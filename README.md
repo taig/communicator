@@ -29,7 +29,7 @@ Usage
 ````java
 import static com.taig.communicator.method.*;
 import static com.taig.communicator.result.Text;
-import static com.taig.communicator.result.Bitmap;
+import static com.taig.communicator.result.Image;
 
 Response<String> source = GET<String>( Text.class, "http://www.android.com/" ).run();
 Response<Bitmap> logo = GET<Bitmap>( Image.class, "http://www.android.com/images/logo.png" ).run();
