@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
-public abstract class Request<T> implements Cancelabe, Callable<Response<T>>
+public abstract class Request<T> implements Cancelabe, Runnable
 {
 	protected String method;
 
@@ -191,6 +191,17 @@ public abstract class Request<T> implements Cancelabe, Callable<Response<T>>
 		return connection;
 	}
 
+	/**
+	 * Execute this request.
+	 *
+	 * If an {@link Event} is specified, its finish callbacks {@link Event#onSuccess(Response)},
+	 * {@link Event#onFailure(Throwable)}, {@link Event#onSuccess(Response)} and the according
+	 * {@link Event#onEvent(com.taig.communicator.event.State)} calls will not be executed.
+	 *
+	 * @return	The {@link Response} object that keeps the connection response meta data (such as response code) and
+	 * 			the payload that will be <code>null</code> if the HTTP server returned an error.
+	 * @throws IOException
+	 */
 	public Response<T> request() throws IOException
 	{
 		state.start();
@@ -205,12 +216,12 @@ public abstract class Request<T> implements Cancelabe, Callable<Response<T>>
 					connection.getHeaderFields(),
 					receive( connection )
 			);
-			state.success( response );
+			state.success();
 			return response;
 		}
 		catch( IOException exception )
 		{
-			state.failure( exception );
+			state.failure();
 			throw exception;
 		}
 		finally
@@ -219,10 +230,16 @@ public abstract class Request<T> implements Cancelabe, Callable<Response<T>>
 		}
 	}
 
-	@Override
-	public Response<T> call() throws Exception
+	public void run()
 	{
-		return request();
+		try
+		{
+			state.success( request() );
+		}
+		catch( IOException exception )
+		{
+			state.failure( exception );
+		}
 	}
 
 	protected abstract void send( HttpURLConnection connection ) throws IOException;
@@ -265,15 +282,23 @@ public abstract class Request<T> implements Cancelabe, Callable<Response<T>>
 			event.receive( current, total );
 		}
 
-		public void success( Response<T> response )
+		public void success()
 		{
 			current = State.SUCCESS;
+		}
+
+		public void success( Response<T> response )
+		{
 			event.success( response );
+		}
+
+		public void failure()
+		{
+			current = State.FAILURE;
 		}
 
 		public void failure( Throwable error )
 		{
-			current = State.FAILURE;
 			event.failure( error );
 		}
 	}
