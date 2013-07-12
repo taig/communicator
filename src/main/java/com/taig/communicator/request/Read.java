@@ -26,12 +26,7 @@ public abstract class Read<T> extends Request<T>
 
 		if( connection.getResponseCode() >= 400 )
 		{
-			input = connection.getErrorStream();
-
-			if( input == null )
-			{
-				return null;
-			}
+			return null;
 		}
 		else
 		{
