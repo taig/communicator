@@ -26,7 +26,7 @@ Usage
 
 `GET`, `POST`, `PUT`, `DELETE` or `HEAD` requests are called from `package com.taig.communicator.method.Method`.
 
-````
+````java
 import static com.taig.communicator.method.*;
 import static com.taig.communicator.result.Text;
 import static com.taig.communicator.result.Bitmap;
