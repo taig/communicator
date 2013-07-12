@@ -12,7 +12,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
 
 public abstract class Request<T> implements Cancelabe, Callable<Response<T>>
 {
@@ -192,7 +191,7 @@ public abstract class Request<T> implements Cancelabe, Callable<Response<T>>
 		return connection;
 	}
 
-	public Response<T> run() throws IOException
+	public Response<T> request() throws IOException
 	{
 		state.start();
 		HttpURLConnection connection = connect();
@@ -223,7 +222,7 @@ public abstract class Request<T> implements Cancelabe, Callable<Response<T>>
 	@Override
 	public Response<T> call() throws Exception
 	{
-		return run();
+		return request();
 	}
 
 	protected abstract void send( HttpURLConnection connection ) throws IOException;
