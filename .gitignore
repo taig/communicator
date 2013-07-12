@@ -1,0 +1,12 @@
+target/
+/lib/
+*.imtarget/
+*.iml
+idea/
+idea_modules/
+*.dex
+*.class
+bin/
+gen/
+local.properties
+proguard/
