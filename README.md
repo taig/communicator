@@ -41,6 +41,7 @@ Creating a custom result parser could be neccessary if you're planning to parse 
 
 > **Please Note**  
 > Latest Android SDK versions prevent you from performing HTTP requests on the main thread because it will block your
-> UI and therefore lead to a bad user experience. Wrap your requests with an `AsyncTask` and you're ready to request stuff.
+> UI and therefore lead to a bad user experience. Place your requests within an `AsyncTask` and you're ready to request
+> internets.
 
 ... more to come.
