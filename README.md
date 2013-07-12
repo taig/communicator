@@ -22,4 +22,25 @@ simplicity: [read] [3] this.
 Usage
 -----
 
-TODO
+### Request
+
+`GET`, `POST`, `PUT`, `DELETE` or `HEAD` requests are called from `package com.taig.communicator.method.Method`.
+
+````
+import static com.taig.communicator.method.*;
+import static com.taig.communicator.result.Text;
+import static com.taig.communicator.result.Bitmap;
+
+Response<String> source = GET<String>( Text.class, "http://www.android.com/" ).run();
+Response<Bitmap> logo = GET<Bitmap>( Image.class, "http://www.android.com/images/logo.png" ).run();
+````
+
+The first argument, `Text.class`, is a result parser that will be executed after successful data retrievel on the
+connection's thread. To supply your own result parser create a new subclass of `com.taig.communicator.result.Result`.
+Creating a custom result parser could be neccessary if you're planning to parse some HTML or JSON results.
+
+> **Please Note**  
+> Latest Android SDK versions prevent you from performing HTTP requests on the main thread because it will block your
+> UI and therefore lead to a bad user experience. Wrap your requests with an `AsyncTask` and you're ready to request stuff.
+
+... more to come.
