@@ -11,8 +11,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
-public abstract class Request<T> implements Cancelabe
+public abstract class Request<T> implements Cancelabe, Runnable
 {
 	protected String method;
 
@@ -190,7 +191,18 @@ public abstract class Request<T> implements Cancelabe
 		return connection;
 	}
 
-	public Response<T> run() throws IOException
+	/**
+	 * Execute this request.
+	 *
+	 * If an {@link Event} is specified, its finish callbacks {@link Event#onSuccess(Response)},
+	 * {@link Event#onFailure(Throwable)}, {@link Event#onSuccess(Response)} and the according
+	 * {@link Event#onEvent(com.taig.communicator.event.State)} calls will not be executed.
+	 *
+	 * @return	The {@link Response} object that keeps the connection response meta data (such as response code) and
+	 * 			the payload that will be <code>null</code> if the HTTP server returned an error.
+	 * @throws IOException
+	 */
+	public Response<T> request() throws IOException
 	{
 		state.start();
 		HttpURLConnection connection = connect();
@@ -204,17 +216,29 @@ public abstract class Request<T> implements Cancelabe
 					connection.getHeaderFields(),
 					receive( connection )
 			);
-			state.success( response );
+			state.success();
 			return response;
 		}
 		catch( IOException exception )
 		{
-			state.failure( exception );
+			state.failure();
 			throw exception;
 		}
 		finally
 		{
 			connection.disconnect();
+		}
+	}
+
+	public void run()
+	{
+		try
+		{
+			state.success( request() );
+		}
+		catch( IOException exception )
+		{
+			state.failure( exception );
 		}
 	}
 
@@ -258,15 +282,23 @@ public abstract class Request<T> implements Cancelabe
 			event.receive( current, total );
 		}
 
-		public void success( Response<T> response )
+		public void success()
 		{
 			current = State.SUCCESS;
+		}
+
+		public void success( Response<T> response )
+		{
 			event.success( response );
+		}
+
+		public void failure()
+		{
+			current = State.FAILURE;
 		}
 
 		public void failure( Throwable error )
 		{
-			current = State.FAILURE;
 			event.failure( error );
 		}
 	}
