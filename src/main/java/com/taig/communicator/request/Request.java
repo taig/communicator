@@ -11,8 +11,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 
-public abstract class Request<T> implements Cancelabe
+public abstract class Request<T> implements Cancelabe, Callable<Response<T>>
 {
 	protected String method;
 
@@ -216,6 +218,12 @@ public abstract class Request<T> implements Cancelabe
 		{
 			connection.disconnect();
 		}
+	}
+
+	@Override
+	public Response<T> call() throws Exception
+	{
+		return run();
 	}
 
 	protected abstract void send( HttpURLConnection connection ) throws IOException;
