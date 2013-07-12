@@ -7,7 +7,9 @@ import com.taig.communicator.event.State;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public abstract class Request<T> implements Cancelabe
@@ -38,7 +40,7 @@ public abstract class Request<T> implements Cancelabe
 
 	protected boolean userInteraction = false;
 
-	protected Map<String, String> headers = new HashMap<String, String>();
+	protected Map<String, List<String>> headers = new HashMap<String, List<String>>();
 
 	public Request( String method, URL url, Event<T> event )
 	{
@@ -75,17 +77,33 @@ public abstract class Request<T> implements Cancelabe
 
 	public Request<T> addHeader( String key, String value )
 	{
-		this.headers.put( key, value );
+		if( !this.headers.containsKey( key ) )
+		{
+			this.headers.put( key, new ArrayList<String>() );
+		}
+
+		this.headers.get( key ).add( value );
 		return this;
 	}
 
-	public Request<T> addHeaders( Map<String, String> headers )
+	public Request<T> addHeaders( String key, List<String> values )
 	{
-		this.headers.putAll( headers );
+		if( !this.headers.containsKey( key ) )
+		{
+			this.headers.put( key, new ArrayList<String>() );
+		}
+
+		this.headers.get( key ).addAll( values );
 		return this;
 	}
 
-	public Request<T> setHeaders( Map<String, String> headers )
+	public Request<T> addHeaders( Map<String, List<String>> values )
+	{
+		this.headers.putAll( values );
+		return this;
+	}
+
+	public Request<T> setHeaders( Map<String, List<String>> headers )
 	{
 		this.headers = headers;
 		return this;
@@ -161,9 +179,12 @@ public abstract class Request<T> implements Cancelabe
 			connection.setFixedLengthStreamingMode( contentLength );
 		}
 
-		for( Map.Entry<String, String> header : headers.entrySet() )
+		for( Map.Entry<String, List<String>> header : this.headers.entrySet() )
 		{
-			connection.setRequestProperty( header.getKey(), header.getValue() );
+			for( String value : header.getValue() )
+			{
+				connection.setRequestProperty( header.getKey(), value );
+			}
 		}
 
 		return connection;
@@ -177,7 +198,12 @@ public abstract class Request<T> implements Cancelabe
 		try
 		{
 			send( connection );
-			Response<T> response = new Response<T>( receive( connection ) );
+			Response<T> response = new Response<T>(
+					connection.getResponseCode(),
+					connection.getResponseMessage(),
+					connection.getHeaderFields(),
+					receive( connection )
+			);
 			state.success( response );
 			return response;
 		}
