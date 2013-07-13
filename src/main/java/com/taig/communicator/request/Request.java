@@ -217,6 +217,7 @@ public abstract class Request<T> implements Cancelabe, Runnable
 		{
 			send( connection );
 			Response<T> response = new Response<T>(
+					url,
 					connection.getResponseCode(),
 					connection.getResponseMessage(),
 					connection.getHeaderFields(),
