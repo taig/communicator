@@ -22,16 +22,7 @@ public abstract class Read<T> extends Request<T>
 	@Override
 	protected T receive( HttpURLConnection connection ) throws IOException
 	{
-		InputStream input;
-
-		if( connection.getResponseCode() >= 400 )
-		{
-			return null;
-		}
-		else
-		{
-			input = connection.getInputStream();
-		}
+		InputStream input = connection.getInputStream();
 
 		try
 		{
