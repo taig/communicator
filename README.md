@@ -32,7 +32,7 @@ import static com.taig.communicator.method.Method.*;
 import com.taig.communicator.result.Text;
 import com.taig.communicator.result.Image;
 
-Response<String> source = GET<String>( Text.class, "http://www.android.com/" ).request();
+Response<String> source = GET<String>( Text.class, "http://www.android.com/" ).followRedirects( true ).request();
 Response<Bitmap> logo = GET<Bitmap>( Image.class, "http://www.android.com/images/logo.png" ).request();
 ````
 
