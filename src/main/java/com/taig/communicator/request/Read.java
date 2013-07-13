@@ -22,34 +22,12 @@ public abstract class Read<T> extends Request<T>
 	@Override
 	protected T receive( HttpURLConnection connection ) throws IOException
 	{
-		InputStream input;
-
-		if( connection.getResponseCode() >= 400 )
-		{
-			return null;
-		}
-		else
-		{
-			input = connection.getInputStream();
-		}
+		Stream.Input input = new Receive( connection.getInputStream(), connection.getContentLength() );
 
 		try
 		{
 			state.receive();
-
-			return read( url, new Stream.Input( input, connection.getContentLength() )
-			{
-				@Override
-				public void update() throws IOException
-				{
-					if( cancelled )
-					{
-						throw new InterruptedIOException( "Connection cancelled" );
-					}
-
-					state.receiving( read, length );
-				}
-			} );
+			return read( url, input );
 		}
 		finally
 		{
@@ -58,4 +36,23 @@ public abstract class Read<T> extends Request<T>
 	}
 
 	protected abstract T read( URL url, Stream.Input input ) throws IOException;
+
+	protected class Receive extends Stream.Input
+	{
+		public Receive( InputStream stream, int length )
+		{
+			super( stream, length );
+		}
+
+		@Override
+		public void update() throws IOException
+		{
+			if( cancelled )
+			{
+				throw new InterruptedIOException( "Connection cancelled" );
+			}
+
+			state.receiving( read, length );
+		}
+	}
 }
