@@ -1,10 +1,13 @@
 package com.taig.communicator.request;
 
+import java.net.URL;
 import java.util.List;
 import java.util.Map;
 
 public class Response<T>
 {
+	protected URL url;
+
 	protected int code;
 
 	protected String message;
@@ -13,12 +16,18 @@ public class Response<T>
 
 	protected T result;
 
-	public Response( int code, String message, Map<String, List<String>> headers, T result )
+	public Response( URL url, int code, String message, Map<String, List<String>> headers, T result )
 	{
+		this.url = url;
 		this.code = code;
 		this.message = message;
 		this.headers = headers;
 		this.result = result;
+	}
+
+	public URL getURL()
+	{
+		return url;
 	}
 
 	public int getCode()
