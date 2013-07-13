@@ -6,7 +6,7 @@ object Build extends sbt.Build
 	val main = Project( "communicator", file( "." ) ).settings(
 		name := "Communicator",
 		organization := "com.taig.communicator",
-		version := "0.2",
+		version := "0.2.1",
 		autoScalaLibrary := false
 	)
 }
