@@ -67,7 +67,7 @@ import java.net.URL;
 
 public class Headline extends Result<String>
 {
-  @Override
+        @Override
 	public String process( URL url, InputStream stream ) throws IOException
 	{
 		throw new UnsupportedOperationException();
