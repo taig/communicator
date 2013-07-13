@@ -1,5 +1,6 @@
 target/
-/lib/
+lib/
+project/
 *.imtarget/
 *.iml
 idea/
