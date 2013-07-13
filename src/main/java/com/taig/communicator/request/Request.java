@@ -19,7 +19,7 @@ public abstract class Request<T> implements Cancelabe, Runnable
 
 	protected URL url;
 
-	protected Event.Proxy<T> event;
+	protected Event<T>.Proxy event;
 
 	protected LoadingState state = new LoadingState();
 
@@ -47,7 +47,11 @@ public abstract class Request<T> implements Cancelabe, Runnable
 	{
 		this.method = method;
 		this.url = url;
-		this.event = new Event.Proxy<T>( event );
+
+		if( event != null )
+		{
+			this.event = event.new Proxy();
+		}
 	}
 
 	public State getState()
@@ -188,6 +192,8 @@ public abstract class Request<T> implements Cancelabe, Runnable
 			}
 		}
 
+		connection.connect();
+
 		return connection;
 	}
 
@@ -253,13 +259,21 @@ public abstract class Request<T> implements Cancelabe, Runnable
 		public void start()
 		{
 			current = State.START;
-			event.start();
+
+			if( event != null )
+			{
+				event.start();
+			}
 		}
 
 		public void cancel()
 		{
 			current = State.CANCEL;
-			event.cancel();
+
+			if( event != null )
+			{
+				event.cancel();
+			}
 		}
 
 		public void send()
@@ -269,7 +283,10 @@ public abstract class Request<T> implements Cancelabe, Runnable
 
 		public void sending( int current, int total )
 		{
-			event.send( current, total );
+			if( event != null )
+			{
+				event.send( current, total );
+			}
 		}
 
 		public void receive()
@@ -279,7 +296,10 @@ public abstract class Request<T> implements Cancelabe, Runnable
 
 		public void receiving( int current, int total )
 		{
-			event.receive( current, total );
+			if( event != null )
+			{
+				event.receive( current, total );
+			}
 		}
 
 		public void success()
@@ -289,7 +309,10 @@ public abstract class Request<T> implements Cancelabe, Runnable
 
 		public void success( Response<T> response )
 		{
-			event.success( response );
+			if( event != null )
+			{
+				event.success( response );
+			}
 		}
 
 		public void failure()
@@ -299,7 +322,10 @@ public abstract class Request<T> implements Cancelabe, Runnable
 
 		public void failure( Throwable error )
 		{
-			event.failure( error );
+			if( event != null )
+			{
+				event.failure( error );
+			}
 		}
 	}
 }
