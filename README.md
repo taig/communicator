@@ -94,7 +94,27 @@ return Jsoup.parse( stream, "UTF-8", url.toString() ).select( "h1" ).first().tex
 
 ### Events
 
-... more to come.
+Events provide a very simple way of interacting with your application during request execution. Every HTTP method in
+`com.taig.communicator.Method` takes an additional parameter `Event<T>`.
+
+````java
+GET<String>( Text.class, "http://www.android.com/", new Event<String>()
+{
+	@Override
+	protected void onReceive( int progress )
+	{
+		Log.d( "TAG", "Resource load status: " + progress + "%" );
+	}
+} ).run();
+````
+
+You can override a variety of event methods. **Your supplied code will be executed on the main thread**. So you're safe
+to interact with you app's UI (i.e. updating a `ProgressBar`).
+
+> **Please Note**
+> You can fire a `Request` with either `run()` or `request()`. The latter method returns a `Response<T>` but will in
+> exchange not trigger the `onSuccess()`, `onFailure()` and `onFinish()` events! `run()` however does not have a return
+> value but triggers all available events.
 
 [1]: http://android-developers.blogspot.de/2011/09/androids-http-clients.html
 [2]: https://github.com/Taig/Communicator/releases
