@@ -25,7 +25,7 @@ trouble building it then there's an `*.apk` in the download section waiting for 
 
 ### Request
 
-`GET`, `POST`, `PUT`, `DELETE` or `HEAD` requests are called from `package com.taig.communicator.method.Method`.
+`GET`, `POST`, `PUT`, `DELETE` or `HEAD` requests are called via `com.taig.communicator.method.Method`.
 
 ````java
 import static com.taig.communicator.method.*;
