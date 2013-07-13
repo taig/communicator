@@ -3,10 +3,11 @@ package com.taig.communicator.result;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URL;
 
 public abstract class Result<T>
 {
-	public abstract T process( InputStream stream ) throws IOException;
+	public abstract T process( URL url, InputStream stream ) throws IOException;
 
 	public static <T> Result<T> newInstance( Class<? extends Result<T>> result )
 	{
