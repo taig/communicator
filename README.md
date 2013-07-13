@@ -37,8 +37,8 @@ Response<Bitmap> logo = GET<Bitmap>( Image.class, "http://www.android.com/images
 ````
 
 The first argument, `Text.class`, is a result parser that will be executed after successful data retrieval on the
-connection's thread. To supply your own result parser create a new subclass of `com.taig.communicator.result.Result`.
-Creating a custom result parser could be necessary if you're planning to parse some HTML or JSON results.
+connection's thread. After successful request execution you will retrieve a `Response<T>` object that wraps the received
+payload as well as the source URL and the server's response headers.
 
 > **Please Note**  
 > Latest Android SDK versions prevent you from performing HTTP requests on the main thread because it will block your
