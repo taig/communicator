@@ -37,7 +37,7 @@ public abstract class Read<T> extends Request<T>
 		{
 			state.receive();
 
-			return read( new Stream.Input( input, connection.getContentLength() )
+			return read( url, new Stream.Input( input, connection.getContentLength() )
 			{
 				@Override
 				public void update() throws IOException
@@ -57,5 +57,5 @@ public abstract class Read<T> extends Request<T>
 		}
 	}
 
-	protected abstract T read( Stream.Input input ) throws IOException;
+	protected abstract T read( URL url, Stream.Input input ) throws IOException;
 }

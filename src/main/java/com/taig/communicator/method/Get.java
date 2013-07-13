@@ -19,8 +19,8 @@ public class Get<T> extends Read<T>
 	}
 
 	@Override
-	protected T read( Stream.Input input ) throws IOException
+	protected T read( URL url, Stream.Input input ) throws IOException
 	{
-		return result.process( input );
+		return result.process( url, input );
 	}
 }
