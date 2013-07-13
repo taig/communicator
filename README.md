@@ -111,7 +111,7 @@ GET<String>( Text.class, "http://www.android.com/", new Event<String>()
 You can override a variety of event methods. **Your supplied code will be executed on the main thread**. So you're safe
 to interact with you app's UI (i.e. updating a `ProgressBar`).
 
-> **Please Note**
+> **Please Note**  
 > You can fire a `Request` with either `run()` or `request()`. The latter method returns a `Response<T>` but will in
 > exchange not trigger the `onSuccess()`, `onFailure()` and `onFinish()` events! `run()` however does not have a return
 > value but triggers all available events.
