@@ -116,6 +116,18 @@ to interact with you app's UI (i.e. updating a `ProgressBar`).
 > exchange not trigger the `onSuccess()`, `onFailure()` and `onFinish()` events! `run()` however does not have a return
 > value but triggers all available events.
 
+### Send Payload
+
+TODO
+
+#### Key/Value Data (Form Submit)
+
+TODO
+
+#### Binary Data (File Upload)
+
+TODO
+
 [1]: http://android-developers.blogspot.de/2011/09/androids-http-clients.html
 [2]: https://github.com/Taig/Communicator/releases
 [3]: http://tools.android.com/recent/dealingwithdependenciesinandroidprojects
