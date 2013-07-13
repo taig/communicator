@@ -1,5 +1,6 @@
-package com.taig.communicator.result;
+package com.taig.communicator.sample.result;
 
+import com.taig.communicator.result.Result;
 import org.jsoup.Jsoup;
 
 import java.io.IOException;
