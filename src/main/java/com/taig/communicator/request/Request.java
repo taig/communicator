@@ -192,6 +192,8 @@ public abstract class Request<T> implements Cancelabe, Runnable
 			}
 		}
 
+		connection.connect();
+
 		return connection;
 	}
 
