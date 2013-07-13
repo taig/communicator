@@ -22,6 +22,11 @@ simplicity: [read] [3] this.
 Usage
 -----
 
+There is a sample application available that covers the library's basic use cases. You can find the source code in the
+`sample/` folder. In case you're wondering about the unusual project structure: the app is built with `sbt`. Just head to
+the source folder and everything is back to normal. If you feel like running the sample app on your device but having
+trouble building it then there's an `*.apk` in the download section waiting for you to give it a try.
+
 ### Request
 
 `GET`, `POST`, `PUT`, `DELETE` or `HEAD` requests are called from `package com.taig.communicator.method.Method`.
