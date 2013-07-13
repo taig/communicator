@@ -28,9 +28,9 @@ trouble building it then there's an `*.apk` in the download section waiting for 
 `GET`, `POST`, `PUT`, `DELETE` or `HEAD` requests are called via `com.taig.communicator.method.Method`.
 
 ````java
-import static com.taig.communicator.method.*;
-import static com.taig.communicator.result.Text;
-import static com.taig.communicator.result.Image;
+import static com.taig.communicator.method.Method.*;
+import com.taig.communicator.result.Text;
+import com.taig.communicator.result.Image;
 
 Response<String> source = GET<String>( Text.class, "http://www.android.com/" ).request();
 Response<Bitmap> logo = GET<Bitmap>( Image.class, "http://www.android.com/images/logo.png" ).request();
