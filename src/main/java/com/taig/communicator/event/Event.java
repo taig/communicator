@@ -27,61 +27,54 @@ public abstract class Event<T>
 
 	protected void onFinish() {}
 
-	public static class Proxy<T>
+	public class Proxy
 	{
-		protected Event<T> event;
-
 		protected Executor executor = new MainThreadExecutor();
 
 		public Event<T> getEvent()
 		{
-			return event;
-		}
-
-		public Proxy( Event<T> event )
-		{
-			this.event = event;
+			return Event.this;
 		}
 
 		public void start()
 		{
-			update( new Runnable()
+			executor.execute( new Runnable()
 			{
 				@Override
 				public void run()
 				{
-					event.onEvent( State.START );
-					event.onStart();
+					onEvent( State.START );
+					onStart();
 				}
 			} );
 		}
 
 		public void cancel()
 		{
-			update( new Runnable()
+			executor.execute( new Runnable()
 			{
 				@Override
 				public void run()
 				{
-					event.onEvent( State.CANCEL );
-					event.onCancel();
+					onEvent( State.CANCEL );
+					onCancel();
 				}
 			} );
 		}
 
 		public void send( final int current, final int total )
 		{
-			update( new Runnable()
+			executor.execute( new Runnable()
 			{
 				@Override
 				public void run()
 				{
-					event.onEvent( State.SEND );
-					event.onSend( current, total );
+					onEvent( State.SEND );
+					onSend( current, total );
 
 					if( total > 0 )
 					{
-						event.onSend( current / total * 100 );
+						onSend( current / total * 100 );
 					}
 				}
 			} );
@@ -89,17 +82,17 @@ public abstract class Event<T>
 
 		public void receive( final int current, final int total )
 		{
-			update( new Runnable()
+			executor.execute( new Runnable()
 			{
 				@Override
 				public void run()
 				{
-					event.onEvent( State.RECEIVE );
-					event.onReceive( current, total );
+					onEvent( State.RECEIVE );
+					onReceive( current, total );
 
 					if( total > 0 )
 					{
-						event.onReceive( current / total * 100 );
+						onReceive( current / total * 100 );
 					}
 				}
 			} );
@@ -107,38 +100,30 @@ public abstract class Event<T>
 
 		public void success( final Response<T> response )
 		{
-			update( new Runnable()
+			executor.execute( new Runnable()
 			{
 				@Override
 				public void run()
 				{
-					event.onEvent( State.SUCCESS );
-					event.onSuccess( response );
-					event.onFinish();
+					onEvent( State.SUCCESS );
+					onSuccess( response );
+					onFinish();
 				}
 			} );
 		}
 
 		public void failure( final Throwable error )
 		{
-			update( new Runnable()
+			executor.execute( new Runnable()
 			{
 				@Override
 				public void run()
 				{
-					event.onEvent( State.FAILURE );
-					event.onFailure( error );
-					event.onFinish();
+					onEvent( State.FAILURE );
+					onFailure( error );
+					onFinish();
 				}
 			} );
-		}
-
-		protected void update( Runnable runnable )
-		{
-			if( event != null )
-			{
-				executor.execute( runnable );
-			}
 		}
 	}
 }
