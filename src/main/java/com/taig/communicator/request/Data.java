@@ -53,13 +53,12 @@ public class Data extends CountableInputStream
 				builder.deleteCharAt( builder.length() - 1 );
 			}
 
-			String query = builder.toString();
-
-			return new Data( new ByteArrayInputStream( query.getBytes() ), query.length(), ContentType.FORM );
+			ByteArrayInputStream stream = new ByteArrayInputStream( builder.toString().getBytes() );
+			return new Data( stream, stream.available(), ContentType.FORM );
 		}
 		catch( UnsupportedEncodingException exception )
 		{
-			throw new RuntimeException();
+			throw new RuntimeException( exception.getMessage() );
 		}
 	}
 

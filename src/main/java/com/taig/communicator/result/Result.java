@@ -2,7 +2,6 @@ package com.taig.communicator.result;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 
 public abstract class Result<T>

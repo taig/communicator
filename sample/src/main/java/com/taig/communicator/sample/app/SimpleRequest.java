@@ -1,16 +1,16 @@
-package com.taig.communicator.sample;
+package com.taig.communicator.sample.app;
 
 import android.app.Activity;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.widget.TextView;
-import com.taig.communicator.event.Event;
-import com.taig.communicator.event.State;
+import com.taig.communicator.request.Response;
 import com.taig.communicator.result.Text;
+import com.taig.communicator.sample.R;
 
 import static com.taig.communicator.method.Method.GET;
 
-public class Events extends Activity
+public class SimpleRequest extends Activity
 {
 	@Override
 	protected void onCreate( Bundle savedInstanceState )
@@ -19,7 +19,7 @@ public class Events extends Activity
 		setContentView( R.layout.text );
 
 		final TextView text = (TextView) findViewById( R.id.text );
-		text.setText( "IDLE" );
+		text.setText( "Loading ..." );
 
 		AsyncTask.execute( new Runnable()
 		{
@@ -28,25 +28,19 @@ public class Events extends Activity
 			{
 				try
 				{
-					Thread.sleep( 1000 );
+					final Response<String> response = GET( Text.class, "http://www.gutenberg.org/files/43206/43206-0.txt" ).request();
 
-					GET( Text.class, "http://www.gutenberg.org/cache/epub/20872/pg20872.txt", new Event<String>()
+					runOnUiThread( new Runnable()
 					{
 						@Override
-						protected void onEvent( State state )
+						public void run()
 						{
-							if( state != State.RECEIVE )
-							{
-								text.setText( state.toString() );
-							}
+							text.setText(
+									"Code: " + response.getCode() + "\n" +
+									"Message: " + response.getMessage() + "\n\n" +
+									response.getPayload().substring( 3034, 3498 ) + " ..." );
 						}
-
-						@Override
-						protected void onReceive( int current, int total )
-						{
-							text.setText( "RECEIVE (" + current + "kB)" );
-						}
-					} ).run();
+					} );
 				}
 				catch( final Exception exception )
 				{

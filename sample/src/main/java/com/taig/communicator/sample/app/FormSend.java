@@ -1,17 +1,22 @@
-package com.taig.communicator.sample;
+package com.taig.communicator.sample.app;
 
 import android.app.Activity;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.Gravity;
 import android.widget.TextView;
-import com.taig.communicator.event.Event;
-import com.taig.communicator.event.State;
+import com.taig.communicator.request.Data;
 import com.taig.communicator.request.Response;
 import com.taig.communicator.result.Text;
+import com.taig.communicator.sample.R;
 
-import static com.taig.communicator.method.Method.GET;
+import java.util.HashMap;
+import java.util.Map;
 
-public class SimpleRequest extends Activity
+import static com.taig.communicator.method.Method.POST;
+
+public class FormSend extends Activity
 {
 	@Override
 	protected void onCreate( Bundle savedInstanceState )
@@ -29,17 +34,20 @@ public class SimpleRequest extends Activity
 			{
 				try
 				{
-					final Response<String> response = GET( Text.class, "http://www.gutenberg.org/files/43206/43206-0.txt" ).request();
+					Map<String, String> params = new HashMap<String, String>();
+					params.put( "username", "taig" );
+					params.put( "password", "strawberry" );
+					params.put( "remember", "true" );
+
+					final Response<String> response = POST( Text.class, "http://httpbin.org/post", Data.from( params ) ).request();
 
 					runOnUiThread( new Runnable()
 					{
 						@Override
 						public void run()
 						{
-							text.setText(
-									"Code: " + response.getCode() + "\n" +
-									"Message: " + response.getMessage() + "\n\n" +
-									response.getPayload().substring( 3034, 3498 ) + " ..." );
+							text.setGravity( Gravity.LEFT | Gravity.CENTER_VERTICAL );
+							text.setText( response.getPayload() );
 						}
 					} );
 				}
@@ -51,6 +59,7 @@ public class SimpleRequest extends Activity
 						public void run()
 						{
 							text.setText( "Things went horribly wrong: " + exception.getMessage() );
+							Log.d( "ASDF", "FUCK", exception );
 						}
 					} );
 				}
