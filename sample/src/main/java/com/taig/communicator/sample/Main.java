@@ -21,7 +21,7 @@ public class Main extends Activity
 			@Override
 			public void onClick( View view )
 			{
-				Toast.makeText( Main.this, "TODO", Toast.LENGTH_SHORT ).show();
+				startActivity( new Intent( Main.this, SimpleRequest.class ) );
 			}
 		} );
 
