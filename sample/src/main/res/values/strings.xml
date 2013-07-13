@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">CommunicatorSample</string>
+	<string name="simple_request">Simple request</string>
+	<string name="events">Events</string>
+	<string name="custom_result_parser">Custom Result Parser</string>
+</resources>
