@@ -1,9 +1,10 @@
-package com.taig.communicator.sample;
+package com.taig.communicator.sample.app;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import com.taig.communicator.sample.R;
 
 import static com.taig.communicator.sample.R.id.button_custom_result_parser;
 import static com.taig.communicator.sample.R.id.button_events;

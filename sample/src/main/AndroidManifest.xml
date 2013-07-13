@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-		  package="com.taig.communicator.sample">
+		  package="com.taig.communicator.sample.app">
 
 	<uses-sdk android:minSdkVersion="11" />
 

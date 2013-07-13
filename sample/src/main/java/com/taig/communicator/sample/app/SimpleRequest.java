@@ -1,13 +1,12 @@
-package com.taig.communicator.sample;
+package com.taig.communicator.sample.app;
 
 import android.app.Activity;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.widget.TextView;
-import com.taig.communicator.event.Event;
-import com.taig.communicator.event.State;
 import com.taig.communicator.request.Response;
 import com.taig.communicator.result.Text;
+import com.taig.communicator.sample.R;
 
 import static com.taig.communicator.method.Method.GET;
 
