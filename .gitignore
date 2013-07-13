@@ -1,6 +1,6 @@
 target/
+boot/
 lib/
-project/
 *.imtarget/
 *.iml
 idea/
