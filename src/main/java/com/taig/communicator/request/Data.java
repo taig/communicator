@@ -1,6 +1,6 @@
 package com.taig.communicator.request;
 
-import com.taig.communicator.io.CountableInputStream;
+import com.taig.communicator.io.Countable;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -8,7 +8,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Map;
 
-public class Data extends CountableInputStream
+public class Data extends Countable.Stream.Input
 {
 	protected ContentType contentType;
 

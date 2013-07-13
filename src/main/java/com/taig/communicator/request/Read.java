@@ -1,7 +1,7 @@
 package com.taig.communicator.request;
 
 import com.taig.communicator.event.Event;
-import com.taig.communicator.event.Stream;
+import com.taig.communicator.event.Updateable;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,7 +22,7 @@ public abstract class Read<T> extends Request<T>
 	@Override
 	protected T receive( HttpURLConnection connection ) throws IOException
 	{
-		Stream.Input input = new Receive( connection.getInputStream(), connection.getContentLength() );
+		Updateable.Input input = new Receive( connection.getInputStream(), connection.getContentLength() );
 
 		try
 		{
@@ -35,9 +35,9 @@ public abstract class Read<T> extends Request<T>
 		}
 	}
 
-	protected abstract T read( URL url, Stream.Input input ) throws IOException;
+	protected abstract T read( URL url, Updateable.Input input ) throws IOException;
 
-	protected class Receive extends Stream.Input
+	protected class Receive extends Updateable.Input
 	{
 		public Receive( InputStream stream, int length )
 		{

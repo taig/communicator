@@ -1,8 +1,7 @@
 package com.taig.communicator.request;
 
-import android.util.Log;
 import com.taig.communicator.event.Event;
-import com.taig.communicator.event.Stream;
+import com.taig.communicator.event.Updateable;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -54,7 +53,7 @@ public abstract class Write<T> extends Read<T>
 	{
 		if( data != null )
 		{
-			Stream.Output output = new Send( connection.getOutputStream(), data.getLength() );
+			Updateable.Output output = new Send( connection.getOutputStream(), data.getLength() );
 
 			try
 			{
@@ -69,7 +68,7 @@ public abstract class Write<T> extends Read<T>
 		}
 	}
 
-	protected void write( Stream.Output output, InputStream data ) throws IOException
+	protected void write( Updateable.Output output, InputStream data ) throws IOException
 	{
 		byte[] buffer = new byte[1024];
 
@@ -79,7 +78,7 @@ public abstract class Write<T> extends Read<T>
 		}
 	}
 
-	protected class Send extends Stream.Output
+	protected class Send extends Updateable.Output
 	{
 		public Send( OutputStream stream, int length )
 		{
