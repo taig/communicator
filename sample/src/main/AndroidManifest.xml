@@ -23,6 +23,8 @@
 
 		<activity android:name=".Events" />
 
+		<activity android:name=".CustomResultParser" />
+
 	</application>
 
 </manifest>
