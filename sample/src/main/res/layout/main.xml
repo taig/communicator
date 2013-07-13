@@ -25,4 +25,10 @@
 			android:padding="10dp"
 			android:text="@string/custom_result_parser" />
 
+	<Button android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:id="@+id/button_form_send"
+			android:padding="10dp"
+			android:text="@string/form_send" />
+
 </LinearLayout>

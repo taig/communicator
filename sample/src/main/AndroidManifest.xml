@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-		  package="com.taig.communicator.sample.app">
+		  package="com.taig.communicator.sample">
 
 	<uses-sdk android:minSdkVersion="11" />
 
@@ -8,7 +8,7 @@
 	<application android:label="@string/app_name">
 
 		<activity android:label="@string/app_name"
-				  android:name=".Main">
+				  android:name=".app.Main">
 
 			<intent-filter>
 
@@ -19,11 +19,13 @@
 
 		</activity>
 
-		<activity android:name=".SimpleRequest" />
+		<activity android:name=".app.SimpleRequest" />
 
-		<activity android:name=".Events" />
+		<activity android:name=".app.Events" />
 
-		<activity android:name=".CustomResultParser" />
+		<activity android:name=".app.CustomResultParser" />
+
+		<activity android:name=".app.FormSend" />
 
 	</application>
 
