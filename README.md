@@ -13,7 +13,7 @@ Installation
 
 [Download] [2] the latest release as a `*.jar` file and add it to your Android app's `libs/` folder. Android will
 take care of adding the dependency to your classpath. You're already good to go now. If you want more from life than
-simplicity: [read] [3] this.
+simplicity: read [this] [3].
 
 Usage
 -----
@@ -25,14 +25,14 @@ trouble building it then there's an `*.apk` in the download section waiting for 
 
 ### Request
 
-`GET`, `POST`, `PUT`, `DELETE` or `HEAD` requests are called from `package com.taig.communicator.method.Method`.
+`GET`, `POST`, `PUT`, `DELETE` or `HEAD` requests are called via `com.taig.communicator.method.Method`.
 
 ````java
-import static com.taig.communicator.method.*;
-import static com.taig.communicator.result.Text;
-import static com.taig.communicator.result.Image;
+import static com.taig.communicator.method.Method.*;
+import com.taig.communicator.result.Text;
+import com.taig.communicator.result.Image;
 
-Response<String> source = GET<String>( Text.class, "http://www.android.com/" ).request();
+Response<String> source = GET<String>( Text.class, "http://www.android.com/" ).followRedirects( true ).request();
 Response<Bitmap> logo = GET<Bitmap>( Image.class, "http://www.android.com/images/logo.png" ).request();
 ````
 
@@ -111,10 +111,22 @@ GET<String>( Text.class, "http://www.android.com/", new Event<String>()
 You can override a variety of event methods. **Your supplied code will be executed on the main thread**. So you're safe
 to interact with you app's UI (i.e. updating a `ProgressBar`).
 
-> **Please Note**
+> **Please Note**  
 > You can fire a `Request` with either `run()` or `request()`. The latter method returns a `Response<T>` but will in
 > exchange not trigger the `onSuccess()`, `onFailure()` and `onFinish()` events! `run()` however does not have a return
 > value but triggers all available events.
+
+### Send Payload
+
+TODO
+
+#### Key/Value Data (Form Submit)
+
+TODO
+
+#### Binary Data (File Upload)
+
+TODO
 
 [1]: http://android-developers.blogspot.de/2011/09/androids-http-clients.html
 [2]: https://github.com/Taig/Communicator/releases
