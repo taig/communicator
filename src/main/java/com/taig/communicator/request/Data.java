@@ -59,7 +59,7 @@ public class Data extends CountableInputStream
 		}
 		catch( UnsupportedEncodingException exception )
 		{
-			throw new RuntimeException();
+			throw new RuntimeException( exception.getMessage() );
 		}
 	}
 
