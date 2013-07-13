@@ -31,8 +31,8 @@ import static com.taig.communicator.method.*;
 import static com.taig.communicator.result.Text;
 import static com.taig.communicator.result.Image;
 
-Response<String> source = GET<String>( Text.class, "http://www.android.com/" ).run();
-Response<Bitmap> logo = GET<Bitmap>( Image.class, "http://www.android.com/images/logo.png" ).run();
+Response<String> source = GET<String>( Text.class, "http://www.android.com/" ).request();
+Response<Bitmap> logo = GET<Bitmap>( Image.class, "http://www.android.com/images/logo.png" ).request();
 ````
 
 The first argument, `Text.class`, is a result parser that will be executed after successful data retrieval on the
