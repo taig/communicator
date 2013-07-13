@@ -1,5 +1,6 @@
 package com.taig.communicator.request;
 
+import android.util.Log;
 import com.taig.communicator.event.Event;
 import com.taig.communicator.event.Stream;
 
@@ -53,33 +54,17 @@ public abstract class Write<T> extends Read<T>
 	{
 		if( data != null )
 		{
-			OutputStream output = connection.getOutputStream();
+			Stream.Output output = new Send( connection.getOutputStream(), data.getLength() );
 
 			try
 			{
 				state.send();
-				write( new Stream.Output( output, data.getLength() )
-				{
-					@Override
-					public void update() throws IOException
-					{
-						if( cancelled )
-						{
-							throw new InterruptedIOException( "Connection cancelled" );
-						}
-
-						state.sending( written, length );
-					}
-				}, data );
+				write( output, data );
 			}
 			finally
 			{
 				output.close();
-
-				if( data != null )
-				{
-					data.close();
-				}
+				data.close();
 			}
 		}
 	}
@@ -88,9 +73,28 @@ public abstract class Write<T> extends Read<T>
 	{
 		byte[] buffer = new byte[1024];
 
-		while ( data.read( buffer ) != -1 )
+		for( int read = 0; read != -1; read = data.read( buffer ) )
 		{
-			output.write( buffer );
+			output.write( buffer, 0, read );
+		}
+	}
+
+	protected class Send extends Stream.Output
+	{
+		public Send( OutputStream stream, int length )
+		{
+			super( stream, length );
+		}
+
+		@Override
+		public void update() throws IOException
+		{
+			if( cancelled )
+			{
+				throw new InterruptedIOException( "Connection cancelled" );
+			}
+
+			state.sending( written, length );
 		}
 	}
 }
