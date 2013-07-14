@@ -15,6 +15,14 @@ public class Head extends Request<Void>
 	}
 
 	@Override
+	public HttpURLConnection connect() throws IOException
+	{
+		HttpURLConnection connection = super.connect();
+		connection.setRequestProperty( "Accept-Encoding", "" );
+		return connection;
+	}
+
+	@Override
 	protected void send( HttpURLConnection connection ) throws IOException {}
 
 	@Override
