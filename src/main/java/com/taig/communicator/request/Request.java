@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 
 public abstract class Request<T> implements Cancelabe, Runnable
 {
@@ -167,7 +166,6 @@ public abstract class Request<T> implements Cancelabe, Runnable
 		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 		connection.setAllowUserInteraction( userInteraction );
 		connection.setConnectTimeout( connectTimeout );
-		connection.setDoInput( true );
 		connection.setIfModifiedSince( modifiedSince );
 		connection.setInstanceFollowRedirects( redirect );
 		connection.setReadTimeout( readTimeout );
@@ -208,11 +206,11 @@ public abstract class Request<T> implements Cancelabe, Runnable
 	 */
 	public Response<T> request() throws IOException
 	{
-		state.start();
 		HttpURLConnection connection = connect();
 
 		try
 		{
+			state.start();
 			send( connection );
 			Response<T> response = new Response<T>(
 					url,
