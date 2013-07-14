@@ -1,34 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-			  android:layout_width="fill_parent"
-			  android:layout_height="fill_parent"
-			  android:gravity="center"
-			  android:orientation="vertical"
-			  android:padding="20dp">
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+			android:layout_width="fill_parent"
+			android:layout_height="fill_parent">
 
-	<Button android:layout_width="fill_parent"
-			android:layout_height="wrap_content"
-			android:id="@+id/button_simple_request"
-			android:padding="10dp"
-			android:text="@string/simple_request" />
+	<LinearLayout android:layout_width="fill_parent"
+				  android:layout_height="wrap_content"
+				  android:layout_gravity="center_vertical"
+				  android:orientation="vertical"
+				  android:padding="20dp">
 
-	<Button android:layout_width="fill_parent"
-			android:layout_height="wrap_content"
-			android:id="@+id/button_events"
-			android:padding="10dp"
-			android:text="@string/events" />
+		<Button android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:id="@+id/button_simple_request"
+				android:padding="10dp"
+				android:text="@string/simple_request" />
 
-	<Button android:layout_width="fill_parent"
-			android:layout_height="wrap_content"
-			android:id="@+id/button_custom_result_parser"
-			android:padding="10dp"
-			android:text="@string/custom_result_parser" />
+		<Button android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:id="@+id/button_events"
+				android:padding="10dp"
+				android:text="@string/events" />
 
-	<Button android:layout_width="fill_parent"
-			android:layout_height="wrap_content"
-			android:id="@+id/button_form_send"
-			android:padding="10dp"
-			android:text="@string/form_send" />
+		<Button android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:id="@+id/button_custom_result_parser"
+				android:padding="10dp"
+				android:text="@string/custom_result_parser" />
 
-</LinearLayout>
+		<Button android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:id="@+id/button_form_send"
+				android:padding="10dp"
+				android:text="@string/form_send" />
+
+		<Button android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:id="@+id/button_cookies"
+				android:padding="10dp"
+				android:text="@string/cookies" />
+	</LinearLayout>
+
+</ScrollView>
