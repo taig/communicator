@@ -1,17 +1,16 @@
 package com.taig.communicator.event;
 
-import com.taig.communicator.io.CountableInputStream;
-import com.taig.communicator.io.CountableOutputStream;
+import com.taig.communicator.io.Countable;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public interface Stream
+public interface Updateable
 {
 	public void update() throws IOException;
 
-	abstract class Input extends CountableInputStream implements Stream
+	abstract class Input extends Countable.Stream.Input implements Updateable
 	{
 		protected int interval = 4096;
 
@@ -92,7 +91,7 @@ public interface Stream
 		}
 	}
 
-	abstract class Output extends CountableOutputStream implements Stream
+	abstract class Output extends Countable.Stream.Output implements Updateable
 	{
 		protected int interval = 4096;
 

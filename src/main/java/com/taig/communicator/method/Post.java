@@ -1,7 +1,7 @@
 package com.taig.communicator.method;
 
 import com.taig.communicator.event.Event;
-import com.taig.communicator.event.Stream;
+import com.taig.communicator.event.Updateable;
 import com.taig.communicator.request.Data;
 import com.taig.communicator.request.Write;
 import com.taig.communicator.result.Result;
@@ -20,7 +20,7 @@ public class Post<T> extends Write<T>
 	}
 
 	@Override
-	protected T read( URL url, Stream.Input input ) throws IOException
+	protected T read( URL url, Updateable.Input input ) throws IOException
 	{
 		return result.process( url, input );
 	}
