@@ -1,8 +1,10 @@
 package com.taig.communicator.request;
 
+import android.util.Log;
+
+import java.net.HttpCookie;
 import java.net.URL;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Response<T>
 {
@@ -43,6 +45,32 @@ public class Response<T>
 	public Map<String, List<String>> getHeaders()
 	{
 		return headers;
+	}
+
+	public List<String> getHeader( String key )
+	{
+		return headers.get( key );
+	}
+
+	public List<HttpCookie> getCookies()
+	{
+		List<String> headers = getHeader( "Set-Cookie" );
+
+		if( headers != null )
+		{
+			List<HttpCookie> cookies = new ArrayList<HttpCookie>();
+
+			for( String header : headers )
+			{
+				cookies.addAll( HttpCookie.parse( header ) );
+			}
+
+			return cookies;
+		}
+		else
+		{
+			return null;
+		}
 	}
 
 	public T getPayload()
