@@ -34,9 +34,11 @@ public class Cookies extends Activity
 					Response<Void> response = HEAD( "http://httpbin.org/cookies/set?user=Taig&pass=strawberries" ).request();
 					CookieStore store = new CookieStore( Cookies.this );
 					store.add( response );
+					store.add( null, "global", "cookie" );
 
 					final String manual = GET( Text.class, "http://httpbin.org/get" )
 							.setCookies( response.getCookies() )
+							.addCookie( "local", "cookie" )
 							.request()
 							.getPayload();
 
