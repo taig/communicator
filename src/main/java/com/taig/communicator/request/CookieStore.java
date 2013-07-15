@@ -41,6 +41,13 @@ public class CookieStore implements java.net.CookieStore
 		preferences.edit().putStringSet( host, cookies ).commit();
 	}
 
+	public void add( URI uri, String key, String value )
+	{
+		HttpCookie cookie = new HttpCookie( key, value );
+		cookie.setVersion( 1 );
+		add( uri, cookie );
+	}
+
 	public void add( Response<?> response )
 	{
 		try
