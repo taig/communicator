@@ -151,7 +151,7 @@ public abstract class Request<T> implements Cancelable, Runnable
 	public Request<T> addCookie( String key, String value )
 	{
 		HttpCookie cookie = new HttpCookie( key, value );
-		cookie.setVersion( 1 );
+		cookie.setVersion( 0 );
 		addCookie( cookie );
 		return this;
 	}

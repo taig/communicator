@@ -44,7 +44,7 @@ public class CookieStore implements java.net.CookieStore
 	public void add( URI uri, String key, String value )
 	{
 		HttpCookie cookie = new HttpCookie( key, value );
-		cookie.setVersion( 1 );
+		cookie.setVersion( 0 );
 		add( uri, cookie );
 	}
 
