@@ -1,7 +1,7 @@
 package com.taig.communicator.request;
 
 import android.util.Log;
-import com.taig.communicator.io.Cancelabe;
+import com.taig.communicator.io.Cancelable;
 import com.taig.communicator.event.Event;
 import com.taig.communicator.event.State;
 
@@ -12,7 +12,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
 
-public abstract class Request<T> implements Cancelabe, Runnable
+public abstract class Request<T> implements Cancelable, Runnable
 {
 	protected static final String TAG = Request.class.getName();
 
