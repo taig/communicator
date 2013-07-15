@@ -1,10 +1,10 @@
 package com.taig.communicator.request;
 
-import android.util.Log;
-
 import java.net.HttpCookie;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class Response<T>
 {
@@ -71,6 +71,24 @@ public class Response<T>
 		{
 			return null;
 		}
+	}
+
+	public HttpCookie getCookie( String name )
+	{
+		List<HttpCookie> cookies = getCookies();
+
+		if( cookies != null )
+		{
+			for( HttpCookie cookie : cookies )
+			{
+				if( cookie.getName().equals( name ) )
+				{
+					return cookie;
+				}
+			}
+		}
+
+		return null;
 	}
 
 	public T getPayload()
