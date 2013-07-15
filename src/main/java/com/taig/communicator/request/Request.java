@@ -117,6 +117,14 @@ public abstract class Request<T> implements Cancelabe, Runnable
 		return this;
 	}
 
+	public Request<T> addCookie( String key, String value )
+	{
+		HttpCookie cookie = new HttpCookie( key, value );
+		cookie.setVersion( 1 );
+		addCookie( cookie );
+		return this;
+	}
+
 	public Request<T> addCookies( List<HttpCookie> cookies )
 	{
 		for( HttpCookie cookie : cookies )
