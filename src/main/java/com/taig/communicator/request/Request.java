@@ -8,10 +8,7 @@ import com.taig.communicator.io.Cancelable;
 import java.io.IOException;
 import java.net.CookieStore;
 import java.net.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static com.taig.communicator.request.Header.Request.COOKIE;
 
@@ -299,10 +296,15 @@ public abstract class Request<T> implements Cancelable, Runnable
 
 		for( Map.Entry<String, Collection<String>> header : this.headers.entrySet() )
 		{
-			for( String value : header.getValue() )
+			StringBuilder builder = new StringBuilder();
+			String delimiter = header.getKey().equals( COOKIE ) ? "; " : ",";
+
+			for( Iterator<String> iterator = header.getValue().iterator(); iterator.hasNext(); )
 			{
-				connection.setRequestProperty( header.getKey(), value );
+				builder.append( iterator.next() ).append( iterator.hasNext() ? delimiter : "" );
 			}
+
+			connection.setRequestProperty( header.getKey(), builder.toString() );
 		}
 
 		return connection;
@@ -310,13 +312,13 @@ public abstract class Request<T> implements Cancelable, Runnable
 
 	/**
 	 * Execute this request.
+	 * <p/>
+	 * If an {@link Event} is specified, its finish callbacks {@link Event#onSuccess(Response)}, {@link
+	 * Event#onFailure(Throwable)}, {@link Event#onSuccess(Response)} and the according {@link
+	 * Event#onEvent(com.taig.communicator.event.State)} calls will not be executed.
 	 *
-	 * If an {@link Event} is specified, its finish callbacks {@link Event#onSuccess(Response)},
-	 * {@link Event#onFailure(Throwable)}, {@link Event#onSuccess(Response)} and the according
-	 * {@link Event#onEvent(com.taig.communicator.event.State)} calls will not be executed.
-	 *
-	 * @return	The {@link Response} object that keeps the connection response meta data (such as response code) and
-	 * 			the payload that will be <code>null</code> if the HTTP server returned an error.
+	 * @return The {@link Response} object that keeps the connection response meta data (such as response code) and the
+	 * payload that will be <code>null</code> if the HTTP server returned an error.
 	 * @throws IOException
 	 */
 	public Response<T> request() throws IOException
@@ -328,11 +330,11 @@ public abstract class Request<T> implements Cancelable, Runnable
 			state.start();
 			send( connection );
 			Response<T> response = new Response<T>(
-					url,
-					connection.getResponseCode(),
-					connection.getResponseMessage(),
-					connection.getHeaderFields(),
-					receive( connection )
+				url,
+				connection.getResponseCode(),
+				connection.getResponseMessage(),
+				connection.getHeaderFields(),
+				receive( connection )
 			);
 			state.success();
 			return response;
