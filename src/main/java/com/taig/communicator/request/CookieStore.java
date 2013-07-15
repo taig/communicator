@@ -73,15 +73,13 @@ public class CookieStore implements java.net.CookieStore
 	@Override
 	public List<HttpCookie> get( URI uri )
 	{
+		Set<String> store = preferences.getStringSet( uri.getHost(), new HashSet<String>() );
+		store.addAll( preferences.getStringSet( WILDCARD, new HashSet<String>() ) );
 		List<HttpCookie> cookies = new ArrayList<HttpCookie>();
-		Set<String> store = preferences.getStringSet( uri.getHost(), null );
 
-		if( store != null )
+		for( String cookie : store )
 		{
-			for( String cookie : store )
-			{
-				cookies.addAll( HttpCookie.parse( cookie ) );
-			}
+			cookies.addAll( HttpCookie.parse( cookie ) );
 		}
 
 		return Collections.unmodifiableList( cookies );
