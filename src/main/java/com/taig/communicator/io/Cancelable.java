@@ -1,6 +1,6 @@
 package com.taig.communicator.io;
 
-public interface Cancelabe
+public interface Cancelable
 {
 	public void cancel();
 }
