@@ -13,6 +13,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.taig.communicator.request.Header.Request.COOKIE;
+
 public abstract class Request<T> implements Cancelable, Runnable
 {
 	protected static final String TAG = Request.class.getName();
@@ -49,11 +51,7 @@ public abstract class Request<T> implements Cancelable, Runnable
 	{
 		this.method = method;
 		this.url = url;
-
-		if( event != null )
-		{
-			this.event = event.new Proxy();
-		}
+		setEvent( event );
 	}
 
 	public State getState()
@@ -71,6 +69,12 @@ public abstract class Request<T> implements Cancelable, Runnable
 		return event.getEvent();
 	}
 
+	public Request<T> setEvent( Event<T> event )
+	{
+		this.event = event == null ? null : event.new Proxy();
+		return this;
+	}
+
 	@Override
 	public void cancel()
 	{
@@ -83,6 +87,20 @@ public abstract class Request<T> implements Cancelable, Runnable
 	}
 
 	public Request<T> addHeader( String key, String value )
+	{
+		if( !this.headers.containsKey( key ) )
+		{
+			setHeader( key, value );
+		}
+		else
+		{
+			this.headers.get( key ).add( value );
+		}
+
+		return this;
+	}
+
+	public Request<T> setHeader( String key, String value )
 	{
 		if( !this.headers.containsKey( key ) )
 		{
@@ -115,9 +133,21 @@ public abstract class Request<T> implements Cancelable, Runnable
 		return this;
 	}
 
+	public Request<T> removeHeaders( String key )
+	{
+		this.headers.remove( key );
+		return this;
+	}
+
+	public Request<T> clearHeaders()
+	{
+		this.headers.clear();
+		return this;
+	}
+
 	public Request<T> addCookie( HttpCookie cookie )
 	{
-		addHeader( "Cookie", cookie.toString() );
+		addHeader( COOKIE, cookie.toString() );
 		return this;
 	}
 
@@ -163,7 +193,7 @@ public abstract class Request<T> implements Cancelable, Runnable
 			values.add( cookie.toString() );
 		}
 
-		setHeaders( "Cookie", values );
+		setHeaders( COOKIE, values );
 		return this;
 	}
 
@@ -179,6 +209,22 @@ public abstract class Request<T> implements Cancelable, Runnable
 						"URL (" + url + ") could not be converted to an URI", exception );
 		}
 
+		return this;
+	}
+
+	public Request<T> removeCookie( HttpCookie cookie )
+	{
+		if( this.headers.containsKey( COOKIE ) )
+		{
+			this.headers.get( COOKIE ).remove( cookie.toString() );
+		}
+
+		return this;
+	}
+
+	public Request<T> clearCookies()
+	{
+		this.headers.remove( COOKIE );
 		return this;
 	}
 

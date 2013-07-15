@@ -10,6 +10,9 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import static com.taig.communicator.request.Header.Request.CONTENT_LENGTH;
+import static com.taig.communicator.request.Header.Request.CONTENT_TYPE;
+
 public abstract class Write<T> extends Read<T>
 {
 	protected Data data;
@@ -17,7 +20,7 @@ public abstract class Write<T> extends Read<T>
 	public Write( String method, URL url, Data data, Event<T> event )
 	{
 		super( method, url, event );
-		this.data = data;
+		setData( data );
 	}
 
 	public Data getData()
@@ -25,26 +28,29 @@ public abstract class Write<T> extends Read<T>
 		return data;
 	}
 
+	public Write<T> setData( Data data )
+	{
+		this.data = data;
+
+		if( data != null )
+		{
+			setHeader( CONTENT_TYPE, data.getContentType().toString() );
+			setHeader( CONTENT_LENGTH, data.getLength() > 0 ? String.valueOf( data.getLength() ) : "0" );
+		}
+		else
+		{
+			removeHeaders( CONTENT_TYPE );
+			setHeader( CONTENT_LENGTH, "0" );
+		}
+
+		return this;
+	}
+
 	@Override
 	public HttpURLConnection connect() throws IOException
 	{
 		HttpURLConnection connection = super.connect();
-
-		if( data != null )
-		{
-			connection.setRequestProperty( "Content-Type", data.contentType.toString() );
-			connection.setDoOutput( true );
-
-			if( data.getLength() >= 0 )
-			{
-				connection.setRequestProperty( "Content-Length", String.valueOf( data.getLength() ) );
-			}
-		}
-		else
-		{
-			connection.setRequestProperty( "Content-Length", "0" );
-		}
-
+		connection.setDoOutput( true );
 		return connection;
 	}
 

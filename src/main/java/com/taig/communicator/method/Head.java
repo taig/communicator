@@ -1,11 +1,14 @@
 package com.taig.communicator.method;
 
 import com.taig.communicator.event.Event;
+import com.taig.communicator.request.Header;
 import com.taig.communicator.request.Request;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+
+import static com.taig.communicator.request.Header.Request.ACCEPT_ENCODING;
 
 public class Head extends Request<Void>
 {
@@ -18,7 +21,7 @@ public class Head extends Request<Void>
 	public HttpURLConnection connect() throws IOException
 	{
 		HttpURLConnection connection = super.connect();
-		connection.setRequestProperty( "Accept-Encoding", "" );
+		connection.setRequestProperty( ACCEPT_ENCODING, "" );
 		return connection;
 	}
 
