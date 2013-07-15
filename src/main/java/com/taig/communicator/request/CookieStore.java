@@ -19,12 +19,12 @@ public class CookieStore implements java.net.CookieStore
 
 	public CookieStore( Context context )
 	{
-		this( context, "com.taig.communicator.CookieStore" );
+		this( context, "com.taig.communicator.CookieStore", Context.MODE_PRIVATE );
 	}
 
-	public CookieStore( Context context, String preference )
+	public CookieStore( Context context, String preference, int mode )
 	{
-		this( context.getSharedPreferences( preference, Context.MODE_PRIVATE ) );
+		this( context.getSharedPreferences( preference, mode ) );
 	}
 
 	public CookieStore( SharedPreferences preferences )
