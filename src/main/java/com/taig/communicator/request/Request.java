@@ -1,16 +1,17 @@
 package com.taig.communicator.request;
 
 import android.util.Log;
-import com.taig.communicator.io.Cancelable;
 import com.taig.communicator.event.Event;
 import com.taig.communicator.event.State;
+import com.taig.communicator.io.Cancelable;
 
 import java.io.IOException;
-import java.net.HttpCookie;
-import java.net.HttpURLConnection;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.*;
+import java.net.CookieStore;
+import java.net.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 public abstract class Request<T> implements Cancelable, Runnable
 {
