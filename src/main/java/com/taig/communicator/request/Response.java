@@ -73,6 +73,24 @@ public class Response<T>
 		}
 	}
 
+	public HttpCookie getCookie( String name )
+	{
+		List<HttpCookie> cookies = getCookies();
+
+		if( cookies != null )
+		{
+			for( HttpCookie cookie : cookies )
+			{
+				if( cookie.getName().equals( name ) )
+				{
+					return cookie;
+				}
+			}
+		}
+
+		return null;
+	}
+
 	public T getPayload()
 	{
 		return result;
