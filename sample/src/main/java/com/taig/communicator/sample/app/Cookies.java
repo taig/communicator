@@ -3,6 +3,7 @@ package com.taig.communicator.sample.app;
 import android.app.Activity;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
 import android.widget.TextView;
 import com.taig.communicator.request.CookieStore;
@@ -30,7 +31,7 @@ public class Cookies extends Activity
 			{
 				try
 				{
-					Response<Void> response = HEAD( "https://github.com" ).request();
+					Response<Void> response = HEAD( "http://httpbin.org/cookies/set?user=Taig&pass=strawberries" ).request();
 					CookieStore store = new CookieStore( Cookies.this );
 					store.add( response );
 
@@ -39,7 +40,7 @@ public class Cookies extends Activity
 							.request()
 							.getPayload();
 
-					final String automatic = POST( Text.class, "http://httpbin.org/post", null )
+					final String automatic = GET( Text.class, "http://httpbin.org/get" )
 							.setCookies( store )
 							.request()
 							.getPayload();
@@ -62,6 +63,7 @@ public class Cookies extends Activity
 						public void run()
 						{
 							text.setText( "Things went horribly wrong: " + exception.getMessage() );
+							Log.d( "ASDF", "", exception );
 						}
 					} );
 				}
