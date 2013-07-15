@@ -1,7 +1,5 @@
 package com.taig.communicator.request;
 
-import android.util.Log;
-
 import java.net.HttpCookie;
 import java.net.URL;
 import java.util.*;
