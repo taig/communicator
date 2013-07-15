@@ -26,7 +26,12 @@ public abstract class Method
 
 	public static <T> Get<T> GET( Class<? extends Parser<T>> parser, URL url, Event<T> event )
 	{
-		return new Get<T>( createParser( parser ), url, event );
+		return GET( createParser( parser ), url, event );
+	}
+
+	public static <T> Get<T> GET( Parser<T> parser, URL url, Event<T> event )
+	{
+		return new Get<T>( parser, url, event );
 	}
 
 	public static <T> Delete<T> DELETE( Class<? extends Parser<T>> parser, String url ) throws MalformedURLException
@@ -66,7 +71,12 @@ public abstract class Method
 
 	public static <T> Delete<T> DELETE( Class<? extends Parser<T>> parser, URL url, Data data, Event<T> event )
 	{
-		return new Delete<T>( createParser( parser ), url, data, event );
+		return DELETE( createParser( parser ), url, data, event );
+	}
+
+	public static <T> Delete<T> DELETE( Parser<T> parser, URL url, Data data, Event<T> event )
+	{
+		return new Delete<T>( parser, url, data, event );
 	}
 
 	public static Head HEAD( String url ) throws MalformedURLException
@@ -109,6 +119,11 @@ public abstract class Method
 		return new Post<T>( createParser( parser ), url, data, event );
 	}
 
+	public static <T> Post<T> POST( Parser<T> parser, URL url, Data data, Event<T> event )
+	{
+		return POST( parser, url, data, event );
+	}
+
 	public static <T> Put<T> PUT( Class<? extends Parser<T>> parser, String url, Data data ) throws MalformedURLException
 	{
 		return PUT( parser, url, data, null );
@@ -126,7 +141,12 @@ public abstract class Method
 
 	public static <T> Put<T> PUT( Class<? extends Parser<T>> parser, URL url, Data data, Event<T> event )
 	{
-		return new Put<T>( createParser( parser ), url, data, event );
+		return PUT( createParser( parser ), url, data, event );
+	}
+
+	public static <T> Put<T> PUT( Parser<T> parser, URL url, Data data, Event<T> event )
+	{
+		return new Put<T>( parser, url, data, event );
 	}
 
 	protected static <T> Parser<T> createParser( Class<? extends Parser<T>> type )
