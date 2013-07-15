@@ -1,17 +1,22 @@
 package com.taig.communicator.request;
 
-import com.taig.communicator.io.Cancelabe;
+import android.util.Log;
 import com.taig.communicator.event.Event;
 import com.taig.communicator.event.State;
+import com.taig.communicator.io.Cancelable;
 
 import java.io.IOException;
-import java.net.HttpCookie;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.*;
+import java.net.CookieStore;
+import java.net.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
-public abstract class Request<T> implements Cancelabe, Runnable
+public abstract class Request<T> implements Cancelable, Runnable
 {
+	protected static final String TAG = Request.class.getName();
+
 	protected String method;
 
 	protected URL url;
@@ -38,7 +43,7 @@ public abstract class Request<T> implements Cancelabe, Runnable
 
 	protected boolean userInteraction = false;
 
-	protected Map<String, List<String>> headers = new HashMap<String, List<String>>();
+	protected Map<String, Collection<String>> headers = new HashMap<String, Collection<String>>();
 
 	public Request( String method, URL url, Event<T> event )
 	{
@@ -88,24 +93,23 @@ public abstract class Request<T> implements Cancelabe, Runnable
 		return this;
 	}
 
-	public Request<T> addHeaders( String key, List<String> values )
+	public Request<T> addHeaders( String key, Collection<String> values )
 	{
-		if( !this.headers.containsKey( key ) )
+		for( String value : values )
 		{
-			this.headers.put( key, new ArrayList<String>() );
+			addHeader( key, value );
 		}
 
-		this.headers.get( key ).addAll( values );
 		return this;
 	}
 
-	public Request<T> addHeaders( Map<String, List<String>> values )
+	public Request<T> setHeaders( String key, Collection<String> values )
 	{
-		this.headers.putAll( values );
+		this.headers.put( key, values );
 		return this;
 	}
 
-	public Request<T> setHeaders( Map<String, List<String>> headers )
+	public Request<T> setHeaders( Map<String, Collection<String>> headers )
 	{
 		this.headers = headers;
 		return this;
@@ -125,11 +129,54 @@ public abstract class Request<T> implements Cancelabe, Runnable
 		return this;
 	}
 
-	public Request<T> addCookies( List<HttpCookie> cookies )
+	public Request<T> addCookies( Collection<HttpCookie> cookies )
 	{
 		for( HttpCookie cookie : cookies )
 		{
 			addCookie( cookie );
+		}
+
+		return this;
+	}
+
+	public Request<T> addCookies( CookieStore store )
+	{
+		try
+		{
+			addCookies( store.get( url.toURI() ) );
+		}
+		catch( URISyntaxException exception )
+		{
+			Log.w( TAG, "The cookies of a CookieStore couldn't be added to a Request because the associated " +
+						"URL (" + url + ") could not be converted to an URI", exception );
+		}
+
+		return this;
+	}
+
+	public Request<T> setCookies( Collection<HttpCookie> cookies )
+	{
+		Collection<String> values = new ArrayList<String>();
+
+		for( HttpCookie cookie : cookies )
+		{
+			values.add( cookie.toString() );
+		}
+
+		setHeaders( "Cookie", values );
+		return this;
+	}
+
+	public Request<T> setCookies( CookieStore store )
+	{
+		try
+		{
+			setCookies( store.get( url.toURI() ) );
+		}
+		catch( URISyntaxException exception )
+		{
+			Log.w( TAG, "The cookies of a CookieStore couldn't be added to a Request because the associated " +
+						"URL (" + url + ") could not be converted to an URI", exception );
 		}
 
 		return this;
@@ -204,7 +251,7 @@ public abstract class Request<T> implements Cancelabe, Runnable
 			connection.setFixedLengthStreamingMode( contentLength );
 		}
 
-		for( Map.Entry<String, List<String>> header : this.headers.entrySet() )
+		for( Map.Entry<String, Collection<String>> header : this.headers.entrySet() )
 		{
 			for( String value : header.getValue() )
 			{
