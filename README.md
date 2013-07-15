@@ -88,7 +88,7 @@ to interact with you app's user interface (e.g. updating a `ProgressBar`) withou
 
 #### Key/Value Data (Form Submit)
 
-In order to add Form data (or more generally spoken Key/Value pairs) to your request body you have to specify the `data`
+In order to add form data (or more generally spoken key/value pairs) to the request body you have to specify the `data`
 argument in a `POST` or `PUT` request. More precisely *Communicator* demands you to supply your key/value pairs as
 `Map<String, String>`.
 
@@ -99,6 +99,9 @@ params.put( "pass", "As if!" );
 
 POST<String>( Text.class, "https://facebook.com/login.php", Data.from( params ) ).run();
 ````
+
+The supplied data will then be properly encoded for transmission and the request headers `Content-Length` and
+`Content-Type` will be set accordingly.
 
 #### Binary Data (File Upload)
 
