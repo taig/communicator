@@ -1,7 +1,8 @@
 # Communicator
 
 A simple Java networking library for the Android platform. It's based on `HttpURLConnection` as [recommended] [1] by
-Google. *Communicator* aims to provide maximum flexibility with minimal verbosity and helps to accomplish common use cases.
+Google. *Communicator* aims to provide maximum flexibility with minimal verbosity and helps to accomplish common use
+cases.
 
 > **Please Note**  
 > Communicator is currently in a very early development state. Therefore please excuse the lack of documentation and
@@ -16,8 +17,8 @@ simplicity: read [this] [3].
 ## Usage
 
 There is a sample application available that covers the library's basic use cases. You can find the source code in the
-`sample/` folder. In case you're wondering about the unusual project structure: the app is built with `sbt`. Just head to
-the source folder and everything is back to normal. If you feel like running the sample app on your device but having
+`sample/` folder. In case you're wondering about the unusual project structure: the app is built with `sbt`. Just head
+to the source folder and everything is back to normal. If you feel like running the sample app on your device but having
 trouble building it then there's an `*.apk` in the download section waiting for you to give it a try.
 
 ### Request
@@ -75,8 +76,8 @@ GET<String>( Text.class, "http://www.android.com/", new Event<String>()
 ````
 
 You can override a variety of event methods whose body will always be **executed on the main thread**. So you're safe
-to interact with you app's user interface (e.g. updating a `ProgressBar`) without wrapping your code in a `runOnUiThread`
-call. On the other hand you should avoid doing any heavy lifting consequently.
+to interact with you app's user interface (e.g. updating a `ProgressBar`) without wrapping your code in a
+`runOnUiThread` call. On the other hand you should avoid doing any heavy lifting consequently.
 
 > **Please Note**  
 > You can fire a `Request` with either `run()` or `request()`. The latter method returns a `Response<T>` but will in
