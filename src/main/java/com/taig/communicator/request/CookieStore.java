@@ -41,6 +41,24 @@ public class CookieStore implements java.net.CookieStore
 		preferences.edit().putStringSet( host, cookies ).commit();
 	}
 
+	public void add( Response<?> response )
+	{
+		try
+		{
+			URI uri = response.getURL().toURI();
+
+			for( HttpCookie cookie : response.getCookies() )
+			{
+				add( uri, cookie );
+			}
+		}
+		catch( URISyntaxException exception )
+		{
+			Log.w( TAG, "The cookies of a Response were dropped because the associated " +
+						"URL (" + response.getURL() + ") could not be converted to an URI", exception );
+		}
+	}
+
 	@Override
 	public List<HttpCookie> get( URI uri )
 	{
@@ -80,7 +98,7 @@ public class CookieStore implements java.net.CookieStore
 						catch( IllegalArgumentException exception )
 						{
 							preferences.edit().remove( entry.getKey() ).commit();
-							Log.w( TAG, "Found and removed illegal entry in CookieStore's SharedPreferences.", exception );
+							Log.w( TAG, "Found and removed illegal entry in CookieStore's SharedPreferences", exception );
 						}
 					}
 				}
@@ -110,7 +128,7 @@ public class CookieStore implements java.net.CookieStore
 				catch( URISyntaxException exception )
 				{
 					preferences.edit().remove( host ).commit();
-					Log.w( TAG, "Found and removed illegal entry in CookieStore's SharedPreferences.", exception );
+					Log.w( TAG, "Found and removed illegal entry in CookieStore's SharedPreferences", exception );
 				}
 			}
 		}
