@@ -38,6 +38,7 @@ public class CookieStore implements java.net.CookieStore
 		String host = uri == null ? WILDCARD : uri.getHost();
 		Set<String> cookies = preferences.getStringSet( host, new HashSet<String>() );
 		cookies.add( cookie.toString() );
+		preferences.edit().putStringSet( host, cookies ).commit();
 	}
 
 	public void add( Response<?> response )
