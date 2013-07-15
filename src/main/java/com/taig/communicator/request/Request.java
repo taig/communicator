@@ -88,6 +88,20 @@ public abstract class Request<T> implements Cancelable, Runnable
 	{
 		if( !this.headers.containsKey( key ) )
 		{
+			setHeader( key, value );
+		}
+		else
+		{
+			this.headers.get( key ).add( value );
+		}
+
+		return this;
+	}
+
+	public Request<T> setHeader( String key, String value )
+	{
+		if( !this.headers.containsKey( key ) )
+		{
 			this.headers.put( key, new ArrayList<String>() );
 		}
 
