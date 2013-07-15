@@ -166,6 +166,21 @@ public abstract class Request<T> implements Cancelable, Runnable
 		return this;
 	}
 
+	public Request<T> setCookies( CookieStore store )
+	{
+		try
+		{
+			setCookies( store.get( url.toURI() ) );
+		}
+		catch( URISyntaxException exception )
+		{
+			Log.w( TAG, "The cookies of a CookieStore couldn't be added to a Request because the associated " +
+						"URL (" + url + ") could not be converted to an URI", exception );
+		}
+
+		return this;
+	}
+
 	public Request<T> allowUserInteraction( boolean allow )
 	{
 		this.userInteraction = allow;
