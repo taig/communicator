@@ -2,7 +2,9 @@ package com.taig.communicator.request;
 
 import java.net.HttpCookie;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class Response<T>
 {
