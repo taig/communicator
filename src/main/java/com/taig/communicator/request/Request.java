@@ -131,6 +131,18 @@ public abstract class Request<T> implements Cancelable, Runnable
 		return this;
 	}
 
+	public Request<T> removeHeaders( String key )
+	{
+		this.headers.remove( key );
+		return this;
+	}
+
+	public Request<T> clearHeaders()
+	{
+		this.headers.clear();
+		return this;
+	}
+
 	public Request<T> addCookie( HttpCookie cookie )
 	{
 		addHeader( "Cookie", cookie.toString() );
@@ -195,6 +207,22 @@ public abstract class Request<T> implements Cancelable, Runnable
 						"URL (" + url + ") could not be converted to an URI", exception );
 		}
 
+		return this;
+	}
+
+	public Request<T> removeCookie( HttpCookie cookie )
+	{
+		if( this.headers.containsKey( "Cookie" ) )
+		{
+			this.headers.get( "Cookie" ).remove( cookie.toString() );
+		}
+
+		return this;
+	}
+
+	public Request<T> clearCookies()
+	{
+		this.headers.remove( "Cookie" );
 		return this;
 	}
 
