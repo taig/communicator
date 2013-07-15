@@ -13,6 +13,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.taig.communicator.request.Header.Request.COOKIE;
+
 public abstract class Request<T> implements Cancelable, Runnable
 {
 	protected static final String TAG = Request.class.getName();
@@ -145,7 +147,7 @@ public abstract class Request<T> implements Cancelable, Runnable
 
 	public Request<T> addCookie( HttpCookie cookie )
 	{
-		addHeader( "Cookie", cookie.toString() );
+		addHeader( COOKIE, cookie.toString() );
 		return this;
 	}
 
@@ -191,7 +193,7 @@ public abstract class Request<T> implements Cancelable, Runnable
 			values.add( cookie.toString() );
 		}
 
-		setHeaders( "Cookie", values );
+		setHeaders( COOKIE, values );
 		return this;
 	}
 
@@ -212,9 +214,9 @@ public abstract class Request<T> implements Cancelable, Runnable
 
 	public Request<T> removeCookie( HttpCookie cookie )
 	{
-		if( this.headers.containsKey( "Cookie" ) )
+		if( this.headers.containsKey( COOKIE ) )
 		{
-			this.headers.get( "Cookie" ).remove( cookie.toString() );
+			this.headers.get( COOKIE ).remove( cookie.toString() );
 		}
 
 		return this;
@@ -222,7 +224,7 @@ public abstract class Request<T> implements Cancelable, Runnable
 
 	public Request<T> clearCookies()
 	{
-		this.headers.remove( "Cookie" );
+		this.headers.remove( COOKIE );
 		return this;
 	}
 

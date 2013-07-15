@@ -10,6 +10,9 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import static com.taig.communicator.request.Header.Request.CONTENT_LENGTH;
+import static com.taig.communicator.request.Header.Request.CONTENT_TYPE;
+
 public abstract class Write<T> extends Read<T>
 {
 	protected Data data;
@@ -17,7 +20,7 @@ public abstract class Write<T> extends Read<T>
 	public Write( String method, URL url, Data data, Event<T> event )
 	{
 		super( method, url, event );
-		this.data = data;
+		setData( data );
 	}
 
 	public Data getData()
@@ -31,21 +34,13 @@ public abstract class Write<T> extends Read<T>
 
 		if( data != null )
 		{
-			setHeader( "Content-Type", data.getContentType().toString() );
-
-			if( data.getLength() >= 0 )
-			{
-				setHeader( "Content-Length", String.valueOf( data.getLength() ) );
-			}
-			else
-			{
-				setHeader( "Content-Length", "0" );
-			}
+			setHeader( CONTENT_TYPE, data.getContentType().toString() );
+			setHeader( CONTENT_LENGTH, data.getLength() > 0 ? String.valueOf( data.getLength() ) : "0" );
 		}
 		else
 		{
-			setHeader( "Content-Length", "0" );
-			removeHeaders( "Content-Type" );
+			removeHeaders( CONTENT_TYPE );
+			setHeader( CONTENT_LENGTH, "0" );
 		}
 
 		return null;
