@@ -27,6 +27,8 @@
 
 		<activity android:name=".app.FormSend" />
 
+		<activity android:name=".app.Cookies" />
+
 	</application>
 
 </manifest>

@@ -17,6 +17,14 @@ public abstract class Read<T> extends Request<T>
 	}
 
 	@Override
+	public HttpURLConnection connect() throws IOException
+	{
+		HttpURLConnection connection = super.connect();
+		connection.setDoInput( true );
+		return connection;
+	}
+
+	@Override
 	protected void send( HttpURLConnection connection ) throws IOException {}
 
 	@Override

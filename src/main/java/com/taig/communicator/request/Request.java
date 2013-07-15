@@ -5,13 +5,10 @@ import com.taig.communicator.event.Event;
 import com.taig.communicator.event.State;
 
 import java.io.IOException;
+import java.net.HttpCookie;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Callable;
+import java.util.*;
 
 public abstract class Request<T> implements Cancelabe, Runnable
 {
@@ -114,6 +111,30 @@ public abstract class Request<T> implements Cancelabe, Runnable
 		return this;
 	}
 
+	public Request<T> addCookie( HttpCookie cookie )
+	{
+		addHeader( "Cookie", cookie.toString() );
+		return this;
+	}
+
+	public Request<T> addCookie( String key, String value )
+	{
+		HttpCookie cookie = new HttpCookie( key, value );
+		cookie.setVersion( 1 );
+		addCookie( cookie );
+		return this;
+	}
+
+	public Request<T> addCookies( List<HttpCookie> cookies )
+	{
+		for( HttpCookie cookie : cookies )
+		{
+			addCookie( cookie );
+		}
+
+		return this;
+	}
+
 	public Request<T> allowUserInteraction( boolean allow )
 	{
 		this.userInteraction = allow;
@@ -167,7 +188,6 @@ public abstract class Request<T> implements Cancelabe, Runnable
 		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 		connection.setAllowUserInteraction( userInteraction );
 		connection.setConnectTimeout( connectTimeout );
-		connection.setDoInput( true );
 		connection.setIfModifiedSince( modifiedSince );
 		connection.setInstanceFollowRedirects( redirect );
 		connection.setReadTimeout( readTimeout );
@@ -208,13 +228,14 @@ public abstract class Request<T> implements Cancelabe, Runnable
 	 */
 	public Response<T> request() throws IOException
 	{
-		state.start();
 		HttpURLConnection connection = connect();
 
 		try
 		{
+			state.start();
 			send( connection );
 			Response<T> response = new Response<T>(
+					url,
 					connection.getResponseCode(),
 					connection.getResponseMessage(),
 					connection.getHeaderFields(),

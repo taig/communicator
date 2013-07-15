@@ -51,5 +51,14 @@ public class Main extends Activity
 				startActivity( new Intent( Main.this, FormSend.class ) );
 			}
 		} );
+
+		findViewById( button_cookies ).setOnClickListener( new View.OnClickListener()
+		{
+			@Override
+			public void onClick( View view )
+			{
+				startActivity( new Intent( Main.this, Cookies.class ) );
+			}
+		} );
 	}
 }
