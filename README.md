@@ -69,7 +69,7 @@ GET<String>( Text.class, "http://www.android.com/", new Event<String>()
 	@Override
 	protected void onReceive( int progress )
 	{
-		Log.d( "TAG", "Resource load status: " + progress + "%" );
+		Log.d( "MyAppTag", "Resource load status: " + progress + "%" );
 	}
 } ).run();
 ````
@@ -98,4 +98,3 @@ TODO
 [1]: http://android-developers.blogspot.de/2011/09/androids-http-clients.html
 [2]: https://github.com/Taig/Communicator/releases
 [3]: http://tools.android.com/recent/dealingwithdependenciesinandroidprojects
-[4]: http://jsoup.org
