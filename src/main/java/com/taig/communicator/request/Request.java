@@ -49,11 +49,7 @@ public abstract class Request<T> implements Cancelable, Runnable
 	{
 		this.method = method;
 		this.url = url;
-
-		if( event != null )
-		{
-			this.event = event.new Proxy();
-		}
+		setEvent( event );
 	}
 
 	public State getState()
@@ -69,6 +65,12 @@ public abstract class Request<T> implements Cancelable, Runnable
 	public Event<T> getEvent()
 	{
 		return event.getEvent();
+	}
+
+	public Request<T> setEvent( Event<T> event )
+	{
+		this.event = event == null ? null : event.new Proxy();
+		return this;
 	}
 
 	@Override
