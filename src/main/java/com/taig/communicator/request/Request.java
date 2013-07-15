@@ -85,26 +85,25 @@ public abstract class Request<T> implements Cancelable, Runnable
 
 	public Request<T> addHeader( String key, String value )
 	{
-		if( !this.headers.containsKey( key ) )
+		Collection<String> values = this.headers.get( key );
+
+		if( values == null )
 		{
-			return setHeader( key, value );
+			setHeader( key, value );
 		}
 		else
 		{
-			this.headers.get( key ).add( value );
-			return this;
+			values.add( value );
 		}
+
+		return this;
 	}
 
 	public Request<T> setHeader( String key, String value )
 	{
-		if( !this.headers.containsKey( key ) )
-		{
-			this.headers.put( key, new ArrayList<String>() );
-		}
-
-		this.headers.get( key ).add( value );
-		return this;
+		Collection<String> values = new ArrayList<String>();
+		values.add( value );
+		return setHeaders( key, values );
 	}
 
 	public Request<T> addHeaders( String key, Collection<String> values )
@@ -119,25 +118,21 @@ public abstract class Request<T> implements Cancelable, Runnable
 
 	public Request<T> setHeaders( String key, Collection<String> values )
 	{
-		this.headers.put( key, values );
+		if( values == null )
+		{
+			this.headers.remove( key );
+		}
+		else
+		{
+			this.headers.put( key, values );
+		}
+
 		return this;
 	}
 
 	public Request<T> setHeaders( Map<String, Collection<String>> headers )
 	{
 		this.headers = headers;
-		return this;
-	}
-
-	public Request<T> removeHeaders( String key )
-	{
-		this.headers.remove( key );
-		return this;
-	}
-
-	public Request<T> clearHeaders()
-	{
-		this.headers.clear();
 		return this;
 	}
 
@@ -190,13 +185,30 @@ public abstract class Request<T> implements Cancelable, Runnable
 		return this;
 	}
 
+	public Request<T> addCookies( Response<?> response )
+	{
+		List<HttpCookie> cookies = response.getCookies();
+
+		if( cookies != null )
+		{
+			addCookies( cookies );
+		}
+
+		return this;
+	}
+
 	public Request<T> setCookies( Collection<HttpCookie> cookies )
 	{
-		Collection<String> values = new ArrayList<String>();
+		Collection<String> values = null;
 
-		for( HttpCookie cookie : cookies )
+		if( cookies != null )
 		{
-			values.add( cookie.toString() );
+			values = new ArrayList<String>();
+
+			for( HttpCookie cookie : cookies )
+			{
+				values.add( cookie.toString() );
+			}
 		}
 
 		return setHeaders( COOKIE, values );
@@ -206,7 +218,8 @@ public abstract class Request<T> implements Cancelable, Runnable
 	{
 		try
 		{
-			setCookies( store.get( url.toURI() ) );
+			List<HttpCookie> cookies = store.get( url.toURI() );
+			setCookies( cookies.isEmpty() ? null : cookies );
 		}
 		catch( URISyntaxException exception )
 		{
@@ -217,20 +230,9 @@ public abstract class Request<T> implements Cancelable, Runnable
 		return this;
 	}
 
-	public Request<T> removeCookie( HttpCookie cookie )
+	public Request<T> setCookies( Response<?> response )
 	{
-		if( this.headers.containsKey( COOKIE ) )
-		{
-			this.headers.get( COOKIE ).remove( cookie.toString() );
-		}
-
-		return this;
-	}
-
-	public Request<T> clearCookies()
-	{
-		this.headers.remove( COOKIE );
-		return this;
+		return setCookies( response.getCookies() );
 	}
 
 	public Request<T> allowUserInteraction( boolean allow )
