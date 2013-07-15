@@ -1,5 +1,6 @@
 package com.taig.communicator.request;
 
+import android.util.Log;
 import com.taig.communicator.io.Cancelabe;
 import com.taig.communicator.event.Event;
 import com.taig.communicator.event.State;
@@ -7,11 +8,14 @@ import com.taig.communicator.event.State;
 import java.io.IOException;
 import java.net.HttpCookie;
 import java.net.HttpURLConnection;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
 
 public abstract class Request<T> implements Cancelabe, Runnable
 {
+	protected static final String TAG = Request.class.getName();
+
 	protected String method;
 
 	protected URL url;
@@ -130,6 +134,21 @@ public abstract class Request<T> implements Cancelabe, Runnable
 		for( HttpCookie cookie : cookies )
 		{
 			addCookie( cookie );
+		}
+
+		return this;
+	}
+
+	public Request<T> addCookies( CookieStore store )
+	{
+		try
+		{
+			addCookies( store.get( url.toURI() ) );
+		}
+		catch( URISyntaxException exception )
+		{
+			Log.w( TAG, "The cookies of a CookieStore couldn't be added to a Request because the associated " +
+						"URL (" + url + ") could not be converted to an URI", exception );
 		}
 
 		return this;
