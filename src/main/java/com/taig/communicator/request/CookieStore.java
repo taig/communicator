@@ -38,7 +38,6 @@ public class CookieStore implements java.net.CookieStore
 		String host = uri == null ? WILDCARD : uri.getHost();
 		Set<String> cookies = preferences.getStringSet( host, new HashSet<String>() );
 		cookies.add( cookie.toString() );
-		preferences.edit().putStringSet( host, cookies ).commit();
 	}
 
 	public void add( Response<?> response )
@@ -46,10 +45,14 @@ public class CookieStore implements java.net.CookieStore
 		try
 		{
 			URI uri = response.getURL().toURI();
+			List<HttpCookie> cookies = response.getCookies();
 
-			for( HttpCookie cookie : response.getCookies() )
+			if( cookies != null )
 			{
-				add( uri, cookie );
+				for( HttpCookie cookie : cookies )
+				{
+					add( uri, cookie );
+				}
 			}
 		}
 		catch( URISyntaxException exception )
