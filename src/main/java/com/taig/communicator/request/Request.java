@@ -109,6 +109,12 @@ public abstract class Request<T> implements Cancelable, Runnable
 		return this;
 	}
 
+	public Request<T> setHeaders( String key, List<String> headers )
+	{
+		this.headers.put( key, headers );
+		return this;
+	}
+
 	public Request<T> setHeaders( Map<String, List<String>> headers )
 	{
 		this.headers = headers;
@@ -151,6 +157,19 @@ public abstract class Request<T> implements Cancelable, Runnable
 						"URL (" + url + ") could not be converted to an URI", exception );
 		}
 
+		return this;
+	}
+
+	public Request<T> setCookies( List<HttpCookie> cookies )
+	{
+		List<String> headers = new ArrayList<String>();
+
+		for( HttpCookie cookie : cookies )
+		{
+			headers.add( cookie.toString() );
+		}
+
+		setHeaders( "Cookie", headers );
 		return this;
 	}
 
