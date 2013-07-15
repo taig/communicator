@@ -43,7 +43,7 @@ public abstract class Write<T> extends Read<T>
 			setHeader( CONTENT_LENGTH, "0" );
 		}
 
-		return null;
+		return this;
 	}
 
 	@Override
