@@ -2,71 +2,71 @@ package com.taig.communicator.method;
 
 import com.taig.communicator.event.Event;
 import com.taig.communicator.request.Data;
-import com.taig.communicator.result.Result;
+import com.taig.communicator.result.Parser;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 
 public abstract class Method
 {
-	public static <T> Get<T> GET( Class<? extends Result<T>> result, String url ) throws MalformedURLException
+	public static <T> Get<T> GET( Class<? extends Parser<T>> parser, String url ) throws MalformedURLException
 	{
-		return GET( result, url, null );
+		return GET( parser, url, null );
 	}
 
-	public static <T> Get<T> GET( Class<? extends Result<T>> result, String url, Event<T> event ) throws MalformedURLException
+	public static <T> Get<T> GET( Class<? extends Parser<T>> parser, String url, Event<T> event ) throws MalformedURLException
 	{
-		return GET( result, new URL( url ), event );
+		return GET( parser, new URL( url ), event );
 	}
 
-	public static <T> Get<T> GET( Class<? extends Result<T>> result, URL url )
+	public static <T> Get<T> GET( Class<? extends Parser<T>> parser, URL url )
 	{
-		return GET( result, url, null );
+		return GET( parser, url, null );
 	}
 
-	public static <T> Get<T> GET( Class<? extends Result<T>> result, URL url, Event<T> event )
+	public static <T> Get<T> GET( Class<? extends Parser<T>> parser, URL url, Event<T> event )
 	{
-		return new Get<T>( Result.newInstance( result ), url, event );
+		return new Get<T>( Parser.newInstance( parser ), url, event );
 	}
 
-	public static <T> Delete<T> DELETE( Class<? extends Result<T>> result, String url ) throws MalformedURLException
+	public static <T> Delete<T> DELETE( Class<? extends Parser<T>> parser, String url ) throws MalformedURLException
 	{
-		return DELETE( result, url, null, null );
+		return DELETE( parser, url, null, null );
 	}
 
-	public static <T> Delete<T> DELETE( Class<? extends Result<T>> result, String url, Event<T> event ) throws MalformedURLException
+	public static <T> Delete<T> DELETE( Class<? extends Parser<T>> parser, String url, Event<T> event ) throws MalformedURLException
 	{
-		return DELETE( result, new URL( url ), null, event );
+		return DELETE( parser, new URL( url ), null, event );
 	}
 
-	public static <T> Delete<T> DELETE( Class<? extends Result<T>> result, String url, Data data ) throws MalformedURLException
+	public static <T> Delete<T> DELETE( Class<? extends Parser<T>> parser, String url, Data data ) throws MalformedURLException
 	{
-		return DELETE( result, url, data, null );
+		return DELETE( parser, url, data, null );
 	}
 
-	public static <T> Delete<T> DELETE( Class<? extends Result<T>> result, String url, Data data, Event<T> event ) throws MalformedURLException
+	public static <T> Delete<T> DELETE( Class<? extends Parser<T>> parser, String url, Data data, Event<T> event ) throws MalformedURLException
 	{
-		return DELETE( result, new URL( url ), data, event );
+		return DELETE( parser, new URL( url ), data, event );
 	}
 
-	public static <T> Delete<T> DELETE( Class<? extends Result<T>> result, URL url )
+	public static <T> Delete<T> DELETE( Class<? extends Parser<T>> parser, URL url )
 	{
-		return DELETE( result, url, null, null );
+		return DELETE( parser, url, null, null );
 	}
 
-	public static <T> Delete<T> DELETE( Class<? extends Result<T>> result, URL url, Event<T> event )
+	public static <T> Delete<T> DELETE( Class<? extends Parser<T>> parser, URL url, Event<T> event )
 	{
-		return DELETE( result, url, null, event );
+		return DELETE( parser, url, null, event );
 	}
 
-	public static <T> Delete<T> DELETE( Class<? extends Result<T>> result, URL url, Data data )
+	public static <T> Delete<T> DELETE( Class<? extends Parser<T>> parser, URL url, Data data )
 	{
-		return DELETE( result, url, data, null );
+		return DELETE( parser, url, data, null );
 	}
 
-	public static <T> Delete<T> DELETE( Class<? extends Result<T>> result, URL url, Data data, Event<T> event )
+	public static <T> Delete<T> DELETE( Class<? extends Parser<T>> parser, URL url, Data data, Event<T> event )
 	{
-		return new Delete<T>( Result.newInstance( result ), url, data, event );
+		return new Delete<T>( Parser.newInstance( parser ), url, data, event );
 	}
 
 	public static Head HEAD( String url ) throws MalformedURLException
@@ -89,43 +89,43 @@ public abstract class Method
 		return new Head( url, event );
 	}
 
-	public static <T> Post<T> POST( Class<? extends Result<T>> result, String url, Data data ) throws MalformedURLException
+	public static <T> Post<T> POST( Class<? extends Parser<T>> parser, String url, Data data ) throws MalformedURLException
 	{
-		return POST( result, url, data, null );
+		return POST( parser, url, data, null );
 	}
 
-	public static <T> Post<T> POST( Class<? extends Result<T>> result, String url, Data data, Event<T> event ) throws MalformedURLException
+	public static <T> Post<T> POST( Class<? extends Parser<T>> parser, String url, Data data, Event<T> event ) throws MalformedURLException
 	{
-		return POST( result, new URL( url ), data, event );
+		return POST( parser, new URL( url ), data, event );
 	}
 
-	public static <T> Post<T> POST( Class<? extends Result<T>> result, URL url, Data data )
+	public static <T> Post<T> POST( Class<? extends Parser<T>> parser, URL url, Data data )
 	{
-		return POST( result, url, data, null );
+		return POST( parser, url, data, null );
 	}
 
-	public static <T> Post<T> POST( Class<? extends Result<T>> result, URL url, Data data, Event<T> event )
+	public static <T> Post<T> POST( Class<? extends Parser<T>> parser, URL url, Data data, Event<T> event )
 	{
-		return new Post<T>( Result.newInstance( result ), url, data, event );
+		return new Post<T>( Parser.newInstance( parser ), url, data, event );
 	}
 
-	public static <T> Put<T> PUT( Class<? extends Result<T>> result, String url, Data data ) throws MalformedURLException
+	public static <T> Put<T> PUT( Class<? extends Parser<T>> parser, String url, Data data ) throws MalformedURLException
 	{
-		return PUT( result, url, data, null );
+		return PUT( parser, url, data, null );
 	}
 
-	public static <T> Put<T> PUT( Class<? extends Result<T>> result, String url, Data data, Event<T> event ) throws MalformedURLException
+	public static <T> Put<T> PUT( Class<? extends Parser<T>> parser, String url, Data data, Event<T> event ) throws MalformedURLException
 	{
-		return PUT( result, new URL( url ), data, event );
+		return PUT( parser, new URL( url ), data, event );
 	}
 
-	public static <T> Put<T> PUT( Class<? extends Result<T>> result, URL url, Data data )
+	public static <T> Put<T> PUT( Class<? extends Parser<T>> parser, URL url, Data data )
 	{
-		return PUT( result, url, data, null );
+		return PUT( parser, url, data, null );
 	}
 
-	public static <T> Put<T> PUT( Class<? extends Result<T>> result, URL url, Data data, Event<T> event )
+	public static <T> Put<T> PUT( Class<? extends Parser<T>> parser, URL url, Data data, Event<T> event )
 	{
-		return new Put<T>( Result.newInstance( result ), url, data, event );
+		return new Put<T>( Parser.newInstance( parser ), url, data, event );
 	}
 }

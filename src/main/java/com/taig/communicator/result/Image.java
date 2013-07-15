@@ -7,10 +7,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
-public class Image extends Result<Bitmap>
+public class Image extends Parser<Bitmap>
 {
 	@Override
-	public Bitmap process( URL url, InputStream stream ) throws IOException
+	public Bitmap parse( URL url, InputStream stream ) throws IOException
 	{
 		return BitmapFactory.decodeStream( stream );
 	}

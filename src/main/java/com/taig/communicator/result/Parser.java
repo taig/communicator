@@ -4,11 +4,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
-public abstract class Result<T>
+public abstract class Parser<T>
 {
-	public abstract T process( URL url, InputStream stream ) throws IOException;
+	public abstract T parse( URL url, InputStream stream ) throws IOException;
 
-	public static <T> Result<T> newInstance( Class<? extends Result<T>> result )
+	public static <T> Parser<T> newInstance( Class<? extends Parser<T>> result )
 	{
 		try
 		{
