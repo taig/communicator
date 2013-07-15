@@ -26,7 +26,7 @@ public abstract class Method
 
 	public static <T> Get<T> GET( Class<? extends Parser<T>> parser, URL url, Event<T> event )
 	{
-		return new Get<T>( Parser.newInstance( parser ), url, event );
+		return new Get<T>( createParser( parser ), url, event );
 	}
 
 	public static <T> Delete<T> DELETE( Class<? extends Parser<T>> parser, String url ) throws MalformedURLException
@@ -66,7 +66,7 @@ public abstract class Method
 
 	public static <T> Delete<T> DELETE( Class<? extends Parser<T>> parser, URL url, Data data, Event<T> event )
 	{
-		return new Delete<T>( Parser.newInstance( parser ), url, data, event );
+		return new Delete<T>( createParser( parser ), url, data, event );
 	}
 
 	public static Head HEAD( String url ) throws MalformedURLException
@@ -106,7 +106,7 @@ public abstract class Method
 
 	public static <T> Post<T> POST( Class<? extends Parser<T>> parser, URL url, Data data, Event<T> event )
 	{
-		return new Post<T>( Parser.newInstance( parser ), url, data, event );
+		return new Post<T>( createParser( parser ), url, data, event );
 	}
 
 	public static <T> Put<T> PUT( Class<? extends Parser<T>> parser, String url, Data data ) throws MalformedURLException
@@ -126,6 +126,18 @@ public abstract class Method
 
 	public static <T> Put<T> PUT( Class<? extends Parser<T>> parser, URL url, Data data, Event<T> event )
 	{
-		return new Put<T>( Parser.newInstance( parser ), url, data, event );
+		return new Put<T>( createParser( parser ), url, data, event );
+	}
+
+	protected static <T> Parser<T> createParser( Class<? extends Parser<T>> type )
+	{
+		try
+		{
+			return type.getConstructor().newInstance();
+		}
+		catch( Exception exception )
+		{
+			throw new RuntimeException( "Could not instantiate default constructor of type '" + type.getName() + "'" );
+		}
 	}
 }

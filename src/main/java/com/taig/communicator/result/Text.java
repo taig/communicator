@@ -5,7 +5,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Scanner;
 
-public class Text extends Parser<String>
+public class Text implements Parser<String>
 {
 	@Override
 	public String parse( URL url, InputStream stream ) throws IOException

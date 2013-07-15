@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
-public class Image extends Parser<Bitmap>
+public class Image implements Parser<Bitmap>
 {
 	@Override
 	public Bitmap parse( URL url, InputStream stream ) throws IOException
