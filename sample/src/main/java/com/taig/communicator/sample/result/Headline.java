@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
-public class Headline extends Parser<String>
+public class Headline implements Parser<String>
 {
 	@Override
 	public String parse( URL url, InputStream stream ) throws IOException
