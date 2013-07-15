@@ -87,14 +87,13 @@ public abstract class Request<T> implements Cancelable, Runnable
 	{
 		if( !this.headers.containsKey( key ) )
 		{
-			setHeader( key, value );
+			return setHeader( key, value );
 		}
 		else
 		{
 			this.headers.get( key ).add( value );
+			return this;
 		}
-
-		return this;
 	}
 
 	public Request<T> setHeader( String key, String value )
@@ -144,16 +143,26 @@ public abstract class Request<T> implements Cancelable, Runnable
 
 	public Request<T> addCookie( HttpCookie cookie )
 	{
-		addHeader( COOKIE, cookie.toString() );
-		return this;
+		return addHeader( COOKIE, cookie.toString() );
 	}
 
 	public Request<T> addCookie( String key, String value )
 	{
 		HttpCookie cookie = new HttpCookie( key, value );
 		cookie.setVersion( 0 );
-		addCookie( cookie );
-		return this;
+		return addCookie( cookie );
+	}
+
+	public Request<T> setCookie( HttpCookie cookie )
+	{
+		return setHeader( COOKIE, cookie.toString() );
+	}
+
+	public Request<T> setCookie( String key, String value )
+	{
+		HttpCookie cookie = new HttpCookie( key, value );
+		cookie.setVersion( 0 );
+		return setCookie( cookie );
 	}
 
 	public Request<T> addCookies( Collection<HttpCookie> cookies )
@@ -190,8 +199,7 @@ public abstract class Request<T> implements Cancelable, Runnable
 			values.add( cookie.toString() );
 		}
 
-		setHeaders( COOKIE, values );
-		return this;
+		return setHeaders( COOKIE, values );
 	}
 
 	public Request<T> setCookies( CookieStore store )
