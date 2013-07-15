@@ -83,13 +83,21 @@ call. On the other hand you should avoid doing any heavy lifting consequently.
 > exchange not trigger the `onSuccess()`, `onFailure()` and `onFinish()` events! `run()` however does not have a return
 > value but triggers all available events.
 
-### Send Payload
-
-TODO
+### Sending Payload
 
 #### Key/Value Data (Form Submit)
 
-TODO
+In order to add Form data (or more generally spoken Key/Value pairs) to your request body you have to specify the `data`
+argument in a `POST` or `PUT` request. More precisely *Communicator* demands you to supply your key/value pairs as
+`Map<String, String>`.
+
+````java
+Map<String, String> params = new HashMap<String, String>();
+params.put( "email", "my.taig@gmail.com" );
+params.put( "pass", "As if!" );
+
+POST<String>( Text.class, "https://facebook.com/login.php", Data.from( params ) ).run();
+````
 
 #### Binary Data (File Upload)
 
