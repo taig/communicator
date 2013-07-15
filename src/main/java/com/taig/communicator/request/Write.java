@@ -25,26 +25,37 @@ public abstract class Write<T> extends Read<T>
 		return data;
 	}
 
-	@Override
-	public HttpURLConnection connect() throws IOException
+	public Write<T> setData( Data data )
 	{
-		HttpURLConnection connection = super.connect();
+		this.data = data;
 
 		if( data != null )
 		{
-			connection.setRequestProperty( "Content-Type", data.contentType.toString() );
-			connection.setDoOutput( true );
+			setHeader( "Content-Type", data.getContentType().toString() );
 
 			if( data.getLength() >= 0 )
 			{
-				connection.setRequestProperty( "Content-Length", String.valueOf( data.getLength() ) );
+				setHeader( "Content-Length", String.valueOf( data.getLength() ) );
+			}
+			else
+			{
+				setHeader( "Content-Length", "0" );
 			}
 		}
 		else
 		{
-			connection.setRequestProperty( "Content-Length", "0" );
+			setHeader( "Content-Length", "0" );
+			removeHeaders( "Content-Type" );
 		}
 
+		return null;
+	}
+
+	@Override
+	public HttpURLConnection connect() throws IOException
+	{
+		HttpURLConnection connection = super.connect();
+		connection.setDoOutput( true );
 		return connection;
 	}
 
