@@ -39,7 +39,7 @@ public abstract class Write<T> extends Read<T>
 		}
 		else
 		{
-			removeHeaders( CONTENT_TYPE );
+			setHeader( CONTENT_TYPE, null );
 			setHeader( CONTENT_LENGTH, "0" );
 		}
 
