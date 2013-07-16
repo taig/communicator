@@ -3,6 +3,7 @@ package com.taig.communicator.event;
 import com.taig.communicator.concurrent.MainThreadExecutor;
 import com.taig.communicator.request.Response;
 
+import java.io.InterruptedIOException;
 import java.util.concurrent.Executor;
 
 public abstract class Event<T>
@@ -11,7 +12,7 @@ public abstract class Event<T>
 
 	protected void onStart() {}
 
-	protected void onCancel() {}
+	protected void onCancel( InterruptedIOException exception ) {}
 
 	protected void onSend( int current, int total ) {}
 
@@ -49,7 +50,7 @@ public abstract class Event<T>
 			} );
 		}
 
-		public void cancel()
+		public void cancel( final InterruptedIOException exception )
 		{
 			executor.execute( new Runnable()
 			{
@@ -57,7 +58,7 @@ public abstract class Event<T>
 				public void run()
 				{
 					onEvent( State.CANCEL );
-					onCancel();
+					onCancel( exception );
 				}
 			} );
 		}
@@ -74,7 +75,7 @@ public abstract class Event<T>
 
 					if( total > 0 )
 					{
-						onSend( current / total * 100 );
+						onSend( (int) ( current / (float) total * 100 ) + 1 );
 					}
 				}
 			} );
@@ -92,7 +93,7 @@ public abstract class Event<T>
 
 					if( total > 0 )
 					{
-						onReceive( current / total * 100 );
+						onReceive( (int) ( current / (float) total * 100 ) + 1 );
 					}
 				}
 			} );

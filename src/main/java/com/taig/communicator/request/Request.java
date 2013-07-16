@@ -6,6 +6,7 @@ import com.taig.communicator.event.State;
 import com.taig.communicator.io.Cancelable;
 
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.net.CookieStore;
 import java.net.*;
 import java.util.*;
@@ -337,6 +338,11 @@ public abstract class Request<T> implements Cancelable, Runnable
 
 		try
 		{
+			if( cancelled )
+			{
+				throw new InterruptedIOException( "Connection cancelled" );
+			}
+
 			state.start();
 			send( connection );
 			Response<T> response = new Response<T>(
@@ -348,6 +354,11 @@ public abstract class Request<T> implements Cancelable, Runnable
 			);
 			state.success();
 			return response;
+		}
+		catch( InterruptedIOException exception )
+		{
+			state.cancel( exception );
+			throw exception;
 		}
 		catch( IOException exception )
 		{
@@ -390,13 +401,13 @@ public abstract class Request<T> implements Cancelable, Runnable
 			}
 		}
 
-		public void cancel()
+		public void cancel( InterruptedIOException exception )
 		{
 			current = State.CANCEL;
 
 			if( event != null )
 			{
-				event.cancel();
+				event.cancel( exception );
 			}
 		}
 
