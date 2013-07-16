@@ -113,12 +113,15 @@ Last but not least you can also add cookies to a request header. The common user
 `Set-Cookie` directive in a server's response header.
 
 ````java
-// Transfer all cookies that were supplied in the preceding response.
-List<HttpCookie> cookies = HEAD( "https://www.google.com" ).run().getCookies();
-GET( Text.class, "https://www.google.com" ).setCookies( cookies ).run();
+Response<Void> response = HEAD( "https://www.google.com" ).request();
 
-// Do whatever the fuck you want.
-GET( Text.class, "https://www.google.com" ).addCookie( "session", "1234" ).run();
+// Transfer all cookies that were supplied in the preceding response.
+GET( Text.class, "https://www.google.com" )
+	.setCookies( response.getCookies() )			// Set a List of HttpCookies.
+	.setCookies( response )					// Use cookies from another response.
+	.addCookie( new HttpCookie( "remember_me", "true" )	// Set single cookies.
+	.addCookie( "session", "1234" )				// Do whatever the fuck you want.
+	.run();
 ````
 
 Furthermore *Communicator* comes with a `CookieStore` implementation that persists cookies via Android's
@@ -131,7 +134,7 @@ Response<Void> response = HEAD( "https://www.google.com" ).request();
 // Persist retrieved cookies.
 store.add( response );
 
-// Send persisted cookies along with request.
+// Send persisted cookies along with a request.
 GET( Text.class, "https://www.google.com" ).setCookies( store ).run();
 ````
 
