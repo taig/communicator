@@ -19,12 +19,12 @@ public class CookieStore implements java.net.CookieStore
 
 	public CookieStore( Context context )
 	{
-		this( context, "com.taig.communicator.CookieStore" );
+		this( context, "com.taig.communicator.CookieStore", Context.MODE_PRIVATE );
 	}
 
-	public CookieStore( Context context, String preference )
+	public CookieStore( Context context, String preference, int mode )
 	{
-		this( context.getSharedPreferences( preference, Context.MODE_PRIVATE ) );
+		this( context.getSharedPreferences( preference, mode ) );
 	}
 
 	public CookieStore( SharedPreferences preferences )
@@ -41,15 +41,26 @@ public class CookieStore implements java.net.CookieStore
 		preferences.edit().putStringSet( host, cookies ).commit();
 	}
 
+	public void add( URI uri, String key, String value )
+	{
+		HttpCookie cookie = new HttpCookie( key, value );
+		cookie.setVersion( 0 );
+		add( uri, cookie );
+	}
+
 	public void add( Response<?> response )
 	{
 		try
 		{
 			URI uri = response.getURL().toURI();
+			List<HttpCookie> cookies = response.getCookies();
 
-			for( HttpCookie cookie : response.getCookies() )
+			if( cookies != null )
 			{
-				add( uri, cookie );
+				for( HttpCookie cookie : cookies )
+				{
+					add( uri, cookie );
+				}
 			}
 		}
 		catch( URISyntaxException exception )
@@ -62,15 +73,13 @@ public class CookieStore implements java.net.CookieStore
 	@Override
 	public List<HttpCookie> get( URI uri )
 	{
+		Set<String> store = preferences.getStringSet( uri.getHost(), new HashSet<String>() );
+		store.addAll( preferences.getStringSet( WILDCARD, new HashSet<String>() ) );
 		List<HttpCookie> cookies = new ArrayList<HttpCookie>();
-		Set<String> store = preferences.getStringSet( uri.getHost(), null );
 
-		if( store != null )
+		for( String cookie : store )
 		{
-			for( String cookie : store )
-			{
-				cookies.addAll( HttpCookie.parse( cookie ) );
-			}
+			cookies.addAll( HttpCookie.parse( cookie ) );
 		}
 
 		return Collections.unmodifiableList( cookies );

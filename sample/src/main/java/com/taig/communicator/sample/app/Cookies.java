@@ -4,18 +4,14 @@ import android.app.Activity;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.widget.TextView;
-import com.taig.communicator.event.Event;
+import com.taig.communicator.request.CookieStore;
 import com.taig.communicator.request.Response;
+import com.taig.communicator.result.Text;
 import com.taig.communicator.sample.R;
 
-import java.net.HttpCookie;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.List;
-import java.util.Map;
-
-import static com.taig.communicator.method.Method.HEAD;
+import static com.taig.communicator.method.Method.*;
 
 public class Cookies extends Activity
 {
@@ -35,28 +31,31 @@ public class Cookies extends Activity
 			{
 				try
 				{
-					HEAD( "https://github.com", new Event<Void>()
+					Response<Void> response = HEAD( "http://httpbin.org/cookies/set?user=Taig&pass=strawberries" ).request();
+					CookieStore store = new CookieStore( Cookies.this );
+					store.add( response );
+					store.add( null, "global", "cookie" );
+
+					final String manual = GET( Text.class, "http://httpbin.org/get" )
+							.setCookies( response.getCookies() )
+							.addCookie( "local", "cookie" )
+							.request()
+							.getPayload();
+
+					final String automatic = GET( Text.class, "http://httpbin.org/get" )
+							.setCookies( store )
+							.request()
+							.getPayload();
+
+					runOnUiThread( new Runnable()
 					{
 						@Override
-						protected void onSuccess( Response<Void> response )
+						public void run()
 						{
-							List<HttpCookie> cookies = response.getCookies();
-							StringBuilder builder = new StringBuilder();
-
-							for( HttpCookie cookie : cookies )
-							{
-								builder.append( cookie ).append( "\n" );
-							}
-
-							text.setText( builder );
+							text.setGravity( Gravity.LEFT );
+							text.setText( "Request1:\n" + manual + "\n\nRequest2:\n" + automatic );
 						}
-
-						@Override
-						protected void onFailure( Throwable error )
-						{
-							text.setText( error.getMessage() );
-						}
-					} ).run();
+					} );
 				}
 				catch( final Exception exception )
 				{
@@ -66,6 +65,7 @@ public class Cookies extends Activity
 						public void run()
 						{
 							text.setText( "Things went horribly wrong: " + exception.getMessage() );
+							Log.d( "ASDF", "", exception );
 						}
 					} );
 				}

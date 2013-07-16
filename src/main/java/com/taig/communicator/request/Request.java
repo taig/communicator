@@ -8,10 +8,7 @@ import com.taig.communicator.io.Cancelable;
 import java.io.IOException;
 import java.net.CookieStore;
 import java.net.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static com.taig.communicator.request.Header.Request.COOKIE;
 
@@ -88,13 +85,15 @@ public abstract class Request<T> implements Cancelable, Runnable
 
 	public Request<T> addHeader( String key, String value )
 	{
-		if( !this.headers.containsKey( key ) )
+		Collection<String> values = this.headers.get( key );
+
+		if( values == null )
 		{
 			setHeader( key, value );
 		}
 		else
 		{
-			this.headers.get( key ).add( value );
+			values.add( value );
 		}
 
 		return this;
@@ -102,13 +101,9 @@ public abstract class Request<T> implements Cancelable, Runnable
 
 	public Request<T> setHeader( String key, String value )
 	{
-		if( !this.headers.containsKey( key ) )
-		{
-			this.headers.put( key, new ArrayList<String>() );
-		}
-
-		this.headers.get( key ).add( value );
-		return this;
+		Collection<String> values = new ArrayList<String>();
+		values.add( value );
+		return setHeaders( key, values );
 	}
 
 	public Request<T> addHeaders( String key, Collection<String> values )
@@ -123,7 +118,15 @@ public abstract class Request<T> implements Cancelable, Runnable
 
 	public Request<T> setHeaders( String key, Collection<String> values )
 	{
-		this.headers.put( key, values );
+		if( values == null )
+		{
+			this.headers.remove( key );
+		}
+		else
+		{
+			this.headers.put( key, values );
+		}
+
 		return this;
 	}
 
@@ -133,30 +136,28 @@ public abstract class Request<T> implements Cancelable, Runnable
 		return this;
 	}
 
-	public Request<T> removeHeaders( String key )
-	{
-		this.headers.remove( key );
-		return this;
-	}
-
-	public Request<T> clearHeaders()
-	{
-		this.headers.clear();
-		return this;
-	}
-
 	public Request<T> addCookie( HttpCookie cookie )
 	{
-		addHeader( COOKIE, cookie.toString() );
-		return this;
+		return addHeader( COOKIE, cookie.toString() );
 	}
 
 	public Request<T> addCookie( String key, String value )
 	{
 		HttpCookie cookie = new HttpCookie( key, value );
-		cookie.setVersion( 1 );
-		addCookie( cookie );
-		return this;
+		cookie.setVersion( 0 );
+		return addCookie( cookie );
+	}
+
+	public Request<T> setCookie( HttpCookie cookie )
+	{
+		return setHeader( COOKIE, cookie.toString() );
+	}
+
+	public Request<T> setCookie( String key, String value )
+	{
+		HttpCookie cookie = new HttpCookie( key, value );
+		cookie.setVersion( 0 );
+		return setCookie( cookie );
 	}
 
 	public Request<T> addCookies( Collection<HttpCookie> cookies )
@@ -184,24 +185,41 @@ public abstract class Request<T> implements Cancelable, Runnable
 		return this;
 	}
 
-	public Request<T> setCookies( Collection<HttpCookie> cookies )
+	public Request<T> addCookies( Response<?> response )
 	{
-		Collection<String> values = new ArrayList<String>();
+		List<HttpCookie> cookies = response.getCookies();
 
-		for( HttpCookie cookie : cookies )
+		if( cookies != null )
 		{
-			values.add( cookie.toString() );
+			addCookies( cookies );
 		}
 
-		setHeaders( COOKIE, values );
 		return this;
+	}
+
+	public Request<T> setCookies( Collection<HttpCookie> cookies )
+	{
+		Collection<String> values = null;
+
+		if( cookies != null )
+		{
+			values = new ArrayList<String>();
+
+			for( HttpCookie cookie : cookies )
+			{
+				values.add( cookie.toString() );
+			}
+		}
+
+		return setHeaders( COOKIE, values );
 	}
 
 	public Request<T> setCookies( CookieStore store )
 	{
 		try
 		{
-			setCookies( store.get( url.toURI() ) );
+			List<HttpCookie> cookies = store.get( url.toURI() );
+			setCookies( cookies.isEmpty() ? null : cookies );
 		}
 		catch( URISyntaxException exception )
 		{
@@ -212,20 +230,9 @@ public abstract class Request<T> implements Cancelable, Runnable
 		return this;
 	}
 
-	public Request<T> removeCookie( HttpCookie cookie )
+	public Request<T> setCookies( Response<?> response )
 	{
-		if( this.headers.containsKey( COOKIE ) )
-		{
-			this.headers.get( COOKIE ).remove( cookie.toString() );
-		}
-
-		return this;
-	}
-
-	public Request<T> clearCookies()
-	{
-		this.headers.remove( COOKIE );
-		return this;
+		return setCookies( response.getCookies() );
 	}
 
 	public Request<T> allowUserInteraction( boolean allow )
@@ -299,10 +306,15 @@ public abstract class Request<T> implements Cancelable, Runnable
 
 		for( Map.Entry<String, Collection<String>> header : this.headers.entrySet() )
 		{
-			for( String value : header.getValue() )
+			StringBuilder builder = new StringBuilder();
+			String delimiter = header.getKey().equals( COOKIE ) ? "; " : ",";
+
+			for( Iterator<String> iterator = header.getValue().iterator(); iterator.hasNext(); )
 			{
-				connection.setRequestProperty( header.getKey(), value );
+				builder.append( iterator.next() ).append( iterator.hasNext() ? delimiter : "" );
 			}
+
+			connection.setRequestProperty( header.getKey(), builder.toString() );
 		}
 
 		return connection;
@@ -310,13 +322,13 @@ public abstract class Request<T> implements Cancelable, Runnable
 
 	/**
 	 * Execute this request.
+	 * <p/>
+	 * If an {@link Event} is specified, its finish callbacks {@link Event#onSuccess(Response)}, {@link
+	 * Event#onFailure(Throwable)}, {@link Event#onSuccess(Response)} and the according {@link
+	 * Event#onEvent(com.taig.communicator.event.State)} calls will not be executed.
 	 *
-	 * If an {@link Event} is specified, its finish callbacks {@link Event#onSuccess(Response)},
-	 * {@link Event#onFailure(Throwable)}, {@link Event#onSuccess(Response)} and the according
-	 * {@link Event#onEvent(com.taig.communicator.event.State)} calls will not be executed.
-	 *
-	 * @return	The {@link Response} object that keeps the connection response meta data (such as response code) and
-	 * 			the payload that will be <code>null</code> if the HTTP server returned an error.
+	 * @return The {@link Response} object that keeps the connection response meta data (such as response code) and the
+	 * payload that will be <code>null</code> if the HTTP server returned an error.
 	 * @throws IOException
 	 */
 	public Response<T> request() throws IOException
@@ -328,11 +340,11 @@ public abstract class Request<T> implements Cancelable, Runnable
 			state.start();
 			send( connection );
 			Response<T> response = new Response<T>(
-					url,
-					connection.getResponseCode(),
-					connection.getResponseMessage(),
-					connection.getHeaderFields(),
-					receive( connection )
+				url,
+				connection.getResponseCode(),
+				connection.getResponseMessage(),
+				connection.getHeaderFields(),
+				receive( connection )
 			);
 			state.success();
 			return response;

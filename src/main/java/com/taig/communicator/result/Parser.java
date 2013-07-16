@@ -6,5 +6,5 @@ import java.net.URL;
 
 public interface Parser<T>
 {
-	public abstract T parse( URL url, InputStream stream ) throws IOException;
+	public T parse( URL url, InputStream stream ) throws IOException;
 }

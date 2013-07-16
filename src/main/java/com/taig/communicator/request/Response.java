@@ -67,10 +67,8 @@ public class Response<T>
 
 			return cookies;
 		}
-		else
-		{
-			return null;
-		}
+
+		return null;
 	}
 
 	public HttpCookie getCookie( String name )
