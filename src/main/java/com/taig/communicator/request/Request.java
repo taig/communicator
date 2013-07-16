@@ -347,10 +347,12 @@ public abstract class Request<T> implements Cancelable, Runnable
 				receive( connection )
 			);
 			state.success();
+			Log.d( "ASDF", "Done, like nothing happened" );
 			return response;
 		}
 		catch( IOException exception )
 		{
+			Log.e( "ASDF", exception.getMessage(), exception );
 			state.failure();
 			throw exception;
 		}

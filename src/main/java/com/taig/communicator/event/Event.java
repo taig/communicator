@@ -1,5 +1,6 @@
 package com.taig.communicator.event;
 
+import android.util.Log;
 import com.taig.communicator.concurrent.MainThreadExecutor;
 import com.taig.communicator.request.Response;
 
@@ -74,7 +75,7 @@ public abstract class Event<T>
 
 					if( total > 0 )
 					{
-						onSend( current / total * 100 );
+						onSend( (int) ( current / (float) total * 100 ) + 1 );
 					}
 				}
 			} );
@@ -92,7 +93,7 @@ public abstract class Event<T>
 
 					if( total > 0 )
 					{
-						onReceive( current / total * 100 );
+						onReceive( (int) ( current / (float) total * 100 ) + 1 );
 					}
 				}
 			} );
