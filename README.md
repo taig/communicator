@@ -115,12 +115,11 @@ Last but not least you can also add cookies to a request header. The common user
 ````java
 Response<Void> response = HEAD( "https://www.google.com" ).request();
 
-// Transfer all cookies that were supplied in the preceding response.
 GET( Text.class, "https://www.google.com" )
-	.setCookies( response.getCookies() )			// Set a List of HttpCookies.
-	.setCookies( response )					// Use cookies from another response.
-	.addCookie( new HttpCookie( "remember_me", "true" )	// Set single cookies.
-	.addCookie( "session", "1234" )				// Do whatever the fuck you want.
+	.setCookies( response.getCookies() )                    // Set a List of HttpCookies.
+	.setCookies( response )                                 // Use cookies from another response.
+	.addCookie( new HttpCookie( "remember_me", "true" )     // Set single cookies.
+	.addCookie( "session", "1234" )                         // Do whatever the fuck you want.
 	.run();
 ````
 
