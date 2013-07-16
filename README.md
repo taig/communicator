@@ -130,11 +130,10 @@ Furthermore *Communicator* comes with a `CookieStore` implementation that persis
 CookieStore store = new CookieStore();
 Response<Void> response = HEAD( "https://www.google.com" ).request();
 
-// Persist retrieved cookies.
-store.add( response );
-
-// Send persisted cookies along with a request.
-GET( Text.class, "https://www.google.com" ).setCookies( store ).run();
+store.add( response );                                          // Persist retrieved cookies.
+GET( Text.class, "https://www.google.com" )                     // Send persisted cookies that are associated with
+	.setCookies( store )                                    // "google.com" along with the request.
+	.run();
 ````
 
 [1]: http://android-developers.blogspot.de/2011/09/androids-http-clients.html
