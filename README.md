@@ -50,7 +50,7 @@ implements the `com.taig.communicator.result.Parser` interface.
 ````java
 public interface Parser<T>
 {
-	public abstract T parse( URL url, InputStream stream ) throws IOException;
+	public T parse( URL url, InputStream stream ) throws IOException;
 }
 ````
 
