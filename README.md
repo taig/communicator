@@ -97,7 +97,7 @@ Map<String, String> params = new HashMap<String, String>();
 params.put( "email", "my.taig@gmail.com" );
 params.put( "pass", "As if!" );
 
-POST<String>( Text.class, "https://facebook.com/login.php", Data.from( params ) ).run();
+POST( Text.class, "https://facebook.com/login.php", Data.from( params ) ).run();
 ````
 
 The supplied data will then be properly encoded for transmission and the request headers `Content-Length` and
@@ -115,10 +115,10 @@ Last but not least you can also add cookies to a request header. The common user
 ````java
 // Transfer all cookies that were supplied in the preceding response.
 List<HttpCookie> cookies = HEAD( "https://www.google.com" ).run().getCookies();
-GET<String>( Text.class, "https://www.google.com" ).setCookies( cookies ).run();
+GET( Text.class, "https://www.google.com" ).setCookies( cookies ).run();
 
 // Do whatever the fuck you want.
-GET<String>( Text.class, "https://www.google.com" ).addCookie( "session", "1234" ).run();
+GET( Text.class, "https://www.google.com" ).addCookie( "session", "1234" ).run();
 ````
 
 Furthermore *Communicator* comes with a `CookieStore` implementation that persists cookies via Android's
@@ -132,7 +132,7 @@ Response<Void> response = HEAD( "https://www.google.com" ).request();
 store.add( response );
 
 // Send persisted cookies along with request.
-GET<String>( Text.class, "https://www.google.com" ).setCookies( store ).run();
+GET( Text.class, "https://www.google.com" ).setCookies( store ).run();
 ````
 
 [1]: http://android-developers.blogspot.de/2011/09/androids-http-clients.html
