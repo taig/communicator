@@ -31,7 +31,7 @@ public class Cookies extends Activity
 			{
 				try
 				{
-					Response<Void> response = HEAD( "http://httpbin.org/cookies/set?user=Taig&pass=strawberries" ).request();
+					Response response = HEAD( "http://httpbin.org/cookies/set?user=Taig&pass=strawberries" ).request();
 					CookieStore store = new CookieStore( Cookies.this );
 					store.add( response );
 					store.add( null, "global", "cookie" );

@@ -3,6 +3,7 @@ package com.taig.communicator.sample.app;
 import android.app.Activity;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
@@ -35,7 +36,7 @@ public class Events extends Activity
 
 		try
 		{
-			final Get<String> request = GET( Text.class, "http://www.ourairports.com/data/airport-frequencies.csv", new Event<String>()
+			final Get<String> request = GET( Text.class, "http://vhost2.hansenet.de/1_mb_file.bin", new Event.Payload<String>()
 			{
 				@Override
 				protected void onEvent( State state )
@@ -74,14 +75,7 @@ public class Events extends Activity
 				}
 			} );
 
-			AsyncTask.execute( new Runnable()
-			{
-				@Override
-				public void run()
-				{
-					request.run();
-				}
-			} );
+			AsyncTask.execute( request );
 		}
 		catch( MalformedURLException exception )
 		{

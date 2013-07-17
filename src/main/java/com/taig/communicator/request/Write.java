@@ -17,7 +17,7 @@ public abstract class Write<T> extends Read<T>
 {
 	protected Data data;
 
-	public Write( String method, URL url, Data data, Event<T> event )
+	public Write( String method, URL url, Data data, Event.Payload<T> event )
 	{
 		super( method, url, event );
 		setData( data );
@@ -55,15 +55,22 @@ public abstract class Write<T> extends Read<T>
 	}
 
 	@Override
+	protected Response.Payload<T> talk( HttpURLConnection connection ) throws IOException
+	{
+		send( connection );
+		return super.talk( connection );
+	}
+
 	protected void send( HttpURLConnection connection ) throws IOException
 	{
 		if( data != null )
 		{
-			Updateable.Output output = new Send( connection.getOutputStream(), data.getLength() );
+			int length = data.getLength();
+			Updateable.Output output = new Send( connection.getOutputStream(), length );
 
 			try
 			{
-				state.send();
+				state.send( length );
 				write( output, data );
 			}
 			finally

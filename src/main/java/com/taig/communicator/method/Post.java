@@ -3,6 +3,7 @@ package com.taig.communicator.method;
 import com.taig.communicator.event.Event;
 import com.taig.communicator.event.Updateable;
 import com.taig.communicator.request.Data;
+import com.taig.communicator.request.Response;
 import com.taig.communicator.request.Write;
 import com.taig.communicator.result.Parser;
 
@@ -13,7 +14,7 @@ public class Post<T> extends Write<T>
 {
 	protected Parser<T> parser;
 
-	public Post( Parser<T> parser, URL url, Data data, Event<T> event )
+	public Post( Parser<T> parser, URL url, Data data, Event.Payload<T> event )
 	{
 		super( "POST", url, data, event );
 		this.parser = parser;

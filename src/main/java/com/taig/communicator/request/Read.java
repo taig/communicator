@@ -9,9 +9,9 @@ import java.io.InterruptedIOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-public abstract class Read<T> extends Request<T>
+public abstract class Read<T> extends Request<Response.Payload<T>, Event.Payload<T>>
 {
-	public Read( String method, URL url, Event<T> event )
+	public Read( String method, URL url, Event.Payload<T> event )
 	{
 		super( method, url, event );
 	}
@@ -25,16 +25,24 @@ public abstract class Read<T> extends Request<T>
 	}
 
 	@Override
-	protected void send( HttpURLConnection connection ) throws IOException {}
+	protected Response.Payload<T> talk( HttpURLConnection connection ) throws IOException
+	{
+		return new Response.Payload<T>(
+			url,
+			connection.getResponseCode(),
+			connection.getResponseMessage(),
+			connection.getHeaderFields(),
+			receive( connection ) );
+	}
 
-	@Override
 	protected T receive( HttpURLConnection connection ) throws IOException
 	{
-		Updateable.Input input = new Receive( connection.getInputStream(), connection.getContentLength() );
+		int length = connection.getContentLength();
+		Updateable.Input input = new Receive( connection.getInputStream(), length );
 
 		try
 		{
-			state.receive();
+			state.receive( length );
 			return read( url, input );
 		}
 		finally

@@ -48,7 +48,7 @@ public class CookieStore implements java.net.CookieStore
 		add( uri, cookie );
 	}
 
-	public void add( Response<?> response )
+	public void add( Response response )
 	{
 		try
 		{

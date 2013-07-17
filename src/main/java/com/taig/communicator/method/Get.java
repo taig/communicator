@@ -3,6 +3,7 @@ package com.taig.communicator.method;
 import com.taig.communicator.event.Event;
 import com.taig.communicator.event.Updateable;
 import com.taig.communicator.request.Read;
+import com.taig.communicator.request.Response;
 import com.taig.communicator.result.Parser;
 
 import java.io.IOException;
@@ -12,7 +13,7 @@ public class Get<T> extends Read<T>
 {
 	protected Parser<T> parser;
 
-	public Get( Parser<T> parser, URL url, Event<T> event )
+	public Get( Parser<T> parser, URL url, Event.Payload<T> event )
 	{
 		super( "GET", url, event );
 		this.parser = parser;
