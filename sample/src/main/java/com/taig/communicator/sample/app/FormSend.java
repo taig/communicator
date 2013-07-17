@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
 import android.widget.TextView;
+import com.taig.communicator.event.Event;
 import com.taig.communicator.request.Data;
 import com.taig.communicator.request.Response;
 import com.taig.communicator.result.Text;
@@ -39,17 +40,15 @@ public class FormSend extends Activity
 					params.put( "password", "strawberry" );
 					params.put( "remember", "true" );
 
-					final Response<String> response = POST( Text.class, "http://httpbin.org/post", Data.from( params ) ).request();
-
-					runOnUiThread( new Runnable()
+					POST( Text.class, "http://httpbin.org/post", Data.from( params ), new Event.Payload<String>()
 					{
 						@Override
-						public void run()
+						protected void onSuccess( String content )
 						{
 							text.setGravity( Gravity.LEFT | Gravity.CENTER_VERTICAL );
-							text.setText( response.getPayload() );
+							text.setText( content );
 						}
-					} );
+					} ).run();
 				}
 				catch( final Exception exception )
 				{

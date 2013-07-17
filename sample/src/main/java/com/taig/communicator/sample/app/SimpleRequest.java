@@ -28,7 +28,9 @@ public class SimpleRequest extends Activity
 			{
 				try
 				{
-					final Response<String> response = GET( Text.class, "http://www.gutenberg.org/files/43206/43206-0.txt" ).request();
+					final Response.Payload<String> response = GET(
+						Text.class,
+						"http://www.gutenberg.org/files/43206/43206-0.txt" ).request();
 
 					runOnUiThread( new Runnable()
 					{
@@ -36,9 +38,9 @@ public class SimpleRequest extends Activity
 						public void run()
 						{
 							text.setText(
-									"Code: " + response.getCode() + "\n" +
-									"Message: " + response.getMessage() + "\n\n" +
-									response.getPayload().substring( 3034, 3498 ) + " ..." );
+								"Code: " + response.getCode() + "\n" +
+								"Message: " + response.getMessage() + "\n\n" +
+								response.getPayload().substring( 3034, 3498 ) + " ..." );
 						}
 					} );
 				}

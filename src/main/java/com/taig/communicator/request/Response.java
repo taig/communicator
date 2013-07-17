@@ -1,12 +1,14 @@
 package com.taig.communicator.request;
 
+import com.taig.communicator.result.Parser;
+
 import java.net.HttpCookie;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class Response<T>
+public class Response
 {
 	protected URL url;
 
@@ -16,15 +18,12 @@ public class Response<T>
 
 	protected Map<String, List<String>> headers;
 
-	protected T result;
-
-	public Response( URL url, int code, String message, Map<String, List<String>> headers, T result )
+	public Response( URL url, int code, String message, Map<String, List<String>> headers )
 	{
 		this.url = url;
 		this.code = code;
 		this.message = message;
 		this.headers = headers;
-		this.result = result;
 	}
 
 	public URL getURL()
@@ -52,6 +51,24 @@ public class Response<T>
 		return headers.get( key );
 	}
 
+	public HttpCookie getCookie( String name )
+	{
+		List<HttpCookie> cookies = getCookies();
+
+		if( cookies != null )
+		{
+			for( HttpCookie cookie : cookies )
+			{
+				if( cookie.getName().equals( name ) )
+				{
+					return cookie;
+				}
+			}
+		}
+
+		return null;
+	}
+
 	public List<HttpCookie> getCookies()
 	{
 		List<String> headers = getHeader( "Set-Cookie" );
@@ -71,26 +88,19 @@ public class Response<T>
 		return null;
 	}
 
-	public HttpCookie getCookie( String name )
+	public static class Payload<T> extends Response
 	{
-		List<HttpCookie> cookies = getCookies();
+		protected T result;
 
-		if( cookies != null )
+		public Payload( URL url, int code, String message, Map<String, List<String>> headers, T result )
 		{
-			for( HttpCookie cookie : cookies )
-			{
-				if( cookie.getName().equals( name ) )
-				{
-					return cookie;
-				}
-			}
+			super( url, code, message, headers );
+			this.result = result;
 		}
 
-		return null;
-	}
-
-	public T getPayload()
-	{
-		return result;
+		public T getPayload()
+		{
+			return result;
+		}
 	}
 }

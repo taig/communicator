@@ -9,13 +9,15 @@ import com.taig.communicator.result.Parser;
 import java.io.IOException;
 import java.net.URL;
 
+import static com.taig.communicator.method.Method.*;
+
 public class Put<T> extends Write<T>
 {
 	protected Parser<T> parser;
 
-	public Put( Parser<T> parser, URL url, Data data, Event<T> event )
+	public Put( Parser<T> parser, URL url, Data data, Event.Payload<T> event )
 	{
-		super( "POST", url, data, event );
+		super( Type.PUT, url, data, event );
 		this.parser = parser;
 	}
 

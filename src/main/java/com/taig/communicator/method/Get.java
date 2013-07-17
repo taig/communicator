@@ -8,13 +8,15 @@ import com.taig.communicator.result.Parser;
 import java.io.IOException;
 import java.net.URL;
 
+import static com.taig.communicator.method.Method.*;
+
 public class Get<T> extends Read<T>
 {
 	protected Parser<T> parser;
 
-	public Get( Parser<T> parser, URL url, Event<T> event )
+	public Get( Parser<T> parser, URL url, Event.Payload<T> event )
 	{
-		super( "GET", url, event );
+		super( Type.GET, url, event );
 		this.parser = parser;
 	}
 

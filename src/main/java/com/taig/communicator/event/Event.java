@@ -6,8 +6,13 @@ import com.taig.communicator.request.Response;
 import java.io.InterruptedIOException;
 import java.util.concurrent.Executor;
 
-public abstract class Event<T>
+public abstract class Event<R extends Response>
 {
+	public Proxy getProxy()
+	{
+		return new Proxy();
+	}
+
 	protected void onEvent( State state ) {}
 
 	protected void onStart() {}
@@ -22,17 +27,47 @@ public abstract class Event<T>
 
 	protected void onReceive( int progress ) {}
 
-	protected void onSuccess( Response<T> response ) {}
+	protected void onSuccess( R response ) {}
 
 	protected void onFailure( Throwable error ) {}
 
 	protected void onFinish() {}
 
+	public static abstract class Payload<T> extends Event<Response.Payload<T>>
+	{
+		@Override
+		public Proxy getProxy()
+		{
+			return new Proxy();
+		}
+
+		protected void onSuccess( T payload ) {}
+
+		public class Proxy extends Event<Response.Payload<T>>.Proxy
+		{
+			@Override
+			public void success( final Response.Payload<T> response )
+			{
+				executor.execute( new Runnable()
+				{
+					@Override
+					public void run()
+					{
+						onEvent( State.SUCCESS );
+						onSuccess( response );
+						onSuccess( response.getPayload() );
+						onFinish();
+					}
+				} );
+			}
+		}
+	}
+
 	public class Proxy
 	{
 		protected Executor executor = new MainThreadExecutor();
 
-		public Event<T> getEvent()
+		public Event<R> getEvent()
 		{
 			return Event.this;
 		}
@@ -99,7 +134,7 @@ public abstract class Event<T>
 			} );
 		}
 
-		public void success( final Response<T> response )
+		public void success( final R response )
 		{
 			executor.execute( new Runnable()
 			{

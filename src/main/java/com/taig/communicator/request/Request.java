@@ -4,6 +4,7 @@ import android.util.Log;
 import com.taig.communicator.event.Event;
 import com.taig.communicator.event.State;
 import com.taig.communicator.io.Cancelable;
+import com.taig.communicator.method.Method;
 
 import java.io.IOException;
 import java.io.InterruptedIOException;
@@ -13,15 +14,15 @@ import java.util.*;
 
 import static com.taig.communicator.request.Header.Request.COOKIE;
 
-public abstract class Request<T> implements Cancelable, Runnable
+public abstract class Request<R extends Response, E extends Event<R>> implements Cancelable, Runnable
 {
 	protected static final String TAG = Request.class.getName();
 
-	protected String method;
+	protected Method.Type method;
 
 	protected URL url;
 
-	protected Event<T>.Proxy event;
+	protected Event<R>.Proxy event;
 
 	protected LoadingState state = new LoadingState();
 
@@ -45,11 +46,16 @@ public abstract class Request<T> implements Cancelable, Runnable
 
 	protected Map<String, Collection<String>> headers = new HashMap<String, Collection<String>>();
 
-	public Request( String method, URL url, Event<T> event )
+	public Request( Method.Type method, URL url, E event )
 	{
 		this.method = method;
 		this.url = url;
 		setEvent( event );
+	}
+
+	public Method.Type getMethod()
+	{
+		return method;
 	}
 
 	public State getState()
@@ -62,14 +68,9 @@ public abstract class Request<T> implements Cancelable, Runnable
 		return url;
 	}
 
-	public Event<T> getEvent()
+	public Request<R, E> setEvent( E event )
 	{
-		return event.getEvent();
-	}
-
-	public Request<T> setEvent( Event<T> event )
-	{
-		this.event = event == null ? null : event.new Proxy();
+		this.event = event == null ? null : event.getProxy();
 		return this;
 	}
 
@@ -84,7 +85,13 @@ public abstract class Request<T> implements Cancelable, Runnable
 		return cancelled;
 	}
 
-	public Request<T> addHeader( String key, String value )
+	public boolean isBusy()
+	{
+		State state = getState();
+		return state == State.START || state == State.SEND || state == State.RECEIVE;
+	}
+
+	public Request<R, E> addHeader( String key, String value )
 	{
 		Collection<String> values = this.headers.get( key );
 
@@ -100,14 +107,14 @@ public abstract class Request<T> implements Cancelable, Runnable
 		return this;
 	}
 
-	public Request<T> setHeader( String key, String value )
+	public Request<R, E> setHeader( String key, String value )
 	{
 		Collection<String> values = new ArrayList<String>();
 		values.add( value );
 		return setHeaders( key, values );
 	}
 
-	public Request<T> addHeaders( String key, Collection<String> values )
+	public Request<R, E> addHeaders( String key, Collection<String> values )
 	{
 		for( String value : values )
 		{
@@ -117,7 +124,7 @@ public abstract class Request<T> implements Cancelable, Runnable
 		return this;
 	}
 
-	public Request<T> setHeaders( String key, Collection<String> values )
+	public Request<R, E> setHeaders( String key, Collection<String> values )
 	{
 		if( values == null )
 		{
@@ -131,37 +138,37 @@ public abstract class Request<T> implements Cancelable, Runnable
 		return this;
 	}
 
-	public Request<T> setHeaders( Map<String, Collection<String>> headers )
+	public Request<R, E> setHeaders( Map<String, Collection<String>> headers )
 	{
 		this.headers = headers;
 		return this;
 	}
 
-	public Request<T> addCookie( HttpCookie cookie )
+	public Request<R, E> addCookie( HttpCookie cookie )
 	{
 		return addHeader( COOKIE, cookie.toString() );
 	}
 
-	public Request<T> addCookie( String key, String value )
+	public Request<R, E> addCookie( String key, String value )
 	{
 		HttpCookie cookie = new HttpCookie( key, value );
 		cookie.setVersion( 0 );
 		return addCookie( cookie );
 	}
 
-	public Request<T> setCookie( HttpCookie cookie )
+	public Request<R, E> setCookie( HttpCookie cookie )
 	{
 		return setHeader( COOKIE, cookie.toString() );
 	}
 
-	public Request<T> setCookie( String key, String value )
+	public Request<R, E> setCookie( String key, String value )
 	{
 		HttpCookie cookie = new HttpCookie( key, value );
 		cookie.setVersion( 0 );
 		return setCookie( cookie );
 	}
 
-	public Request<T> addCookies( Collection<HttpCookie> cookies )
+	public Request<R, E> addCookies( Collection<HttpCookie> cookies )
 	{
 		for( HttpCookie cookie : cookies )
 		{
@@ -171,7 +178,7 @@ public abstract class Request<T> implements Cancelable, Runnable
 		return this;
 	}
 
-	public Request<T> addCookies( CookieStore store )
+	public Request<R, E> addCookies( CookieStore store )
 	{
 		try
 		{
@@ -186,7 +193,7 @@ public abstract class Request<T> implements Cancelable, Runnable
 		return this;
 	}
 
-	public Request<T> addCookies( Response<?> response )
+	public Request<R, E> addCookies( Response response )
 	{
 		List<HttpCookie> cookies = response.getCookies();
 
@@ -198,7 +205,7 @@ public abstract class Request<T> implements Cancelable, Runnable
 		return this;
 	}
 
-	public Request<T> setCookies( Collection<HttpCookie> cookies )
+	public Request<R, E> setCookies( Collection<HttpCookie> cookies )
 	{
 		Collection<String> values = null;
 
@@ -215,7 +222,7 @@ public abstract class Request<T> implements Cancelable, Runnable
 		return setHeaders( COOKIE, values );
 	}
 
-	public Request<T> setCookies( CookieStore store )
+	public Request<R, E> setCookies( CookieStore store )
 	{
 		try
 		{
@@ -231,54 +238,54 @@ public abstract class Request<T> implements Cancelable, Runnable
 		return this;
 	}
 
-	public Request<T> setCookies( Response<?> response )
+	public Request<R, E> setCookies( Response response )
 	{
 		return setCookies( response.getCookies() );
 	}
 
-	public Request<T> allowUserInteraction( boolean allow )
+	public Request<R, E> allowUserInteraction( boolean allow )
 	{
 		this.userInteraction = allow;
 		return this;
 	}
 
-	public Request<T> ifModifiedSince( int modifiedSince )
+	public Request<R, E> ifModifiedSince( int modifiedSince )
 	{
 		this.modifiedSince = modifiedSince;
 		return this;
 	}
 
-	public Request<T> followRedirects( boolean follow )
+	public Request<R, E> followRedirects( boolean follow )
 	{
 		this.redirect = follow;
 		return this;
 	}
 
-	public Request<T> streamChunks( int chunkLength )
+	public Request<R, E> streamChunks( int chunkLength )
 	{
 		this.chunkLength = chunkLength;
 		return this;
 	}
 
-	public Request<T> streamFixedLength( int contentLength )
+	public Request<R, E> streamFixedLength( int contentLength )
 	{
 		this.contentLength = contentLength;
 		return this;
 	}
 
-	public Request<T> timeoutConnect( int timeout )
+	public Request<R, E> timeoutConnect( int timeout )
 	{
 		this.connectTimeout = timeout;
 		return this;
 	}
 
-	public Request<T> timeoutRead( int timeout )
+	public Request<R, E> timeoutRead( int timeout )
 	{
 		this.readTimeout = timeout;
 		return this;
 	}
 
-	public Request<T> useCache( boolean use )
+	public Request<R, E> useCache( boolean use )
 	{
 		this.cache = use;
 		return this;
@@ -292,7 +299,7 @@ public abstract class Request<T> implements Cancelable, Runnable
 		connection.setIfModifiedSince( modifiedSince );
 		connection.setInstanceFollowRedirects( redirect );
 		connection.setReadTimeout( readTimeout );
-		connection.setRequestMethod( method );
+		connection.setRequestMethod( method.name() );
 		connection.setUseCaches( cache );
 
 		if( chunkLength > 0 )
@@ -332,26 +339,23 @@ public abstract class Request<T> implements Cancelable, Runnable
 	 * payload that will be <code>null</code> if the HTTP server returned an error.
 	 * @throws IOException
 	 */
-	public Response<T> request() throws IOException
+	public R request() throws IOException
 	{
-		HttpURLConnection connection = connect();
+		HttpURLConnection connection = null;
 
 		try
 		{
+			state.start();
+			connection = connect();
+			connection.connect();
+
 			if( cancelled )
 			{
 				throw new InterruptedIOException( "Connection cancelled" );
 			}
 
-			state.start();
-			send( connection );
-			Response<T> response = new Response<T>(
-				url,
-				connection.getResponseCode(),
-				connection.getResponseMessage(),
-				connection.getHeaderFields(),
-				receive( connection )
-			);
+			Log.d( "ASDF", "start talking" );
+			R response = talk( connection );
 			state.success();
 			return response;
 		}
@@ -367,7 +371,10 @@ public abstract class Request<T> implements Cancelable, Runnable
 		}
 		finally
 		{
-			connection.disconnect();
+			if( connection != null )
+			{
+				connection.disconnect();
+			}
 		}
 	}
 
@@ -377,15 +384,17 @@ public abstract class Request<T> implements Cancelable, Runnable
 		{
 			state.success( request() );
 		}
+		catch( InterruptedIOException exception )
+		{
+			// Don't fail/finish cancelled requests.
+		}
 		catch( IOException exception )
 		{
 			state.failure( exception );
 		}
 	}
 
-	protected abstract void send( HttpURLConnection connection ) throws IOException;
-
-	protected abstract T receive( HttpURLConnection connection ) throws IOException;
+	protected abstract R talk( HttpURLConnection connection ) throws IOException;
 
 	protected class LoadingState
 	{
@@ -411,9 +420,10 @@ public abstract class Request<T> implements Cancelable, Runnable
 			}
 		}
 
-		public void send()
+		public void send( int total )
 		{
 			current = State.SEND;
+			sending( 0, total );
 		}
 
 		public void sending( int current, int total )
@@ -424,9 +434,10 @@ public abstract class Request<T> implements Cancelable, Runnable
 			}
 		}
 
-		public void receive()
+		public void receive( int total )
 		{
 			current = State.RECEIVE;
+			receiving( 0, total );
 		}
 
 		public void receiving( int current, int total )
@@ -442,7 +453,7 @@ public abstract class Request<T> implements Cancelable, Runnable
 			current = State.SUCCESS;
 		}
 
-		public void success( Response<T> response )
+		public void success( R response )
 		{
 			if( event != null )
 			{

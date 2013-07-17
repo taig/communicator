@@ -29,12 +29,12 @@ public class CustomResultParser extends Activity
 			{
 				try
 				{
-					GET( Headline.class, "http://stackoverflow.com", new Event<String>()
+					GET( Headline.class, "http://stackoverflow.com", new Event.Payload<String>()
 					{
 						@Override
-						protected void onSuccess( Response<String> response )
+						protected void onSuccess( String content )
 						{
-							text.setText( response.getPayload() );
+							text.setText( content );
 						}
 
 						@Override
