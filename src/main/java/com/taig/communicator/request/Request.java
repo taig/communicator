@@ -4,6 +4,7 @@ import android.util.Log;
 import com.taig.communicator.event.Event;
 import com.taig.communicator.event.State;
 import com.taig.communicator.io.Cancelable;
+import com.taig.communicator.method.Method;
 
 import java.io.IOException;
 import java.io.InterruptedIOException;
@@ -17,7 +18,7 @@ public abstract class Request<R extends Response, E extends Event<R>> implements
 {
 	protected static final String TAG = Request.class.getName();
 
-	protected String method;
+	protected Method.Type method;
 
 	protected URL url;
 
@@ -45,11 +46,16 @@ public abstract class Request<R extends Response, E extends Event<R>> implements
 
 	protected Map<String, Collection<String>> headers = new HashMap<String, Collection<String>>();
 
-	public Request( String method, URL url, E event )
+	public Request( Method.Type method, URL url, E event )
 	{
 		this.method = method;
 		this.url = url;
 		setEvent( event );
+	}
+
+	public Method.Type getMethod()
+	{
+		return method;
 	}
 
 	public State getState()
@@ -293,7 +299,7 @@ public abstract class Request<R extends Response, E extends Event<R>> implements
 		connection.setIfModifiedSince( modifiedSince );
 		connection.setInstanceFollowRedirects( redirect );
 		connection.setReadTimeout( readTimeout );
-		connection.setRequestMethod( method );
+		connection.setRequestMethod( method.name() );
 		connection.setUseCaches( cache );
 
 		if( chunkLength > 0 )

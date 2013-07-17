@@ -2,6 +2,7 @@ package com.taig.communicator.request;
 
 import com.taig.communicator.event.Event;
 import com.taig.communicator.event.Updateable;
+import com.taig.communicator.method.Method;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,7 +18,7 @@ public abstract class Write<T> extends Read<T>
 {
 	protected Data data;
 
-	public Write( String method, URL url, Data data, Event.Payload<T> event )
+	public Write( Method.Type method, URL url, Data data, Event.Payload<T> event )
 	{
 		super( method, url, event );
 		setData( data );

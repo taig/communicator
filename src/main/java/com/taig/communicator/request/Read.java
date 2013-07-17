@@ -2,6 +2,7 @@ package com.taig.communicator.request;
 
 import com.taig.communicator.event.Event;
 import com.taig.communicator.event.Updateable;
+import com.taig.communicator.method.Method;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,7 +12,7 @@ import java.net.URL;
 
 public abstract class Read<T> extends Request<Response.Payload<T>, Event.Payload<T>>
 {
-	public Read( String method, URL url, Event.Payload<T> event )
+	public Read( Method.Type method, URL url, Event.Payload<T> event )
 	{
 		super( method, url, event );
 	}

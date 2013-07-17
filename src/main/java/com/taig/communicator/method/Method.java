@@ -10,6 +10,11 @@ import java.net.URL;
 
 public abstract class Method
 {
+	public enum Type
+	{
+		DELETE, GET, HEAD, POST, PUT
+	}
+
 	public static <T> Get<T> GET( Class<? extends Parser<T>> parser, String url ) throws MalformedURLException
 	{
 		return GET( parser, url, null );

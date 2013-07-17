@@ -3,12 +3,13 @@ package com.taig.communicator.method;
 import com.taig.communicator.event.Event;
 import com.taig.communicator.event.Updateable;
 import com.taig.communicator.request.Data;
-import com.taig.communicator.request.Response;
 import com.taig.communicator.request.Write;
 import com.taig.communicator.result.Parser;
 
 import java.io.IOException;
 import java.net.URL;
+
+import static com.taig.communicator.method.Method.*;
 
 public class Put<T> extends Write<T>
 {
@@ -16,7 +17,7 @@ public class Put<T> extends Write<T>
 
 	public Put( Parser<T> parser, URL url, Data data, Event.Payload<T> event )
 	{
-		super( "POST", url, data, event );
+		super( Type.PUT, url, data, event );
 		this.parser = parser;
 	}
 
