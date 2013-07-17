@@ -79,6 +79,12 @@ public abstract class Request<R extends Response, E extends Event<R>> implements
 		return cancelled;
 	}
 
+	public boolean isBusy()
+	{
+		State state = getState();
+		return state == State.START || state == State.SEND || state == State.RECEIVE;
+	}
+
 	public Request<R, E> addHeader( String key, String value )
 	{
 		Collection<String> values = this.headers.get( key );
