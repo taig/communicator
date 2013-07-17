@@ -113,26 +113,27 @@ Last but not least you can also add cookies to a request header. The common user
 `Set-Cookie` directive in a server's response header.
 
 ````java
-// Transfer all cookies that were supplied in the preceding response.
-List<HttpCookie> cookies = HEAD( "https://www.google.com" ).run().getCookies();
-GET( Text.class, "https://www.google.com" ).setCookies( cookies ).run();
+Response<Void> response = HEAD( "https://www.google.com" ).request();
 
-// Do whatever the fuck you want.
-GET( Text.class, "https://www.google.com" ).addCookie( "session", "1234" ).run();
+GET( Text.class, "https://www.google.com" )
+    .setCookies( response.getCookies() )                        // Set a List of HttpCookies.
+    .setCookies( response )                                     // Use cookies from another response.
+    .addCookie( new HttpCookie( "remember_me", "true" )         // Set single cookies.
+    .addCookie( "session", "1234" )                             // Do whatever the fuck you want.
+    .run();
 ````
 
 Furthermore *Communicator* comes with a `CookieStore` implementation that persists cookies via Android's
 `SharedPreferences`. This is very useful if you have to store cookies beyond an app's lifecycle (e.g. a session cookie).
 
 ````java
-CookieStore store = new CookieStore();
+CookieStore store = new CookieStore( MyActivity.this );
 Response response = HEAD( "https://www.google.com" ).request();
 
-// Persist retrieved cookies.
-store.add( response );
-
-// Send persisted cookies along with request.
-GET( Text.class, "https://www.google.com" ).setCookies( store ).run();
+store.add( response );                                          // Persist retrieved cookies.
+GET( Text.class, "https://www.google.com" )                     // Send persisted cookies that are associated with
+    .setCookies( store )                                        // "google.com" along with the request.
+    .run();
 ````
 
 [1]: http://android-developers.blogspot.de/2011/09/androids-http-clients.html
