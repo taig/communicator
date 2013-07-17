@@ -30,8 +30,8 @@ import static com.taig.communicator.method.Method.*;
 import com.taig.communicator.result.Text;
 import com.taig.communicator.result.Image;
 
-Response<String> source = GET( Text.class, "http://www.android.com/" ).followRedirects( true ).request();
-Response<Bitmap> logo = GET( Image.class, "http://www.android.com/images/logo.png" ).request();
+Response.Payload<String> source = GET( Text.class, "http://www.android.com/" ).followRedirects( true ).request();
+Response.Payload<Bitmap> logo = GET( Image.class, "http://www.android.com/images/logo.png" ).request();
 ````
 
 The first argument, `Text.class`, is a Parser that will be executed in order to process the connection's `InputStream`.
@@ -126,7 +126,7 @@ Furthermore *Communicator* comes with a `CookieStore` implementation that persis
 
 ````java
 CookieStore store = new CookieStore();
-Response<Void> response = HEAD( "https://www.google.com" ).request();
+Response response = HEAD( "https://www.google.com" ).request();
 
 // Persist retrieved cookies.
 store.add( response );
