@@ -34,7 +34,7 @@ public class Data<C extends Data.ContentType> extends Countable.Stream.Input
 
 	public static Data<ContentType.Multipart> from( File file ) throws FileNotFoundException
 	{
-		return from( new FileInputStream( file ), new BigDecimal( file.length() ).intValueExact() );
+		return from( new FileInputStream( file ), (int) Math.min( file.length(), Integer.MAX_VALUE ) );
 	}
 
 	public static Data<ContentType> from( Map<String, String> parameters )
