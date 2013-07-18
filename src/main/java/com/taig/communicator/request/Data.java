@@ -2,38 +2,42 @@ package com.taig.communicator.request;
 
 import com.taig.communicator.io.Countable;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
+import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.util.Map;
 
-public class Data extends Countable.Stream.Input
+public class Data<C extends Data.ContentType> extends Countable.Stream.Input
 {
-	protected ContentType contentType;
+	protected C contentType;
 
-	public Data( InputStream stream )
-	{
-		this( stream, -1 );
-	}
-
-	public Data( InputStream stream, int length )
-	{
-		this( stream, length, ContentType.MULTI );
-	}
-
-	public Data( InputStream stream, int length, ContentType contentType )
+	public Data( InputStream stream, int length, C contentType )
 	{
 		super( stream, length );
 		this.contentType = contentType;
 	}
 
-	public ContentType getContentType()
+	public C getContentType()
 	{
 		return contentType;
 	}
 
-	public static Data from( Map<String, String> parameters )
+	public static Data<ContentType.Multipart> from( InputStream stream )
+	{
+		return from( stream, -1 );
+	}
+
+	public static Data<ContentType.Multipart> from( InputStream stream, int length )
+	{
+		return new Data<ContentType.Multipart>( stream, length, ContentType.MULTIPART );
+	}
+
+	public static Data<ContentType.Multipart> from( File file ) throws FileNotFoundException
+	{
+		return from( new FileInputStream( file ), new BigDecimal( file.length() ).intValueExact() );
+	}
+
+	public static Data<ContentType> from( Map<String, String> parameters )
 	{
 		try
 		{
@@ -54,7 +58,7 @@ public class Data extends Countable.Stream.Input
 			}
 
 			ByteArrayInputStream stream = new ByteArrayInputStream( builder.toString().getBytes() );
-			return new Data( stream, stream.available(), ContentType.FORM );
+			return new Data<ContentType>( stream, stream.available(), ContentType.FORM );
 		}
 		catch( UnsupportedEncodingException exception )
 		{
@@ -62,21 +66,57 @@ public class Data extends Countable.Stream.Input
 		}
 	}
 
-	public enum ContentType
+	public static class ContentType
 	{
-		FORM( "application/x-www-form-urlencoded" ), MULTI( "multipart/form-data" );
+		public static final ContentType FORM = new ContentType( "application/x-www-form-urlencoded" );
 
-		private String content;
+		public static final Multipart MULTIPART = new Multipart();
 
-		private ContentType( String content )
+		protected String type;
+
+		protected ContentType( String type )
 		{
-			this.content = content;
+			this.type = type;
+		}
+
+		public String getType()
+		{
+			return type;
 		}
 
 		@Override
 		public String toString()
 		{
-			return content;
+			return type;
+		}
+
+		public static class Multipart extends ContentType
+		{
+			public static final String CLRF = "\r\n";
+
+			protected String boundary;
+
+			protected Multipart()
+			{
+				this( Long.toHexString( System.currentTimeMillis() ) );
+			}
+
+			protected Multipart( String boundary )
+			{
+				super( "multipart/form-data" );
+				this.boundary = boundary;
+			}
+
+			public String getBoundary()
+			{
+				return boundary;
+			}
+
+			@Override
+			public String toString()
+			{
+				return String.format( "%s; boundary=%s", super.toString(), boundary );
+			}
 		}
 	}
 }
