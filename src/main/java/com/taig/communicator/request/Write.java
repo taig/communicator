@@ -36,12 +36,23 @@ public abstract class Write<T> extends Read<T>
 		if( data != null )
 		{
 			setHeader( CONTENT_TYPE, data.getContentType().toString() );
-			setHeader( CONTENT_LENGTH, data.getLength() > 0 ? String.valueOf( data.getLength() ) : "0" );
+
+			if( data.getLength() > 0 )
+			{
+				setHeader( CONTENT_LENGTH, String.valueOf( data.getLength() ) );
+				contentLength = data.getLength();
+			}
+			else
+			{
+				setHeader( CONTENT_LENGTH, "0" );
+				contentLength = -1;
+			}
 		}
 		else
 		{
 			setHeader( CONTENT_TYPE, null );
 			setHeader( CONTENT_LENGTH, "0" );
+			contentLength = -1;
 		}
 
 		return this;
