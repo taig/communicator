@@ -12,10 +12,13 @@ import java.net.CookieStore;
 import java.net.*;
 import java.util.*;
 
+import static com.taig.communicator.request.Header.Request.ACCEPT_CHARSET;
 import static com.taig.communicator.request.Header.Request.COOKIE;
 
 public abstract class Request<R extends Response, E extends Event<R>> implements Cancelable, Runnable
 {
+	public static final String CHARSET = "UTF-8";
+
 	protected static final String TAG = Request.class.getName();
 
 	protected Method.Type method;
@@ -51,6 +54,7 @@ public abstract class Request<R extends Response, E extends Event<R>> implements
 		this.method = method;
 		this.url = url;
 		setEvent( event );
+		setHeader( ACCEPT_CHARSET, CHARSET );
 	}
 
 	public Method.Type getMethod()
@@ -354,7 +358,6 @@ public abstract class Request<R extends Response, E extends Event<R>> implements
 				throw new InterruptedIOException( "Connection cancelled" );
 			}
 
-			Log.d( "ASDF", "start talking" );
 			R response = talk( connection );
 			state.success();
 			return response;

@@ -44,7 +44,7 @@ public class Data extends Countable.Stream.Input
 				builder
 					.append( parameter.getKey() )
 					.append( "=" )
-					.append( URLEncoder.encode( parameter.getValue(), "UTF-8" ) )
+					.append( URLEncoder.encode( parameter.getValue(), Request.CHARSET ) )
 					.append( "&" );
 			}
 
