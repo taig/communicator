@@ -358,7 +358,6 @@ public abstract class Request<R extends Response, E extends Event<R>> implements
 				throw new InterruptedIOException( "Connection cancelled" );
 			}
 
-			Log.d( "ASDF", "start talking" );
 			R response = talk( connection );
 			state.success();
 			return response;
