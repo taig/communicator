@@ -92,7 +92,7 @@ public class Data<C extends Data.ContentType> extends Countable.Stream.Input
 
 		public static class Multipart extends ContentType
 		{
-			public static final String CLRF = "\r\n";
+			public static final String CRLF = "\r\n";
 
 			protected String boundary;
 
