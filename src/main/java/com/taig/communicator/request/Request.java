@@ -47,14 +47,14 @@ public abstract class Request<R extends Response, E extends Event<R>> implements
 
 	protected boolean userInteraction = false;
 
-	protected Map<String, Collection<String>> headers = new HashMap<String, Collection<String>>();
+	public final Header headers = new Header();
 
 	public Request( Method.Type method, URL url, E event )
 	{
 		this.method = method;
 		this.url = url;
 		setEvent( event );
-		setHeader( ACCEPT_CHARSET, CHARSET );
+		headers.put( ACCEPT_CHARSET, CHARSET );
 	}
 
 	public Method.Type getMethod()
@@ -93,158 +93,6 @@ public abstract class Request<R extends Response, E extends Event<R>> implements
 	{
 		State state = getState();
 		return state == State.START || state == State.SEND || state == State.RECEIVE;
-	}
-
-	public Request<R, E> addHeader( String key, String value )
-	{
-		Collection<String> values = this.headers.get( key );
-
-		if( values == null )
-		{
-			setHeader( key, value );
-		}
-		else
-		{
-			values.add( value );
-		}
-
-		return this;
-	}
-
-	public Request<R, E> setHeader( String key, String value )
-	{
-		Collection<String> values = new ArrayList<String>();
-		values.add( value );
-		return setHeaders( key, values );
-	}
-
-	public Request<R, E> addHeaders( String key, Collection<String> values )
-	{
-		for( String value : values )
-		{
-			addHeader( key, value );
-		}
-
-		return this;
-	}
-
-	public Request<R, E> setHeaders( String key, Collection<String> values )
-	{
-		if( values == null )
-		{
-			this.headers.remove( key );
-		}
-		else
-		{
-			this.headers.put( key, values );
-		}
-
-		return this;
-	}
-
-	public Request<R, E> setHeaders( Map<String, Collection<String>> headers )
-	{
-		this.headers = headers;
-		return this;
-	}
-
-	public Request<R, E> addCookie( HttpCookie cookie )
-	{
-		return addHeader( COOKIE, cookie.toString() );
-	}
-
-	public Request<R, E> addCookie( String key, String value )
-	{
-		HttpCookie cookie = new HttpCookie( key, value );
-		cookie.setVersion( 0 );
-		return addCookie( cookie );
-	}
-
-	public Request<R, E> setCookie( HttpCookie cookie )
-	{
-		return setHeader( COOKIE, cookie.toString() );
-	}
-
-	public Request<R, E> setCookie( String key, String value )
-	{
-		HttpCookie cookie = new HttpCookie( key, value );
-		cookie.setVersion( 0 );
-		return setCookie( cookie );
-	}
-
-	public Request<R, E> addCookies( Collection<HttpCookie> cookies )
-	{
-		for( HttpCookie cookie : cookies )
-		{
-			addCookie( cookie );
-		}
-
-		return this;
-	}
-
-	public Request<R, E> addCookies( CookieStore store )
-	{
-		try
-		{
-			addCookies( store.get( url.toURI() ) );
-		}
-		catch( URISyntaxException exception )
-		{
-			Log.w( TAG, "The cookies of a CookieStore couldn't be added to a Request because the associated " +
-						"URL (" + url + ") could not be converted to an URI", exception );
-		}
-
-		return this;
-	}
-
-	public Request<R, E> addCookies( Response response )
-	{
-		List<HttpCookie> cookies = response.getCookies();
-
-		if( cookies != null )
-		{
-			addCookies( cookies );
-		}
-
-		return this;
-	}
-
-	public Request<R, E> setCookies( Collection<HttpCookie> cookies )
-	{
-		Collection<String> values = null;
-
-		if( cookies != null )
-		{
-			values = new ArrayList<String>();
-
-			for( HttpCookie cookie : cookies )
-			{
-				values.add( cookie.toString() );
-			}
-		}
-
-		return setHeaders( COOKIE, values );
-	}
-
-	public Request<R, E> setCookies( CookieStore store )
-	{
-		try
-		{
-			List<HttpCookie> cookies = store.get( url.toURI() );
-			setCookies( cookies.isEmpty() ? null : cookies );
-		}
-		catch( URISyntaxException exception )
-		{
-			Log.w( TAG, "The cookies of a CookieStore couldn't be added to a Request because the associated " +
-						"URL (" + url + ") could not be converted to an URI", exception );
-		}
-
-		return this;
-	}
-
-	public Request<R, E> setCookies( Response response )
-	{
-		return setCookies( response.getCookies() );
 	}
 
 	public Request<R, E> allowUserInteraction( boolean allow )
@@ -316,19 +164,7 @@ public abstract class Request<R extends Response, E extends Event<R>> implements
 			connection.setFixedLengthStreamingMode( contentLength );
 		}
 
-		for( Map.Entry<String, Collection<String>> header : this.headers.entrySet() )
-		{
-			StringBuilder builder = new StringBuilder();
-			String delimiter = header.getKey().equals( COOKIE ) ? "; " : ",";
-
-			for( Iterator<String> iterator = header.getValue().iterator(); iterator.hasNext(); )
-			{
-				builder.append( iterator.next() ).append( iterator.hasNext() ? delimiter : "" );
-			}
-
-			connection.setRequestProperty( header.getKey(), builder.toString() );
-		}
-
+		headers.apply( connection );
 		return connection;
 	}
 
