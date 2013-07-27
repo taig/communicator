@@ -16,6 +16,12 @@ public class Data<C extends ContentType> extends Countable.Stream.Input
 {
 	protected C contentType;
 
+	public Data( ByteArrayInputStream stream, C contentType )
+	{
+		super( stream );
+		this.contentType = contentType;
+	}
+
 	public Data( InputStream stream, int length, C contentType )
 	{
 		super( stream, length );
@@ -27,10 +33,17 @@ public class Data<C extends ContentType> extends Countable.Stream.Input
 		return contentType;
 	}
 
-	public static Data from( Parameter parameters )
+	public static class Form extends Data<ContentType.Form>
 	{
-		String string = parameters.toString();
-		return new Data<ContentType>( new ByteArrayInputStream( string.getBytes() ), string.length(), ContentType.FORM );
+		public Form( InputStream stream, int length )
+		{
+			super( stream, length, ContentType.FORM );
+		}
+
+		public Form( Parameter parameters )
+		{
+			super( new ByteArrayInputStream( parameters.toString().getBytes() ), ContentType.FORM );
+		}
 	}
 
 	public static class Multipart extends Data<ContentType.Multipart>
@@ -56,12 +69,12 @@ public class Data<C extends ContentType> extends Countable.Stream.Input
 				this.contentType = contentType;
 			}
 
-			public Header getParameterHeader( String name )
+			public static Header getParameterHeader( String name )
 			{
 				return getParameterHeader( name, null, null );
 			}
 
-			public Header getParameterHeader( String name, String mime, String charset )
+			public static Header getParameterHeader( String name, String mime, String charset )
 			{
 				Header headers = new Header();
 				headers.put( CONTENT_DISPOSITION, "form-data", "name=\"" + name + "\"" );

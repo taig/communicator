@@ -1,5 +1,6 @@
 package com.taig.communicator.io;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -19,6 +20,11 @@ public interface Countable
 			public Input( InputStream stream )
 			{
 				this( stream, -1 );
+			}
+
+			public Input( ByteArrayInputStream stream )
+			{
+				this( stream, stream.available() );
 			}
 
 			public Input( InputStream stream, int length )
