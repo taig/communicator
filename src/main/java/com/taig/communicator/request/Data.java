@@ -42,7 +42,12 @@ public abstract class Data<C extends ContentType> extends Countable.Stream.Input
 
 		public Form( Parameter parameters )
 		{
-			super( new ByteArrayInputStream( parameters.toString().getBytes() ), ContentType.FORM );
+			this( parameters, Request.CHARSET );
+		}
+
+		public Form( Parameter parameters, String charset )
+		{
+			super( new ByteArrayInputStream( parameters.mkString( charset ).getBytes() ), ContentType.FORM );
 		}
 	}
 
