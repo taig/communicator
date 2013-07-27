@@ -48,6 +48,7 @@ public abstract class Data<C extends ContentType> extends Countable.Stream.Input
 		public Form( Parameter parameters, String charset )
 		{
 			super( new ByteArrayInputStream( parameters.mkString( charset ).getBytes() ), ContentType.FORM );
+			// TODO prepare header stuff & add encoding!
 		}
 	}
 
@@ -150,6 +151,7 @@ public abstract class Data<C extends ContentType> extends Countable.Stream.Input
 
 			public Builder addImage( String name, Bitmap image )
 			{
+				// TODO
 				return this;
 			}
 
