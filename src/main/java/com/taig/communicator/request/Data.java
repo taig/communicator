@@ -5,12 +5,12 @@ import com.taig.communicator.io.Countable;
 
 import java.io.*;
 import java.net.URLConnection;
-import java.net.URLEncoder;
-import java.util.*;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Map;
 
 import static com.taig.communicator.request.Header.CRLF;
 import static com.taig.communicator.request.Header.Request.*;
-import static com.taig.communicator.request.Request.CHARSET;
 
 public class Data<C extends ContentType> extends Countable.Stream.Input
 {
@@ -209,7 +209,7 @@ public class Data<C extends ContentType> extends Countable.Stream.Input
 				}
 				else
 				{
-					return new Data<ContentType.Multipart>( new ByteArrayInputStream( new byte[] {} ), contentType );
+					return new Data<ContentType.Multipart>( new ByteArrayInputStream( new byte[] { } ), contentType );
 				}
 			}
 		}
