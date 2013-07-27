@@ -97,18 +97,6 @@ public abstract class Data<C extends ContentType> extends Countable.Stream.Input
 				return headers;
 			}
 
-			public Builder addParameter( String key, Object value )
-			{
-				return addParameter( key, value, null );
-			}
-
-			public Builder addParameter( String key, Object value, String charset )
-			{
-				Parameter parameter = new Parameter();
-				parameter.put( key, value );
-				return addParameters( parameter, charset );
-			}
-
 			public Builder addParameters( Parameter parameters )
 			{
 				return addParameters( parameters, null );
