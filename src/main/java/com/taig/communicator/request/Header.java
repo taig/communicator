@@ -52,6 +52,12 @@ public class Header extends HashMap<String, Object[]>
 		super( headers );
 	}
 
+	public Header( String key, Object... values )
+	{
+		super( 1 );
+		put( key, values );
+	}
+
 	public Object[] put( String key, Object... values )
 	{
 		return super.put( key, values );
