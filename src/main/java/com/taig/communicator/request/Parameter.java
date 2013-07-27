@@ -28,6 +28,12 @@ public class Parameter extends HashMap<String, Object>
 		super( parameters );
 	}
 
+	public Parameter( String key, Object value )
+	{
+		super( 1 );
+		put( key, value );
+	}
+
 	public String mkString( String charset )
 	{
 		try
