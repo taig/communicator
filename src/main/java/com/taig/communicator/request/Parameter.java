@@ -28,18 +28,6 @@ public class Parameter extends HashMap<String, Object>
 		super( parameters );
 	}
 
-	public String getEncodedValue( String key, String charset )
-	{
-		try
-		{
-			return URLEncoder.encode( get( key ).toString(), charset );
-		}
-		catch( UnsupportedEncodingException exception )
-		{
-			throw new RuntimeException( exception.getMessage(), exception );
-		}
-	}
-
 	public String mkString( String charset )
 	{
 		try
