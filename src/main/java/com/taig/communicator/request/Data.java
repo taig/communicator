@@ -209,7 +209,7 @@ public class Data<C extends ContentType> extends Countable.Stream.Input
 				}
 				else
 				{
-					return new Data<ContentType.Multipart>( new ByteArrayInputStream( "".getBytes() ), 0, contentType );
+					return new Data<ContentType.Multipart>( new ByteArrayInputStream( new byte[] {} ), contentType );
 				}
 			}
 		}
