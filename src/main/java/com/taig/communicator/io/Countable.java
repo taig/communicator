@@ -10,7 +10,7 @@ public interface Countable
 
 	public interface Stream
 	{
-		public static abstract class Input extends InputStream implements Countable
+		public static class Input extends InputStream implements Countable
 		{
 			protected InputStream stream;
 
@@ -88,7 +88,7 @@ public interface Countable
 			}
 		}
 
-		public abstract class Output extends OutputStream implements Countable
+		public class Output extends OutputStream implements Countable
 		{
 			protected OutputStream stream;
 
