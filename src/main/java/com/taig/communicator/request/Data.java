@@ -12,7 +12,7 @@ import java.util.Map;
 import static com.taig.communicator.request.Header.CRLF;
 import static com.taig.communicator.request.Header.Request.*;
 
-public class Data<C extends ContentType> extends Countable.Stream.Input
+public abstract class Data<C extends ContentType> extends Countable.Stream.Input
 {
 	protected C contentType;
 
@@ -205,11 +205,11 @@ public class Data<C extends ContentType> extends Countable.Stream.Input
 						}
 					}
 
-					return new Data<ContentType.Multipart>( stream, length, contentType );
+					return new Multipart( stream, length, contentType );
 				}
 				else
 				{
-					return new Data<ContentType.Multipart>( new ByteArrayInputStream( new byte[] { } ), contentType );
+					return new Multipart( new ByteArrayInputStream( new byte[] { } ), 0, contentType );
 				}
 			}
 		}
