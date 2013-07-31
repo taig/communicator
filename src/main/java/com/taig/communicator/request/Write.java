@@ -35,17 +35,13 @@ public abstract class Write<T> extends Read<T>
 	public HttpURLConnection connect() throws IOException
 	{
 		HttpURLConnection connection = super.connect();
-		connection.setDoOutput( true );
 
 		if( data != null )
 		{
-			data.apply( this );
-		}
-		else
-		{
-			headers.put( CONTENT_LENGTH, "0" );
+			data.apply( connection );
 		}
 
+		connection.setDoOutput( true );
 		return connection;
 	}
 

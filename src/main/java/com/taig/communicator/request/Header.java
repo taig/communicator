@@ -1,5 +1,6 @@
 package com.taig.communicator.request;
 
+import java.net.HttpURLConnection;
 import java.net.URLConnection;
 import java.util.*;
 
@@ -8,7 +9,7 @@ import static com.taig.communicator.request.Header.Request.COOKIE;
 /**
  * List of all HTTP-headers that may occur in a request- or a response-header.
  */
-public class Header extends HashMap<String, Object[]>
+public class Header extends HashMap<String, Object[]> implements Appliable
 {
 	/**
 	 * Used to specify directives that MUST be obeyed by all caching mechanisms along the request/response chain.
@@ -75,7 +76,8 @@ public class Header extends HashMap<String, Object[]>
 		}
 	}
 
-	public void apply( URLConnection connection )
+	@Override
+	public void apply( HttpURLConnection connection )
 	{
 		for( Map.Entry<String, Object[]> header : entrySet() )
 		{

@@ -6,6 +6,7 @@ import com.taig.communicator.method.Method;
 import com.taig.communicator.result.Text;
 
 import java.io.*;
+import java.net.HttpURLConnection;
 import java.net.URLConnection;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -38,19 +39,18 @@ public abstract class Data<C extends ContentType> extends Countable.Stream.Input
 	}
 
 	@Override
-	public void apply( Request request )
+	public void apply( HttpURLConnection connection )
 	{
-		Header headers = request.getHeader();
-		headers.put( CONTENT_TYPE, contentType.toString() );
+		connection.setRequestProperty( CONTENT_TYPE, contentType.toString() );
 
 		if( length > 0 )
 		{
-			headers.put( CONTENT_LENGTH, String.valueOf( length ) );
-			request.streamFixedLength( length );
+			connection.setRequestProperty( CONTENT_LENGTH, String.valueOf( length ) );
+			connection.setFixedLengthStreamingMode( length );
 		}
 		else
 		{
-			headers.put( CONTENT_LENGTH, "0" );
+			connection.setRequestProperty( CONTENT_LENGTH, "0" );
 		}
 	}
 
@@ -80,13 +80,13 @@ public abstract class Data<C extends ContentType> extends Countable.Stream.Input
 		}
 
 		@Override
-		public void apply( Request request )
+		public void apply( HttpURLConnection connection )
 		{
-			super.apply( request );
+			super.apply( connection );
 
 			if( charset != null )
 			{
-				request.getHeader().put( CONTENT_ENCODING, charset );
+				connection.setRequestProperty( CONTENT_ENCODING, charset );
 			}
 		}
 	}
