@@ -41,8 +41,9 @@ the source's URL and the server's response headers.
 ### Custom Parser
 
 A Parser is responsible for converting the connection's `InputStream` into something that makes sense for you.
-If you take a look at `com.taig.communicator.result` you will find two predefined Parsers: `Text` for converting the
-stream into a `String` and `Image` to get an `android.graphics.Bitmap`.
+If you take a look at `com.taig.communicator.result` you will find three predefined Parsers: `Text` for converting the
+stream into a `String`, `Image` to get an `android.graphics.Bitmap` and `Ignore` in case you don't care about the server
+response.
 
 In order to create your own Parser (e.g. for processing HTML or JSON) all you have to do is creating a new class that
 implements the `com.taig.communicator.result.Parser` interface.
