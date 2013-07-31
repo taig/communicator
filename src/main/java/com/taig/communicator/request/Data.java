@@ -14,8 +14,9 @@ import java.util.Map;
 import static com.taig.communicator.method.Method.POST;
 import static com.taig.communicator.request.Header.CRLF;
 import static com.taig.communicator.request.Header.Request.*;
+import static org.apache.http.protocol.HTTP.CONTENT_ENCODING;
 
-public abstract class Data<C extends ContentType> extends Countable.Stream.Input
+public abstract class Data<C extends ContentType> extends Countable.Stream.Input implements Appliable
 {
 	protected C contentType;
 
@@ -34,6 +35,23 @@ public abstract class Data<C extends ContentType> extends Countable.Stream.Input
 	public C getContentType()
 	{
 		return contentType;
+	}
+
+	@Override
+	public void apply( Request request )
+	{
+		Header headers = request.getHeader();
+		headers.put( CONTENT_TYPE, contentType.toString() );
+
+		if( length > 0 )
+		{
+			headers.put( CONTENT_LENGTH, String.valueOf( length ) );
+			request.streamFixedLength( length );
+		}
+		else
+		{
+			headers.put( CONTENT_LENGTH, "0" );
+		}
 	}
 
 	public static class Form extends Data<ContentType.Form>
@@ -59,6 +77,17 @@ public abstract class Data<C extends ContentType> extends Countable.Stream.Input
 		public String getEncoding()
 		{
 			return charset;
+		}
+
+		@Override
+		public void apply( Request request )
+		{
+			super.apply( request );
+
+			if( charset != null )
+			{
+				request.getHeader().put( CONTENT_ENCODING, charset );
+			}
 		}
 	}
 

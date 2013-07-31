@@ -47,7 +47,7 @@ public abstract class Request<R extends Response, E extends Event<R>> implements
 
 	protected boolean userInteraction = false;
 
-	public final Header headers = new Header();
+	protected Header headers = new Header();
 
 	public Request( Method.Type method, URL url, E event )
 	{
@@ -70,6 +70,11 @@ public abstract class Request<R extends Response, E extends Event<R>> implements
 	public URL getUrl()
 	{
 		return url;
+	}
+
+	public Header getHeader()
+	{
+		return headers;
 	}
 
 	public Request<R, E> setEvent( E event )

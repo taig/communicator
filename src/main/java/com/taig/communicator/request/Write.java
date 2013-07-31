@@ -23,7 +23,7 @@ public abstract class Write<T> extends Read<T>
 	public Write( Method.Type method, URL url, Data data, Event.Payload<T> event )
 	{
 		super( method, url, event );
-		setData( data );
+		this.data = data;
 	}
 
 	public Data getData()
@@ -31,54 +31,21 @@ public abstract class Write<T> extends Read<T>
 		return data;
 	}
 
-	public Write<T> setData( Data data )
-	{
-		this.data = data;
-
-		if( data != null )
-		{
-			headers.put( CONTENT_TYPE, data.getContentType().toString() );
-
-			if( data.getLength() > 0 )
-			{
-				headers.put( CONTENT_LENGTH, String.valueOf( data.getLength() ) );
-				contentLength = data.getLength();
-			}
-			else
-			{
-				headers.put( CONTENT_LENGTH, "0" );
-				contentLength = -1;
-			}
-
-			if( data instanceof Data.Form )
-			{
-				String charset = ( (Data.Form) data ).getEncoding();
-
-				if( charset != null )
-				{
-					headers.put( CONTENT_ENCODING, ( (Data.Form) data ).getEncoding() );
-				}
-			}
-			else if( data instanceof Data.Multipart && data.getLength() >= 0 )
-			{
-				streamFixedLength( data.getLength() );
-			}
-		}
-		else
-		{
-			headers.remove( CONTENT_TYPE );
-			headers.put( CONTENT_LENGTH, "0" );
-			contentLength = -1;
-		}
-
-		return this;
-	}
-
 	@Override
 	public HttpURLConnection connect() throws IOException
 	{
 		HttpURLConnection connection = super.connect();
 		connection.setDoOutput( true );
+
+		if( data != null )
+		{
+			data.apply( this );
+		}
+		else
+		{
+			headers.put( CONTENT_LENGTH, "0" );
+		}
+
 		return connection;
 	}
 
