@@ -68,6 +68,11 @@ public abstract class Request<R extends Response, E extends Event<R>> implements
 		return url;
 	}
 
+	public Header getHeader()
+	{
+		return headers;
+	}
+
 	public Request<R, E> setEvent( E event )
 	{
 		this.event = event == null ? null : event.getProxy();
