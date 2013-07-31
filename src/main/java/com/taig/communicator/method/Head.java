@@ -16,7 +16,7 @@ public class Head extends Request<Response, Event<Response>>
 	public Head( URL url, Event<Response> event )
 	{
 		super( Type.HEAD, url, event );
-		setHeader( ACCEPT_ENCODING, "" );
+		headers.put( ACCEPT_ENCODING, "" );
 	}
 
 	@Override

@@ -93,11 +93,11 @@ argument in a `POST` or `PUT` request. More precisely *Communicator* demands you
 `Map<String, String>`.
 
 ````java
-Map<String, String> params = new HashMap<String, String>();
+Parameter params = new Parameter();
 params.put( "email", "my.taig@gmail.com" );
 params.put( "pass", "As if!" );
 
-POST( Text.class, "https://facebook.com/login.php", Data.from( params ) ).run();
+POST( Text.class, "https://facebook.com/login.php", params ).run();
 ````
 
 The supplied data will then be properly encoded for transmission and the request headers `Content-Length` and
@@ -105,7 +105,17 @@ The supplied data will then be properly encoded for transmission and the request
 
 #### Binary Data (File Upload)
 
-TODO
+Since a `multipart/fom-data` request tends to have way more complex headers than a simple `form-url-encoded` request,
+*Communicator* provides a Builder to allow a simple header build up.
+
+````java
+Data data = new Data.Multipart.Builder()
+	.addParameter( params )
+	.addTextFile( "cv", new File( "/my_cv.txt" ), "utf-8" )
+	.build();
+
+POST( Text.class, "http://some.webservice.com", data ).run();
+````
 
 #### Cookies
 

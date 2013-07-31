@@ -1,82 +1,223 @@
 package com.taig.communicator.request;
 
+import android.graphics.Bitmap;
 import com.taig.communicator.io.Countable;
+import com.taig.communicator.method.Method;
+import com.taig.communicator.result.Text;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
+import java.io.*;
+import java.net.URLConnection;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Map;
 
-public class Data extends Countable.Stream.Input
+import static com.taig.communicator.method.Method.POST;
+import static com.taig.communicator.request.Header.CRLF;
+import static com.taig.communicator.request.Header.Request.*;
+
+public abstract class Data<C extends ContentType> extends Countable.Stream.Input
 {
-	protected ContentType contentType;
+	protected C contentType;
 
-	public Data( InputStream stream )
+	public Data( ByteArrayInputStream stream, C contentType )
 	{
-		this( stream, -1 );
+		super( stream );
+		this.contentType = contentType;
 	}
 
-	public Data( InputStream stream, int length )
-	{
-		this( stream, length, ContentType.MULTI );
-	}
-
-	public Data( InputStream stream, int length, ContentType contentType )
+	public Data( InputStream stream, int length, C contentType )
 	{
 		super( stream, length );
 		this.contentType = contentType;
 	}
 
-	public ContentType getContentType()
+	public C getContentType()
 	{
 		return contentType;
 	}
 
-	public static Data from( Map<String, String> parameters )
+	public static class Form extends Data<ContentType.Form>
 	{
-		try
+		protected String charset;
+
+		public Form( InputStream stream, int length )
 		{
-			StringBuilder builder = new StringBuilder();
-
-			for( Map.Entry<String, String> parameter : parameters.entrySet() )
-			{
-				builder
-					.append( parameter.getKey() )
-					.append( "=" )
-					.append( URLEncoder.encode( parameter.getValue(), "UTF-8" ) )
-					.append( "&" );
-			}
-
-			if( builder.length() > 0 )
-			{
-				builder.deleteCharAt( builder.length() - 1 );
-			}
-
-			ByteArrayInputStream stream = new ByteArrayInputStream( builder.toString().getBytes() );
-			return new Data( stream, stream.available(), ContentType.FORM );
+			super( stream, length, ContentType.FORM );
 		}
-		catch( UnsupportedEncodingException exception )
+
+		public Form( Parameter parameters )
 		{
-			throw new RuntimeException( exception.getMessage() );
+			this( parameters, Request.CHARSET );
+		}
+
+		public Form( Parameter parameters, String charset )
+		{
+			super( new ByteArrayInputStream( parameters.mkString( charset ).getBytes() ), ContentType.FORM );
+			this.charset = charset;
+		}
+
+		public String getEncoding()
+		{
+			return charset;
 		}
 	}
 
-	public enum ContentType
+	public static class Multipart extends Data<ContentType.Multipart>
 	{
-		FORM( "application/x-www-form-urlencoded" ), MULTI( "multipart/form-data" );
-
-		private String content;
-
-		private ContentType( String content )
+		public Multipart( InputStream stream, int length, ContentType.Multipart contentType )
 		{
-			this.content = content;
+			super( stream, length, contentType );
 		}
 
-		@Override
-		public String toString()
+		public static class Builder
 		{
-			return content;
+			protected ContentType.Multipart contentType;
+
+			protected LinkedList<Stream.Input> streams = new LinkedList<Stream.Input>();
+
+			public Builder()
+			{
+				this( new ContentType.Multipart() );
+			}
+
+			public Builder( ContentType.Multipart contentType )
+			{
+				this.contentType = contentType;
+			}
+
+			public static Header getParameterHeader( String name )
+			{
+				return getParameterHeader( name, null, null );
+			}
+
+			public static Header getParameterHeader( String name, String mime, String charset )
+			{
+				Header headers = new Header();
+				headers.put( CONTENT_DISPOSITION, "form-data", "name=\"" + name + "\"" );
+
+				if( mime != null )
+				{
+					headers.put( CONTENT_TYPE, mime );
+				}
+
+				if( charset != null )
+				{
+					headers.add( CONTENT_TYPE, "charset=" + charset );
+				}
+
+				return headers;
+			}
+
+			public Builder addParameter( Parameter parameters )
+			{
+				return addParameter( parameters, null );
+			}
+
+			public Builder addParameter( Parameter parameters, String charset )
+			{
+				for( Map.Entry<String, Object> parameter : parameters.entrySet() )
+				{
+					String value = parameter.getValue().toString();
+
+					addInputStream(
+						getParameterHeader( parameter.getKey(), "text/plain", charset ),
+						new Stream.Input( new ByteArrayInputStream( value.getBytes() ), value.length() ) );
+				}
+
+				return this;
+			}
+
+			public Builder addBinaryFile( String name, File file ) throws IOException
+			{
+				return addBinaryFile( name, file, URLConnection.guessContentTypeFromName( file.getName() ) );
+			}
+
+			public Builder addBinaryFile( String name, File file, String mime ) throws IOException
+			{
+				Header headers = getParameterHeader( name, mime, null );
+				headers.put( CONTENT_TRANSFER_ENCODING, "binary" );
+				return addFile( headers, file );
+			}
+
+			public Builder addTextFile( String name, File file, String charset ) throws IOException
+			{
+				return addFile( getParameterHeader( name, "text/plain", charset ), file );
+			}
+
+			public Builder addFile( Header headers, File file ) throws IOException
+			{
+				headers.add( CONTENT_DISPOSITION, "filename=\"" + file.getName() + "\"" );
+				return addInputStream( headers, new Stream.Input(
+					new FileInputStream( file ),
+					(int) Math.min( file.length(), Integer.MAX_VALUE ) ) );
+			}
+
+			public Builder addBinaryData( String name, byte[] data, String mime )
+			{
+				return addInputStream(
+					getParameterHeader( name, mime, null ),
+					new Stream.Input( new ByteArrayInputStream( data ), data.length ) );
+			}
+
+			public Builder addImage( String name, Bitmap image )
+			{
+				ByteArrayOutputStream output = new ByteArrayOutputStream();
+				image.compress( Bitmap.CompressFormat.PNG, 100, output );
+				return addBinaryData( name, output.toByteArray(), "image/png" );
+			}
+
+			public Builder addInputStream( Header headers, Stream.Input stream )
+			{
+				String prefix = contentType.getSeparatingBoundary() + headers.mkString( "; " ) + CRLF;
+				String suffix = CRLF;
+
+				int length = stream.getLength();
+
+				if( length >= 0 )
+				{
+					length += prefix.length();
+					length += suffix.length();
+				}
+
+				streams.add(
+					new Stream.Input(
+						new SequenceInputStream(
+							new SequenceInputStream( new ByteArrayInputStream( prefix.getBytes() ), stream ),
+							new ByteArrayInputStream( suffix.getBytes() ) ), length ) );
+
+				return this;
+			}
+
+			public Multipart build()
+			{
+				if( !streams.isEmpty() )
+				{
+					String suffix = contentType.getTerminatingBoundary();
+					InputStream stream = new ByteArrayInputStream( suffix.getBytes() );
+					int length = suffix.length();
+
+					for( Iterator<Stream.Input> iterator = streams.descendingIterator(); iterator.hasNext(); )
+					{
+						Stream.Input current = iterator.next();
+						stream = new SequenceInputStream( current, stream );
+
+						if( current.getLength() >= 0 && length >= 0 )
+						{
+							length += current.getLength();
+						}
+						else
+						{
+							length = -1;
+						}
+					}
+
+					return new Multipart( stream, length, contentType );
+				}
+				else
+				{
+					return new Multipart( new ByteArrayInputStream( new byte[] {} ), 0, contentType );
+				}
+			}
 		}
 	}
 }
