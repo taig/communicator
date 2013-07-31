@@ -68,11 +68,6 @@ public abstract class Request<R extends Response, E extends Event<R>> implements
 		return url;
 	}
 
-	public Header getHeader()
-	{
-		return headers;
-	}
-
 	public Request<R, E> setEvent( E event )
 	{
 		this.event = event == null ? null : event.getProxy();
@@ -141,6 +136,18 @@ public abstract class Request<R extends Response, E extends Event<R>> implements
 	public Request<R, E> useCache( boolean use )
 	{
 		this.cache = use;
+		return this;
+	}
+
+	public Request<R, E> putHeader( String key, Object... values )
+	{
+		headers.put( key, values );
+		return this;
+	}
+
+	public Request<R, E> addHeader( String key, Object... values )
+	{
+		headers.add( key, values );
 		return this;
 	}
 
