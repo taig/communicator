@@ -6,7 +6,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
 import android.widget.TextView;
-import com.taig.communicator.request.CookieStore;
+import com.taig.communicator.request.PersistedCookieStore;
 import com.taig.communicator.request.Response;
 import com.taig.communicator.result.Text;
 import com.taig.communicator.sample.R;
@@ -32,7 +32,7 @@ public class Cookies extends Activity
 				try
 				{
 					Response response = HEAD( "http://httpbin.org/cookies/set?user=Taig&pass=strawberries" ).request();
-					CookieStore store = new CookieStore( Cookies.this );
+					CookieStore store = new PersistedCookieStore( Cookies.this );
 					store.add( response );
 					store.add( null, "global", "cookie" );
 
