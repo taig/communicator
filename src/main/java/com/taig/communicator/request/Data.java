@@ -47,7 +47,7 @@ public abstract class Data<C extends ContentType> extends Countable.Stream.Input
 
 		public Form( Parameter parameters )
 		{
-			this( parameters, Request.CHARSET );
+			this( parameters, null );
 		}
 
 		public Form( Parameter parameters, String charset )

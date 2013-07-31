@@ -52,7 +52,16 @@ public abstract class Write<T> extends Read<T>
 
 			if( data instanceof Data.Form )
 			{
-				headers.put( CONTENT_ENCODING, ( (Data.Form) data ).getEncoding() );
+				String charset = ( (Data.Form) data ).getEncoding();
+
+				if( charset != null )
+				{
+					headers.put( CONTENT_ENCODING, ( (Data.Form) data ).getEncoding() );
+				}
+			}
+			else if( data instanceof Data.Multipart && data.getLength() >= 0 )
+			{
+				streamFixedLength( data.getLength() );
 			}
 		}
 		else
