@@ -41,16 +41,22 @@ public abstract class Data<C extends ContentType> extends Countable.Stream.Input
 	@Override
 	public void apply( HttpURLConnection connection )
 	{
-		connection.setRequestProperty( CONTENT_TYPE, contentType.toString() );
-
-		if( length > 0 )
+		if( connection.getRequestProperty( CONTENT_TYPE ) == null )
 		{
-			connection.setRequestProperty( CONTENT_LENGTH, String.valueOf( length ) );
-			connection.setFixedLengthStreamingMode( length );
+			connection.setRequestProperty( CONTENT_TYPE, contentType.toString() );
 		}
-		else
+
+		if( connection.getRequestProperty( CONTENT_LENGTH ) == null )
 		{
-			connection.setRequestProperty( CONTENT_LENGTH, "0" );
+			if( length > 0 )
+			{
+				connection.setRequestProperty( CONTENT_LENGTH, String.valueOf( length ) );
+				connection.setFixedLengthStreamingMode( length );
+			}
+			else
+			{
+				connection.setRequestProperty( CONTENT_LENGTH, "0" );
+			}
 		}
 	}
 
@@ -84,7 +90,7 @@ public abstract class Data<C extends ContentType> extends Countable.Stream.Input
 		{
 			super.apply( connection );
 
-			if( charset != null )
+			if( charset != null && connection.getRequestProperty( CONTENT_ENCODING ) == null )
 			{
 				connection.setRequestProperty( CONTENT_ENCODING, charset );
 			}
