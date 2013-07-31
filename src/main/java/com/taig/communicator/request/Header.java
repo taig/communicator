@@ -52,6 +52,12 @@ public class Header extends HashMap<String, Object[]>
 		super( headers );
 	}
 
+	public Header( String key, Object... values )
+	{
+		super( 1 );
+		put( key, values );
+	}
+
 	public Object[] put( String key, Object... values )
 	{
 		return super.put( key, values );
@@ -363,7 +369,7 @@ public class Header extends HashMap<String, Object[]>
 				@Override
 				public String toString()
 				{
-					return String.format( "%s, boundary=%s", super.toString(), boundary );
+					return super.toString() + "; boundary=" + boundary;
 				}
 			}
 		}

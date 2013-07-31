@@ -3,6 +3,7 @@ package com.taig.communicator.request;
 import com.taig.communicator.event.Event;
 import com.taig.communicator.event.Updateable;
 import com.taig.communicator.method.Method;
+import org.apache.http.protocol.HTTP;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,6 +14,7 @@ import java.net.URL;
 
 import static com.taig.communicator.request.Header.Request.CONTENT_LENGTH;
 import static com.taig.communicator.request.Header.Request.CONTENT_TYPE;
+import static org.apache.http.protocol.HTTP.CONTENT_ENCODING;
 
 public abstract class Write<T> extends Read<T>
 {
@@ -46,6 +48,11 @@ public abstract class Write<T> extends Read<T>
 			{
 				headers.put( CONTENT_LENGTH, "0" );
 				contentLength = -1;
+			}
+
+			if( data instanceof Data.Form )
+			{
+				headers.put( CONTENT_ENCODING, ( (Data.Form) data ).getEncoding() );
 			}
 		}
 		else

@@ -2,6 +2,8 @@ package com.taig.communicator.request;
 
 import android.graphics.Bitmap;
 import com.taig.communicator.io.Countable;
+import com.taig.communicator.method.Method;
+import com.taig.communicator.result.Text;
 
 import java.io.*;
 import java.net.URLConnection;
@@ -9,6 +11,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 
+import static com.taig.communicator.method.Method.POST;
 import static com.taig.communicator.request.Header.CRLF;
 import static com.taig.communicator.request.Header.Request.*;
 
@@ -35,6 +38,8 @@ public abstract class Data<C extends ContentType> extends Countable.Stream.Input
 
 	public static class Form extends Data<ContentType.Form>
 	{
+		protected String charset;
+
 		public Form( InputStream stream, int length )
 		{
 			super( stream, length, ContentType.FORM );
@@ -42,7 +47,18 @@ public abstract class Data<C extends ContentType> extends Countable.Stream.Input
 
 		public Form( Parameter parameters )
 		{
-			super( new ByteArrayInputStream( parameters.toString().getBytes() ), ContentType.FORM );
+			this( parameters, Request.CHARSET );
+		}
+
+		public Form( Parameter parameters, String charset )
+		{
+			super( new ByteArrayInputStream( parameters.mkString( charset ).getBytes() ), ContentType.FORM );
+			this.charset = charset;
+		}
+
+		public String getEncoding()
+		{
+			return charset;
 		}
 	}
 
@@ -92,24 +108,12 @@ public abstract class Data<C extends ContentType> extends Countable.Stream.Input
 				return headers;
 			}
 
-			public Builder addParameter( String key, Object value )
+			public Builder addParameter( Parameter parameters )
 			{
-				return addParameter( key, value, null );
+				return addParameter( parameters, null );
 			}
 
-			public Builder addParameter( String key, Object value, String charset )
-			{
-				Parameter parameter = new Parameter();
-				parameter.put( key, value );
-				return addParameters( parameter, charset );
-			}
-
-			public Builder addParameters( Parameter parameters )
-			{
-				return addParameters( parameters, null );
-			}
-
-			public Builder addParameters( Parameter parameters, String charset )
+			public Builder addParameter( Parameter parameters, String charset )
 			{
 				for( Map.Entry<String, Object> parameter : parameters.entrySet() )
 				{
@@ -148,7 +152,7 @@ public abstract class Data<C extends ContentType> extends Countable.Stream.Input
 					(int) Math.min( file.length(), Integer.MAX_VALUE ) ) );
 			}
 
-			public Builder addBinaryData( String name, byte[] data, String mime ) throws IOException
+			public Builder addBinaryData( String name, byte[] data, String mime )
 			{
 				return addInputStream(
 					getParameterHeader( name, mime, null ),
@@ -157,7 +161,9 @@ public abstract class Data<C extends ContentType> extends Countable.Stream.Input
 
 			public Builder addImage( String name, Bitmap image )
 			{
-				return this;
+				ByteArrayOutputStream output = new ByteArrayOutputStream();
+				image.compress( Bitmap.CompressFormat.PNG, 100, output );
+				return addBinaryData( name, output.toByteArray(), "image/png" );
 			}
 
 			public Builder addInputStream( Header headers, Stream.Input stream )
@@ -182,7 +188,7 @@ public abstract class Data<C extends ContentType> extends Countable.Stream.Input
 				return this;
 			}
 
-			public Data<ContentType.Multipart> build()
+			public Multipart build()
 			{
 				if( !streams.isEmpty() )
 				{
@@ -209,7 +215,7 @@ public abstract class Data<C extends ContentType> extends Countable.Stream.Input
 				}
 				else
 				{
-					return new Multipart( new ByteArrayInputStream( new byte[] { } ), 0, contentType );
+					return new Multipart( new ByteArrayInputStream( new byte[] {} ), 0, contentType );
 				}
 			}
 		}

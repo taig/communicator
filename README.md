@@ -97,7 +97,7 @@ Map<String, String> params = new HashMap<String, String>();
 params.put( "email", "my.taig@gmail.com" );
 params.put( "pass", "As if!" );
 
-POST( Text.class, "https://facebook.com/login.php", Data.from( params ) ).run();
+POST( Text.class, "https://facebook.com/login.php", new Data.Form( params ) ).run();
 ````
 
 The supplied data will then be properly encoded for transmission and the request headers `Content-Length` and
@@ -105,7 +105,11 @@ The supplied data will then be properly encoded for transmission and the request
 
 #### Binary Data (File Upload)
 
-TODO
+Since a `multipart/fom-data` request tends to have way more complex headers than a simple `form-url-encoded` request,
+*Communicator* provides a Builder to allow a simple header build up.
+
+````java
+````
 
 #### Cookies
 
