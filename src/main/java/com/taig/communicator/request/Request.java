@@ -8,8 +8,10 @@ import com.taig.communicator.method.Method;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.net.*;
+import java.util.List;
 
 import static com.taig.communicator.request.Header.Request.ACCEPT_CHARSET;
+import static com.taig.communicator.request.Header.Request.COOKIE;
 
 public abstract class Request<R extends Response, E extends Event<R>> implements Cancelable, Runnable
 {
@@ -154,6 +156,50 @@ public abstract class Request<R extends Response, E extends Event<R>> implements
 	{
 		headers.add( key, values );
 		return this;
+	}
+
+	public Request<R, E> putCookie( HttpCookie... cookies )
+	{
+		return putHeader( COOKIE, cookies );
+	}
+
+	public Request<R, E> putCookie( Response response )
+	{
+		return putCookie( (CookieStore) response.getCookies() );
+	}
+
+	public Request<R, E> putCookie( CookieStore store )
+	{
+		try
+		{
+			return putCookie( (HttpCookie[]) store.get( url.toURI() ).toArray() );
+		}
+		catch( URISyntaxException exception )
+		{
+			throw new RuntimeException( "Could not convert request URL '" + url + "' to an URI" );
+		}
+	}
+
+	public Request<R, E> addCookie( HttpCookie... cookies )
+	{
+		return addHeader( COOKIE, cookies );
+	}
+
+	public Request<R, E> addCookie( Response response )
+	{
+		return addCookie( (HttpCookie[]) response.getCookies().toArray() );
+	}
+
+	public Request<R, E> addCookie( CookieStore store )
+	{
+		try
+		{
+			return addCookie( (HttpCookie[]) store.get( url.toURI() ).toArray() );
+		}
+		catch( URISyntaxException exception )
+		{
+			throw new RuntimeException( "Could not convert request URL '" + url + "' to an URI" );
+		}
 	}
 
 	public HttpURLConnection connect() throws IOException
