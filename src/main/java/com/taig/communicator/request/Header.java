@@ -369,7 +369,7 @@ public class Header extends HashMap<String, Object[]>
 				@Override
 				public String toString()
 				{
-					return String.format( "%s, boundary=%s", super.toString(), boundary );
+					return super.toString() + "; boundary=" + boundary;
 				}
 			}
 		}
