@@ -1,6 +1,5 @@
 package com.taig.communicator.request;
 
-import android.util.Log;
 import com.taig.communicator.event.Event;
 import com.taig.communicator.event.State;
 import com.taig.communicator.io.Cancelable;
@@ -8,12 +7,9 @@ import com.taig.communicator.method.Method;
 
 import java.io.IOException;
 import java.io.InterruptedIOException;
-import java.net.CookieStore;
 import java.net.*;
-import java.util.*;
 
 import static com.taig.communicator.request.Header.Request.ACCEPT_CHARSET;
-import static com.taig.communicator.request.Header.Request.COOKIE;
 
 public abstract class Request<R extends Response, E extends Event<R>> implements Cancelable, Runnable
 {
