@@ -165,7 +165,7 @@ public abstract class Request<R extends Response, E extends Event<R>> implements
 
 	public Request<R, E> putCookie( Response response )
 	{
-		return putCookie( (CookieStore) response.getCookies() );
+		return putCookie( (HttpCookie[]) response.getCookies().toArray() );
 	}
 
 	public Request<R, E> putCookie( CookieStore store )
