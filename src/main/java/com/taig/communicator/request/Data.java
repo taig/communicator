@@ -6,6 +6,7 @@ import com.taig.communicator.method.Method;
 import com.taig.communicator.result.Text;
 
 import java.io.*;
+import java.net.HttpURLConnection;
 import java.net.URLConnection;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -14,8 +15,9 @@ import java.util.Map;
 import static com.taig.communicator.method.Method.POST;
 import static com.taig.communicator.request.Header.CRLF;
 import static com.taig.communicator.request.Header.Request.*;
+import static org.apache.http.protocol.HTTP.CONTENT_ENCODING;
 
-public abstract class Data<C extends ContentType> extends Countable.Stream.Input
+public abstract class Data<C extends ContentType> extends Countable.Stream.Input implements Appliable
 {
 	protected C contentType;
 
@@ -36,6 +38,28 @@ public abstract class Data<C extends ContentType> extends Countable.Stream.Input
 		return contentType;
 	}
 
+	@Override
+	public void apply( HttpURLConnection connection )
+	{
+		if( connection.getRequestProperty( CONTENT_TYPE ) == null )
+		{
+			connection.setRequestProperty( CONTENT_TYPE, contentType.toString() );
+		}
+
+		if( connection.getRequestProperty( CONTENT_LENGTH ) == null )
+		{
+			if( length > 0 )
+			{
+				connection.setRequestProperty( CONTENT_LENGTH, String.valueOf( length ) );
+				connection.setFixedLengthStreamingMode( length );
+			}
+			else
+			{
+				connection.setRequestProperty( CONTENT_LENGTH, "0" );
+			}
+		}
+	}
+
 	public static class Form extends Data<ContentType.Form>
 	{
 		protected String charset;
@@ -47,7 +71,7 @@ public abstract class Data<C extends ContentType> extends Countable.Stream.Input
 
 		public Form( Parameter parameters )
 		{
-			this( parameters, Request.CHARSET );
+			this( parameters, null );
 		}
 
 		public Form( Parameter parameters, String charset )
@@ -59,6 +83,17 @@ public abstract class Data<C extends ContentType> extends Countable.Stream.Input
 		public String getEncoding()
 		{
 			return charset;
+		}
+
+		@Override
+		public void apply( HttpURLConnection connection )
+		{
+			super.apply( connection );
+
+			if( charset != null && connection.getRequestProperty( CONTENT_ENCODING ) == null )
+			{
+				connection.setRequestProperty( CONTENT_ENCODING, charset );
+			}
 		}
 	}
 

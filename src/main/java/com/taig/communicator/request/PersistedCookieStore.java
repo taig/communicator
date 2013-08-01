@@ -4,30 +4,31 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
 
+import java.net.CookieStore;
 import java.net.HttpCookie;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
 
-public class CookieStore implements java.net.CookieStore
+public class PersistedCookieStore implements CookieStore
 {
-	protected static final String TAG = CookieStore.class.getName();
+	protected static final String TAG = PersistedCookieStore.class.getName();
 
 	protected static final String WILDCARD = "*";
 
 	protected SharedPreferences preferences;
 
-	public CookieStore( Context context )
+	public PersistedCookieStore( Context context )
 	{
-		this( context, "com.taig.communicator.CookieStore", Context.MODE_PRIVATE );
+		this( context, "com.taig.communicator.PersistedCookieStore", Context.MODE_PRIVATE );
 	}
 
-	public CookieStore( Context context, String preference, int mode )
+	public PersistedCookieStore( Context context, String preference, int mode )
 	{
 		this( context.getSharedPreferences( preference, mode ) );
 	}
 
-	public CookieStore( SharedPreferences preferences )
+	public PersistedCookieStore( SharedPreferences preferences )
 	{
 		this.preferences = preferences;
 	}

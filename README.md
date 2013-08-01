@@ -41,8 +41,9 @@ the source's URL and the server's response headers.
 ### Custom Parser
 
 A Parser is responsible for converting the connection's `InputStream` into something that makes sense for you.
-If you take a look at `com.taig.communicator.result` you will find two predefined Parsers: `Text` for converting the
-stream into a `String` and `Image` to get an `android.graphics.Bitmap`.
+If you take a look at `com.taig.communicator.result` you will find three predefined Parsers: `Text` for converting the
+stream into a `String`, `Image` to get an `android.graphics.Bitmap` and `Ignore` in case you don't care about the server
+response.
 
 In order to create your own Parser (e.g. for processing HTML or JSON) all you have to do is creating a new class that
 implements the `com.taig.communicator.result.Parser` interface.
@@ -126,10 +127,12 @@ Last but not least you can also add cookies to a request header. The common user
 Response<Void> response = HEAD( "https://www.google.com" ).request();
 
 GET( Text.class, "https://www.google.com" )
-    .setCookies( response.getCookies() )                        // Set a List of HttpCookies.
-    .setCookies( response )                                     // Use cookies from another response.
+    .putCookie( response )                                      // Use cookies from another response.
     .addCookie( new HttpCookie( "remember_me", "true" )         // Set single cookies.
-    .addCookie( "session", "1234" )                             // Do whatever the fuck you want.
+    .addHeader(                                                 // Do whatever the fuck you want.
+        COOKIE,
+        new HttpCookie( "js", "true" ),
+        new HttpCookie( "flash", "false" ) )
     .run();
 ````
 
@@ -137,12 +140,12 @@ Furthermore *Communicator* comes with a `CookieStore` implementation that persis
 `SharedPreferences`. This is very useful if you have to store cookies beyond an app's lifecycle (e.g. a session cookie).
 
 ````java
-CookieStore store = new CookieStore( MyActivity.this );
+CookieStore store = new PersistedCookieStore( MyActivity.this );
 Response response = HEAD( "https://www.google.com" ).request();
 
 store.add( response );                                          // Persist retrieved cookies.
 GET( Text.class, "https://www.google.com" )                     // Send persisted cookies that are associated with
-    .setCookies( store )                                        // "google.com" along with the request.
+    .putCookie( store )                                        // "google.com" along with the request.
     .run();
 ````
 

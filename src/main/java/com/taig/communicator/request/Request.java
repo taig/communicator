@@ -1,6 +1,5 @@
 package com.taig.communicator.request;
 
-import android.util.Log;
 import com.taig.communicator.event.Event;
 import com.taig.communicator.event.State;
 import com.taig.communicator.io.Cancelable;
@@ -8,9 +7,8 @@ import com.taig.communicator.method.Method;
 
 import java.io.IOException;
 import java.io.InterruptedIOException;
-import java.net.CookieStore;
 import java.net.*;
-import java.util.*;
+import java.util.List;
 
 import static com.taig.communicator.request.Header.Request.ACCEPT_CHARSET;
 import static com.taig.communicator.request.Header.Request.COOKIE;
@@ -47,7 +45,7 @@ public abstract class Request<R extends Response, E extends Event<R>> implements
 
 	protected boolean userInteraction = false;
 
-	public final Header headers = new Header();
+	protected Header headers = new Header();
 
 	public Request( Method.Type method, URL url, E event )
 	{
@@ -70,6 +68,11 @@ public abstract class Request<R extends Response, E extends Event<R>> implements
 	public URL getUrl()
 	{
 		return url;
+	}
+
+	public Header getHeader()
+	{
+		return headers;
 	}
 
 	public Request<R, E> setEvent( E event )
@@ -141,6 +144,66 @@ public abstract class Request<R extends Response, E extends Event<R>> implements
 	{
 		this.cache = use;
 		return this;
+	}
+
+	public Request<R, E> putHeader( String key, Object... values )
+	{
+		headers.put( key, values );
+		return this;
+	}
+
+	public Request<R, E> addHeader( String key, Object... values )
+	{
+		headers.add( key, values );
+		return this;
+	}
+
+	public Request<R, E> putCookie( HttpCookie... cookies )
+	{
+		return putHeader( COOKIE, cookies );
+	}
+
+	public Request<R, E> putCookie( Response response )
+	{
+		List<HttpCookie> cookies = response.getCookies();
+		return putCookie( cookies.toArray( new HttpCookie[cookies.size()] ) );
+	}
+
+	public Request<R, E> putCookie( CookieStore store )
+	{
+		try
+		{
+			List<HttpCookie> cookies = store.get( url.toURI() );
+			return addCookie( cookies.toArray( new HttpCookie[cookies.size()] ) );
+		}
+		catch( URISyntaxException exception )
+		{
+			throw new RuntimeException( "Could not convert request URL '" + url + "' to an URI" );
+		}
+	}
+
+	public Request<R, E> addCookie( HttpCookie... cookies )
+	{
+		return addHeader( COOKIE, cookies );
+	}
+
+	public Request<R, E> addCookie( Response response )
+	{
+		List<HttpCookie> cookies = response.getCookies();
+		return addCookie( cookies.toArray( new HttpCookie[cookies.size()] ) );
+	}
+
+	public Request<R, E> addCookie( CookieStore store )
+	{
+		try
+		{
+			List<HttpCookie> cookies = store.get( url.toURI() );
+			return addCookie( cookies.toArray( new HttpCookie[cookies.size()] ) );
+		}
+		catch( URISyntaxException exception )
+		{
+			throw new RuntimeException( "Could not convert request URL '" + url + "' to an URI" );
+		}
 	}
 
 	public HttpURLConnection connect() throws IOException

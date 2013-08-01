@@ -23,7 +23,7 @@ public abstract class Write<T> extends Read<T>
 	public Write( Method.Type method, URL url, Data data, Event.Payload<T> event )
 	{
 		super( method, url, event );
-		setData( data );
+		this.data = data;
 	}
 
 	public Data getData()
@@ -31,44 +31,16 @@ public abstract class Write<T> extends Read<T>
 		return data;
 	}
 
-	public Write<T> setData( Data data )
-	{
-		this.data = data;
-
-		if( data != null )
-		{
-			headers.put( CONTENT_TYPE, data.getContentType().toString() );
-
-			if( data.getLength() > 0 )
-			{
-				headers.put( CONTENT_LENGTH, String.valueOf( data.getLength() ) );
-				contentLength = data.getLength();
-			}
-			else
-			{
-				headers.put( CONTENT_LENGTH, "0" );
-				contentLength = -1;
-			}
-
-			if( data instanceof Data.Form )
-			{
-				headers.put( CONTENT_ENCODING, ( (Data.Form) data ).getEncoding() );
-			}
-		}
-		else
-		{
-			headers.remove( CONTENT_TYPE );
-			headers.put( CONTENT_LENGTH, "0" );
-			contentLength = -1;
-		}
-
-		return this;
-	}
-
 	@Override
 	public HttpURLConnection connect() throws IOException
 	{
 		HttpURLConnection connection = super.connect();
+
+		if( data != null )
+		{
+			data.apply( connection );
+		}
+
 		connection.setDoOutput( true );
 		return connection;
 	}
