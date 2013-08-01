@@ -17,8 +17,6 @@ public abstract class Request<R extends Response, E extends Event<R>> implements
 {
 	public static final String CHARSET = "UTF-8";
 
-	protected static final String TAG = Request.class.getName();
-
 	protected Method.Type method;
 
 	protected URL url;
@@ -160,19 +158,21 @@ public abstract class Request<R extends Response, E extends Event<R>> implements
 
 	public Request<R, E> putCookie( HttpCookie... cookies )
 	{
-		return putHeader( COOKIE, cookies );
+		return putHeader( COOKIE, (Object[]) cookies );
 	}
 
 	public Request<R, E> putCookie( Response response )
 	{
-		return putCookie( (CookieStore) response.getCookies() );
+		List<HttpCookie> cookies = response.getCookies();
+		return putCookie( cookies.toArray( new HttpCookie[cookies.size()] ) );
 	}
 
 	public Request<R, E> putCookie( CookieStore store )
 	{
 		try
 		{
-			return putCookie( (HttpCookie[]) store.get( url.toURI() ).toArray() );
+			List<HttpCookie> cookies = store.get( url.toURI() );
+			return addCookie( cookies.toArray( new HttpCookie[cookies.size()] ) );
 		}
 		catch( URISyntaxException exception )
 		{
@@ -182,19 +182,21 @@ public abstract class Request<R extends Response, E extends Event<R>> implements
 
 	public Request<R, E> addCookie( HttpCookie... cookies )
 	{
-		return addHeader( COOKIE, cookies );
+		return addHeader( COOKIE, (Object[]) cookies );
 	}
 
 	public Request<R, E> addCookie( Response response )
 	{
-		return addCookie( (HttpCookie[]) response.getCookies().toArray() );
+		List<HttpCookie> cookies = response.getCookies();
+		return addCookie( cookies.toArray( new HttpCookie[cookies.size()] ) );
 	}
 
 	public Request<R, E> addCookie( CookieStore store )
 	{
 		try
 		{
-			return addCookie( (HttpCookie[]) store.get( url.toURI() ).toArray() );
+			List<HttpCookie> cookies = store.get( url.toURI() );
+			return addCookie( cookies.toArray( new HttpCookie[cookies.size()] ) );
 		}
 		catch( URISyntaxException exception )
 		{
