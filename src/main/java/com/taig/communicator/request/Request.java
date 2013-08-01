@@ -17,8 +17,6 @@ public abstract class Request<R extends Response, E extends Event<R>> implements
 {
 	public static final String CHARSET = "UTF-8";
 
-	protected static final String TAG = Request.class.getName();
-
 	protected Method.Type method;
 
 	protected URL url;
