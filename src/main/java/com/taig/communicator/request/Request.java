@@ -158,7 +158,7 @@ public abstract class Request<R extends Response, E extends Event<R>> implements
 
 	public Request<R, E> putCookie( HttpCookie... cookies )
 	{
-		return putHeader( COOKIE, cookies );
+		return putHeader( COOKIE, (Object[]) cookies );
 	}
 
 	public Request<R, E> putCookie( Response response )
@@ -182,7 +182,7 @@ public abstract class Request<R extends Response, E extends Event<R>> implements
 
 	public Request<R, E> addCookie( HttpCookie... cookies )
 	{
-		return addHeader( COOKIE, cookies );
+		return addHeader( COOKIE, (Object[]) cookies );
 	}
 
 	public Request<R, E> addCookie( Response response )
