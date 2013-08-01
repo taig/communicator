@@ -165,14 +165,16 @@ public abstract class Request<R extends Response, E extends Event<R>> implements
 
 	public Request<R, E> putCookie( Response response )
 	{
-		return putCookie( (HttpCookie[]) response.getCookies().toArray() );
+		List<HttpCookie> cookies = response.getCookies();
+		return putCookie( cookies.toArray( new HttpCookie[cookies.size()] ) );
 	}
 
 	public Request<R, E> putCookie( CookieStore store )
 	{
 		try
 		{
-			return putCookie( (HttpCookie[]) store.get( url.toURI() ).toArray() );
+			List<HttpCookie> cookies = store.get( url.toURI() );
+			return addCookie( cookies.toArray( new HttpCookie[cookies.size()] ) );
 		}
 		catch( URISyntaxException exception )
 		{
@@ -187,14 +189,16 @@ public abstract class Request<R extends Response, E extends Event<R>> implements
 
 	public Request<R, E> addCookie( Response response )
 	{
-		return addCookie( (HttpCookie[]) response.getCookies().toArray() );
+		List<HttpCookie> cookies = response.getCookies();
+		return addCookie( cookies.toArray( new HttpCookie[cookies.size()] ) );
 	}
 
 	public Request<R, E> addCookie( CookieStore store )
 	{
 		try
 		{
-			return addCookie( (HttpCookie[]) store.get( url.toURI() ).toArray() );
+			List<HttpCookie> cookies = store.get( url.toURI() );
+			return addCookie( cookies.toArray( new HttpCookie[cookies.size()] ) );
 		}
 		catch( URISyntaxException exception )
 		{
