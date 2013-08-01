@@ -8,6 +8,7 @@ import android.view.Gravity;
 import android.widget.TextView;
 import com.taig.communicator.event.Event;
 import com.taig.communicator.request.Data;
+import com.taig.communicator.request.Parameter;
 import com.taig.communicator.request.Response;
 import com.taig.communicator.result.Text;
 import com.taig.communicator.sample.R;
@@ -35,12 +36,12 @@ public class FormSend extends Activity
 			{
 				try
 				{
-					Map<String, String> params = new HashMap<String, String>();
+					Parameter params = new Parameter();
 					params.put( "username", "taig" );
 					params.put( "password", "strawberry" );
 					params.put( "remember", "true" );
 
-					POST( Text.class, "http://httpbin.org/post", Data.from( params ), new Event.Payload<String>()
+					POST( Text.class, "http://httpbin.org/post", new Data.Form( params, "utf-8" ), new Event.Payload<String>()
 					{
 						@Override
 						protected void onSuccess( String content )
