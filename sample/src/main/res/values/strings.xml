@@ -1,9 +1,12 @@
 <resources>
+
     <string name="app_name">CommunicatorSample</string>
 	<string name="simple_request">Simple request</string>
 	<string name="events">Events</string>
 	<string name="custom_result_parser">Custom Result Parser</string>
 	<string name="form_send">Send Form Data</string>
 	<string name="cookies">Cookies</string>
+	<string name="upload">Upload</string>
 	<string name="cancel">Cancel</string>
+
 </resources>
