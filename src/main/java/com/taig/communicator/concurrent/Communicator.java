@@ -1,14 +1,23 @@
 package com.taig.communicator.concurrent;
 
-import java.util.Deque;
+import com.taig.communicator.io.Cancelable;
+import com.taig.communicator.request.Request;
+
+import java.io.Closeable;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.AbstractExecutorService;
+import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
 
-public class Communicator extends AbstractExecutorService
+public class Communicator implements Executor, Cancelable
 {
-	protected int connections;
+	protected QueuedPool<Request> pool;
 
-	protected Deque<Runnable> queue;
+	protected Thread[] threads;
+
+	protected boolean closed = false;
 
 	public Communicator( int connections )
 	{
@@ -17,55 +26,98 @@ public class Communicator extends AbstractExecutorService
 			throw new IllegalArgumentException( "At least 1 connection has to be granted" );
 		}
 
-		this.connections = connections;
-		this.queue = new LinkedBlockingDeque<Runnable>();
+		this.pool = new QueuedPool<Request>( connections );
+		this.threads = new Thread[connections];
+
+		for( int i = 0; i < connections; i++ )
+		{
+			threads[i] = new Thread();
+			threads[i].start();
+		}
 	}
 
-	@Override
-	public void shutdown()
+	public void stop()
 	{
+		closed = true;
+		pool.clear();
 	}
 
 	@Override
-	public List<Runnable> shutdownNow()
+	public void cancel()
 	{
-		return null;
+		stop();
+
+		for( Request request : pool.getPool() )
+		{
+			request.cancel();
+		}
 	}
 
-	@Override
-	public boolean isShutdown()
+	public boolean isClosed()
 	{
-		return false;
+		return closed;
 	}
 
-	@Override
 	public boolean isTerminated()
 	{
-		return false;
-	}
+		for( Thread thread : threads )
+		{
+			if( thread.isAlive() )
+			{
+				return false;
+			}
+		}
 
-	@Override
-	public boolean awaitTermination( long timeout, TimeUnit unit ) throws InterruptedException
-	{
-		return false;
+		return true;
 	}
 
 	@Override
 	public void execute( Runnable runnable )
 	{
+		if( runnable instanceof Request )
+		{
+			request( (Request) runnable );
+		}
+		else
+		{
+			throw new IllegalArgumentException( "Please provide a " + Request.class.getName() + " object" );
+		}
+	}
+
+	public void request( Request request )
+	{
+		pool.add( request );
+	}
+
+	public void request( Request request, boolean skipQueue )
+	{
+		pool.add( request, skipQueue );
 	}
 
 	protected class Thread extends java.lang.Thread
 	{
-		public Thread( Runnable runnable )
-		{
-			super( runnable );
-		}
+		protected Request request;
 
 		@Override
 		public void run()
 		{
-			super.run();
+			try
+			{
+				while( !closed )
+				{
+					request = pool.promote();
+					request.run();
+					pool.demote( request );
+					request = null;
+				}
+			}
+			catch( InterruptedException exception )
+			{
+				if( request != null )
+				{
+					request.cancel();
+				}
+			}
 		}
 	}
 }
