@@ -56,7 +56,7 @@ public abstract class Read<T> extends Request<Response.Payload<T>, Event.Payload
 
 	protected class Receive extends Updateable.Input
 	{
-		public Receive( InputStream stream, int length )
+		public Receive( InputStream stream, long length )
 		{
 			super( stream, length );
 		}

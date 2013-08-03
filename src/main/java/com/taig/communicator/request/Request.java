@@ -320,13 +320,13 @@ public abstract class Request<R extends Response, E extends Event<R>> implements
 			}
 		}
 
-		public void send( int total )
+		public void send( long total )
 		{
 			current = State.SEND;
 			sending( 0, total );
 		}
 
-		public void sending( int current, int total )
+		public void sending( int current, long total )
 		{
 			if( event != null )
 			{
@@ -340,7 +340,7 @@ public abstract class Request<R extends Response, E extends Event<R>> implements
 			receiving( 0, total );
 		}
 
-		public void receiving( int current, int total )
+		public void receiving( int current, long total )
 		{
 			if( event != null )
 			{

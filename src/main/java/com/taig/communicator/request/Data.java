@@ -1,9 +1,8 @@
 package com.taig.communicator.request;
 
+import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
 import com.taig.communicator.io.Countable;
-import com.taig.communicator.method.Method;
-import com.taig.communicator.result.Text;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -27,7 +26,7 @@ public abstract class Data<C extends ContentType> extends Countable.Stream.Input
 		this.contentType = contentType;
 	}
 
-	public Data( InputStream stream, int length, C contentType )
+	public Data( InputStream stream, long length, C contentType )
 	{
 		super( stream, length );
 		this.contentType = contentType;
@@ -51,7 +50,15 @@ public abstract class Data<C extends ContentType> extends Countable.Stream.Input
 			if( length > 0 )
 			{
 				connection.setRequestProperty( CONTENT_LENGTH, String.valueOf( length ) );
-				connection.setFixedLengthStreamingMode( length );
+
+				if( length <= Integer.MAX_VALUE )
+				{
+					connection.setFixedLengthStreamingMode( (int) length );
+				}
+				else
+				{
+					connection.setChunkedStreamingMode( 0 );
+				}
 			}
 			else
 			{
@@ -64,7 +71,7 @@ public abstract class Data<C extends ContentType> extends Countable.Stream.Input
 	{
 		protected String charset;
 
-		public Form( InputStream stream, int length )
+		public Form( InputStream stream, long length )
 		{
 			super( stream, length, ContentType.FORM );
 		}
@@ -99,7 +106,7 @@ public abstract class Data<C extends ContentType> extends Countable.Stream.Input
 
 	public static class Multipart extends Data<ContentType.Multipart>
 	{
-		public Multipart( InputStream stream, int length, ContentType.Multipart contentType )
+		public Multipart( InputStream stream, long length, ContentType.Multipart contentType )
 		{
 			super( stream, length, contentType );
 		}
@@ -122,22 +129,36 @@ public abstract class Data<C extends ContentType> extends Countable.Stream.Input
 
 			public static Header getParameterHeader( String name )
 			{
-				return getParameterHeader( name, null, null );
-			}
-
-			public static Header getParameterHeader( String name, String mime, String charset )
-			{
 				Header headers = new Header();
 				headers.put( CONTENT_DISPOSITION, "form-data", "name=\"" + name + "\"" );
+				return headers;
+			}
+
+			public static Header getParameterHeader( String name, String charset )
+			{
+				Header headers = getParameterHeader( name );
+				headers.put( CONTENT_TYPE, "text/plain" );
+
+				if( charset != null )
+				{
+					headers.add( CONTENT_TYPE, "charset=" + charset );
+				}
+
+				return headers;
+			}
+
+			public static Header getParameterHeader( String name, String mime, boolean binary )
+			{
+				Header headers = getParameterHeader( name );
 
 				if( mime != null )
 				{
 					headers.put( CONTENT_TYPE, mime );
 				}
 
-				if( charset != null )
+				if( binary )
 				{
-					headers.add( CONTENT_TYPE, "charset=" + charset );
+					headers.put( CONTENT_TRANSFER_ENCODING, "binary" );
 				}
 
 				return headers;
@@ -155,7 +176,7 @@ public abstract class Data<C extends ContentType> extends Countable.Stream.Input
 					String value = parameter.getValue().toString();
 
 					addInputStream(
-						getParameterHeader( parameter.getKey(), "text/plain", charset ),
+						getParameterHeader( parameter.getKey(), charset ),
 						new Stream.Input( new ByteArrayInputStream( value.getBytes() ), value.length() ) );
 				}
 
@@ -169,28 +190,53 @@ public abstract class Data<C extends ContentType> extends Countable.Stream.Input
 
 			public Builder addBinaryFile( String name, File file, String mime ) throws IOException
 			{
-				Header headers = getParameterHeader( name, mime, null );
-				headers.put( CONTENT_TRANSFER_ENCODING, "binary" );
-				return addFile( headers, file );
+				return addFile( getParameterHeader( name, mime, true ), file );
+			}
+
+			public Builder addBinaryFile( String name, String fileName, AssetFileDescriptor file, String mime ) throws IOException
+			{
+				return addFile( getParameterHeader( name, mime, true ), fileName, file.getLength(), file.createInputStream() );
+			}
+
+			public Builder addBinaryFile( String name, String fileName, long length, InputStream stream, String mime ) throws IOException
+			{
+				return addFile( getParameterHeader( name, mime, true ), fileName, length, stream );
 			}
 
 			public Builder addTextFile( String name, File file, String charset ) throws IOException
 			{
-				return addFile( getParameterHeader( name, "text/plain", charset ), file );
+				return addFile( getParameterHeader( name, charset ), file );
+			}
+
+			public Builder addTextFile( String name, String fileName, AssetFileDescriptor file, String charset ) throws IOException
+			{
+				return addFile( getParameterHeader( name, charset ), fileName, file.getLength(), file.createInputStream() );
+			}
+
+			public Builder addTextFile( String name, String fileName, long length, InputStream stream, String charset ) throws IOException
+			{
+				return addFile( getParameterHeader( name, charset ), fileName, length, stream );
 			}
 
 			public Builder addFile( Header headers, File file ) throws IOException
 			{
-				headers.add( CONTENT_DISPOSITION, "filename=\"" + file.getName() + "\"" );
-				return addInputStream( headers, new Stream.Input(
-					new FileInputStream( file ),
-					(int) Math.min( file.length(), Integer.MAX_VALUE ) ) );
+				return addFile( headers, file.getName(), file.length(), new FileInputStream( file ) );
+			}
+
+			public Builder addFile( Header headers, String fileName, long length, InputStream stream ) throws IOException
+			{
+				if( fileName != null )
+				{
+					headers.add( CONTENT_DISPOSITION, "filename=\"" + fileName + "\"" );
+				}
+
+				return addInputStream( headers, new Stream.Input( stream, length ) );
 			}
 
 			public Builder addBinaryData( String name, byte[] data, String mime )
 			{
 				return addInputStream(
-					getParameterHeader( name, mime, null ),
+					getParameterHeader( name, mime, true ),
 					new Stream.Input( new ByteArrayInputStream( data ), data.length ) );
 			}
 
@@ -206,7 +252,7 @@ public abstract class Data<C extends ContentType> extends Countable.Stream.Input
 				String prefix = contentType.getSeparatingBoundary() + headers.mkString( "; " ) + CRLF;
 				String suffix = CRLF;
 
-				int length = stream.getLength();
+				long length = stream.getLength();
 
 				if( length >= 0 )
 				{
@@ -229,7 +275,7 @@ public abstract class Data<C extends ContentType> extends Countable.Stream.Input
 				{
 					String suffix = contentType.getTerminatingBoundary();
 					InputStream stream = new ByteArrayInputStream( suffix.getBytes() );
-					int length = suffix.length();
+					long length = suffix.length();
 
 					for( Iterator<Stream.Input> iterator = streams.descendingIterator(); iterator.hasNext(); )
 					{

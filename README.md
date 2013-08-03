@@ -91,7 +91,7 @@ to interact with you app's user interface (e.g. updating a `ProgressBar`) withou
 
 In order to add form data (or more generally spoken key/value pairs) to the request body you have to specify the `data`
 argument in a `POST` or `PUT` request. More precisely *Communicator* demands you to supply your key/value pairs as
-`Map<String, String>`.
+`com.taig.communicator.request.Parameter`, a subclass of `Map<String, String>`.
 
 ````java
 Parameter params = new Parameter();
@@ -140,12 +140,12 @@ Furthermore *Communicator* comes with a `CookieStore` implementation that persis
 `SharedPreferences`. This is very useful if you have to store cookies beyond an app's lifecycle (e.g. a session cookie).
 
 ````java
-CookieStore store = new PersistedCookieStore( MyActivity.this );
+PersistedCookieStore store = new PersistedCookieStore( MyActivity.this );
 Response response = HEAD( "https://www.google.com" ).request();
 
 store.add( response );                                          // Persist retrieved cookies.
 GET( Text.class, "https://www.google.com" )                     // Send persisted cookies that are associated with
-    .putCookie( store )                                        // "google.com" along with the request.
+    .putCookie( store )                                         // "google.com" along with the request.
     .run();
 ````
 
