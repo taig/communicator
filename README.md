@@ -145,7 +145,7 @@ Response response = HEAD( "https://www.google.com" ).request();
 
 store.add( response );                                          // Persist retrieved cookies.
 GET( Text.class, "https://www.google.com" )                     // Send persisted cookies that are associated with
-    .putCookie( store )                                        // "google.com" along with the request.
+    .putCookie( store )                                         // "google.com" along with the request.
     .run();
 ````
 
