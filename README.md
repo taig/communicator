@@ -140,7 +140,7 @@ Furthermore *Communicator* comes with a `CookieStore` implementation that persis
 `SharedPreferences`. This is very useful if you have to store cookies beyond an app's lifecycle (e.g. a session cookie).
 
 ````java
-CookieStore store = new PersistedCookieStore( MyActivity.this );
+PersistedCookieStore store = new PersistedCookieStore( MyActivity.this );
 Response response = HEAD( "https://www.google.com" ).request();
 
 store.add( response );                                          // Persist retrieved cookies.
