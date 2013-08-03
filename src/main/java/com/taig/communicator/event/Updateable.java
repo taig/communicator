@@ -16,7 +16,7 @@ public interface Updateable
 
 		protected int read = 0;
 
-		public Input( InputStream stream, int length )
+		public Input( InputStream stream, long length )
 		{
 			super( stream, length );
 		}
@@ -97,7 +97,7 @@ public interface Updateable
 
 		protected int written = 0;
 
-		public Output( OutputStream stream, int length )
+		public Output( OutputStream stream, long length )
 		{
 			super( stream, length );
 		}

@@ -1,10 +1,7 @@
 package com.taig.communicator.request;
 
-import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
 import com.taig.communicator.io.Countable;
-import com.taig.communicator.method.Method;
-import com.taig.communicator.result.Text;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -28,7 +25,7 @@ public abstract class Data<C extends ContentType> extends Countable.Stream.Input
 		this.contentType = contentType;
 	}
 
-	public Data( InputStream stream, int length, C contentType )
+	public Data( InputStream stream, long length, C contentType )
 	{
 		super( stream, length );
 		this.contentType = contentType;
@@ -52,7 +49,15 @@ public abstract class Data<C extends ContentType> extends Countable.Stream.Input
 			if( length > 0 )
 			{
 				connection.setRequestProperty( CONTENT_LENGTH, String.valueOf( length ) );
-				connection.setFixedLengthStreamingMode( length );
+
+				if( length <= Integer.MAX_VALUE )
+				{
+					connection.setFixedLengthStreamingMode( (int) length );
+				}
+				else
+				{
+					connection.setChunkedStreamingMode( 0 );
+				}
 			}
 			else
 			{
@@ -65,7 +70,7 @@ public abstract class Data<C extends ContentType> extends Countable.Stream.Input
 	{
 		protected String charset;
 
-		public Form( InputStream stream, int length )
+		public Form( InputStream stream, long length )
 		{
 			super( stream, length, ContentType.FORM );
 		}
@@ -100,7 +105,7 @@ public abstract class Data<C extends ContentType> extends Countable.Stream.Input
 
 	public static class Multipart extends Data<ContentType.Multipart>
 	{
-		public Multipart( InputStream stream, int length, ContentType.Multipart contentType )
+		public Multipart( InputStream stream, long length, ContentType.Multipart contentType )
 		{
 			super( stream, length, contentType );
 		}
@@ -204,11 +209,7 @@ public abstract class Data<C extends ContentType> extends Countable.Stream.Input
 
 			public Builder addFile( Header headers, File file ) throws IOException
 			{
-				return addFile(
-					headers,
-					file.getName(),
-					(int) Math.min( file.length(), Integer.MAX_VALUE ),
-					new FileInputStream( file ) );
+				return addFile( headers, file.getName(), file.length(), new FileInputStream( file ) );
 			}
 
 			public Builder addFile( Header headers, String fileName, long length, InputStream stream ) throws IOException
@@ -218,7 +219,7 @@ public abstract class Data<C extends ContentType> extends Countable.Stream.Input
 					headers.add( CONTENT_DISPOSITION, "filename=\"" + fileName + "\"" );
 				}
 
-				return addInputStream( headers, new Stream.Input( stream, (int) Math.min( length, Integer.MAX_VALUE ) ) );
+				return addInputStream( headers, new Stream.Input( stream, length ) );
 			}
 
 			public Builder addBinaryData( String name, byte[] data, String mime )
@@ -240,7 +241,7 @@ public abstract class Data<C extends ContentType> extends Countable.Stream.Input
 				String prefix = contentType.getSeparatingBoundary() + headers.mkString( "; " ) + CRLF;
 				String suffix = CRLF;
 
-				int length = stream.getLength();
+				long length = stream.getLength();
 
 				if( length >= 0 )
 				{
@@ -263,7 +264,7 @@ public abstract class Data<C extends ContentType> extends Countable.Stream.Input
 				{
 					String suffix = contentType.getTerminatingBoundary();
 					InputStream stream = new ByteArrayInputStream( suffix.getBytes() );
-					int length = suffix.length();
+					long length = suffix.length();
 
 					for( Iterator<Stream.Input> iterator = streams.descendingIterator(); iterator.hasNext(); )
 					{

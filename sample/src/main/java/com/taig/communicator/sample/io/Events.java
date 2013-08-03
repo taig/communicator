@@ -54,7 +54,7 @@ public class Events extends Interaction
 			}
 
 			@Override
-			protected void onReceive( int current, int total )
+			protected void onReceive( long current, long total )
 			{
 				getTextView().setText( "RECEIVE (" + current + " / " + total + " kB)" );
 			}

@@ -7,7 +7,7 @@ import java.io.OutputStream;
 
 public interface Countable
 {
-	public int getLength();
+	public long getLength();
 
 	public interface Stream
 	{
@@ -15,7 +15,7 @@ public interface Countable
 		{
 			protected InputStream stream;
 
-			protected int length;
+			protected long length;
 
 			public Input( InputStream stream )
 			{
@@ -27,14 +27,14 @@ public interface Countable
 				this( stream, stream.available() );
 			}
 
-			public Input( InputStream stream, int length )
+			public Input( InputStream stream, long length )
 			{
 				this.stream = stream;
 				this.length = length;
 			}
 
 			@Override
-			public int getLength()
+			public long getLength()
 			{
 				return length;
 			}
@@ -98,21 +98,21 @@ public interface Countable
 		{
 			protected OutputStream stream;
 
-			protected int length;
+			protected long length;
 
 			public Output( OutputStream stream )
 			{
 				this( stream, -1 );
 			}
 
-			public Output( OutputStream stream, int length )
+			public Output( OutputStream stream, long length )
 			{
 				this.stream = stream;
 				this.length = length;
 			}
 
 			@Override
-			public int getLength()
+			public long getLength()
 			{
 				return length;
 			}
