@@ -11,7 +11,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 
-import static com.taig.communicator.method.Method.POST;
 import static com.taig.communicator.request.Header.CRLF;
 import static com.taig.communicator.request.Header.Request.*;
 import static org.apache.http.protocol.HTTP.CONTENT_ENCODING;
