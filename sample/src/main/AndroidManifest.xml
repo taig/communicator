@@ -19,15 +19,7 @@
 
 		</activity>
 
-		<activity android:name=".app.SimpleRequest" />
-
-		<activity android:name=".app.Events" />
-
-		<activity android:name=".app.CustomResultParser" />
-
-		<activity android:name=".app.FormSend" />
-
-		<activity android:name=".app.Cookies" />
+		<activity android:name=".app.Example" />
 
 	</application>
 

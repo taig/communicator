@@ -167,12 +167,6 @@ public class PersistedCookieStore implements CookieStore
 	public boolean removeAll()
 	{
 		Map<String, ?> store = preferences.getAll();
-
-		if( store != null && !store.isEmpty() )
-		{
-			return preferences.edit().clear().commit();
-		}
-
-		return false;
+		return store != null && !store.isEmpty() && preferences.edit().clear().commit();
 	}
 }

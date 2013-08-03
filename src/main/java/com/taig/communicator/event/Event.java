@@ -19,11 +19,11 @@ public abstract class Event<R extends Response>
 
 	protected void onCancel( InterruptedIOException exception ) {}
 
-	protected void onSend( int current, int total ) {}
+	protected void onSend( long current, long total ) {}
 
 	protected void onSend( int progress ) {}
 
-	protected void onReceive( int current, int total ) {}
+	protected void onReceive( long current, long total ) {}
 
 	protected void onReceive( int progress ) {}
 
@@ -98,7 +98,7 @@ public abstract class Event<R extends Response>
 			} );
 		}
 
-		public void send( final int current, final int total )
+		public void send( final int current, final long total )
 		{
 			executor.execute( new Runnable()
 			{
@@ -116,7 +116,7 @@ public abstract class Event<R extends Response>
 			} );
 		}
 
-		public void receive( final int current, final int total )
+		public void receive( final int current, final long total )
 		{
 			executor.execute( new Runnable()
 			{

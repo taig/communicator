@@ -3,7 +3,6 @@ package com.taig.communicator.request;
 import com.taig.communicator.event.Event;
 import com.taig.communicator.event.Updateable;
 import com.taig.communicator.method.Method;
-import org.apache.http.protocol.HTTP;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,10 +10,6 @@ import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-
-import static com.taig.communicator.request.Header.Request.CONTENT_LENGTH;
-import static com.taig.communicator.request.Header.Request.CONTENT_TYPE;
-import static org.apache.http.protocol.HTTP.CONTENT_ENCODING;
 
 public abstract class Write<T> extends Read<T>
 {
@@ -56,7 +51,7 @@ public abstract class Write<T> extends Read<T>
 	{
 		if( data != null )
 		{
-			int length = data.getLength();
+			long length = data.getLength();
 			Updateable.Output output = new Send( connection.getOutputStream(), length );
 
 			try
@@ -84,7 +79,7 @@ public abstract class Write<T> extends Read<T>
 
 	protected class Send extends Updateable.Output
 	{
-		public Send( OutputStream stream, int length )
+		public Send( OutputStream stream, long length )
 		{
 			super( stream, length );
 		}
