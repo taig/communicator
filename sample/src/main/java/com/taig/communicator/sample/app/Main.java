@@ -5,6 +5,10 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import com.taig.communicator.sample.R;
+import com.taig.communicator.sample.io.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.taig.communicator.sample.R.id.*;
 
@@ -16,49 +20,25 @@ public class Main extends Activity
 		super.onCreate( savedInstanceState );
 		setContentView( R.layout.main );
 
-		findViewById( button_simple_request ).setOnClickListener( new View.OnClickListener()
-		{
-			@Override
-			public void onClick( View view )
-			{
-				startActivity( new Intent( Main.this, SimpleRequest.class ) );
-			}
-		} );
+		final Map<Integer, Class<?>> activities = new HashMap<Integer, Class<?>>();
+		activities.put( button_simple_request, SimpleRequest.class );
+		activities.put( button_events, Events.class );
+		activities.put( button_custom_result_parser, CustomResultParser.class );
+		activities.put( button_form_send, FormSend.class );
+		activities.put( button_cookies, Cookies.class );
 
-		findViewById( button_events ).setOnClickListener( new View.OnClickListener()
+		for( final Map.Entry<Integer, Class<?>> entry : activities.entrySet() )
 		{
-			@Override
-			public void onClick( View view )
+			findViewById( entry.getKey() ).setOnClickListener( new View.OnClickListener()
 			{
-				startActivity( new Intent( Main.this, Events.class ) );
-			}
-		} );
-
-		findViewById( button_custom_result_parser ).setOnClickListener( new View.OnClickListener()
-		{
-			@Override
-			public void onClick( View view )
-			{
-				startActivity( new Intent( Main.this, CustomResultParser.class ) );
-			}
-		} );
-
-		findViewById( button_form_send ).setOnClickListener( new View.OnClickListener()
-		{
-			@Override
-			public void onClick( View view )
-			{
-				startActivity( new Intent( Main.this, FormSend.class ) );
-			}
-		} );
-
-		findViewById( button_cookies ).setOnClickListener( new View.OnClickListener()
-		{
-			@Override
-			public void onClick( View view )
-			{
-				startActivity( new Intent( Main.this, Cookies.class ) );
-			}
-		} );
+				@Override
+				public void onClick( View view )
+				{
+					startActivity(
+						new Intent( Main.this, Example.class )
+							.putExtra( Example.INTERACTION, entry.getValue().getName() ) );
+				}
+			} );
+		}
 	}
 }
