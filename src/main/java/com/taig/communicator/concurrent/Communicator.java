@@ -3,13 +3,7 @@ package com.taig.communicator.concurrent;
 import com.taig.communicator.io.Cancelable;
 import com.taig.communicator.request.Request;
 
-import java.io.Closeable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.concurrent.AbstractExecutorService;
 import java.util.concurrent.Executor;
-import java.util.concurrent.TimeUnit;
 
 public class Communicator implements Executor, Cancelable
 {
