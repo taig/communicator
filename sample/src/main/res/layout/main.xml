@@ -48,9 +48,9 @@
 
 		<Button android:layout_width="fill_parent"
 				android:layout_height="wrap_content"
-				android:id="@+id/button_communicator"
+				android:id="@+id/button_multiple_connections"
 				android:padding="10dp"
-				android:text="@string/communicator" />
+				android:text="@string/multiple_connections" />
 
 	</LinearLayout>
 

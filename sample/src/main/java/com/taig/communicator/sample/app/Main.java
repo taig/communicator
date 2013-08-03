@@ -27,7 +27,7 @@ public class Main extends Activity
 		activities.put( button_form_send, FormSend.class );
 		activities.put( button_cookies, Cookies.class );
 		activities.put( button_upload, Upload.class );
-		activities.put( button_communicator, Communicator.class );
+		activities.put( button_multiple_connections, MultipleConnections.class );
 
 		for( final Map.Entry<Integer, Class<? extends Interaction>> entry : activities.entrySet() )
 		{

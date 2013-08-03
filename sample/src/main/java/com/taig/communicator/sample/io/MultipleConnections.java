@@ -2,9 +2,9 @@ package com.taig.communicator.sample.io;
 
 import android.content.Context;
 
-public class Communicator extends Interaction
+public class MultipleConnections extends Interaction
 {
-	public Communicator( Context context )
+	public MultipleConnections( Context context )
 	{
 		super( context );
 	}
@@ -12,6 +12,5 @@ public class Communicator extends Interaction
 	@Override
 	public void interact() throws Exception
 	{
-
 	}
 }
