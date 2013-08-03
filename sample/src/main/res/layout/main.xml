@@ -40,11 +40,17 @@
 				android:padding="10dp"
 				android:text="@string/cookies" />
 
-        <Button android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/button_upload"
-                android:padding="10dp"
-                android:text="@string/upload" />
+		<Button android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:id="@+id/button_upload"
+				android:padding="10dp"
+				android:text="@string/upload" />
+
+		<Button android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:id="@+id/button_communicator"
+				android:padding="10dp"
+				android:text="@string/communicator" />
 
 	</LinearLayout>
 
