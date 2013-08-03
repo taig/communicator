@@ -27,9 +27,12 @@ public class Cookies extends Interaction
 		store.add( response );
 		store.add( null, "global", "cookie" );
 
+		HttpCookie cookie = new HttpCookie( "local", "cookie" );
+		cookie.setVersion( 0 );
+
 		final String manual = GET( Text.class, "http://httpbin.org/get" )
 			.putCookie( response )
-			.addCookie( new HttpCookie( "local", "cookie" ) )
+			.addCookie( cookie )
 			.request()
 			.getPayload();
 
