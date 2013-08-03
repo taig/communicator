@@ -258,8 +258,10 @@ public class QueuedPool<T> implements Collection<T>
 	 * <li>... the pool has room to accept the element.</li>
 	 * <li>... the queue has an element available.</li>
 	 * </ul>
+	 *
+	 * @return The element that has been promoted from queue to pool.
 	 */
-	public void promote() throws InterruptedException
+	public T promote() throws InterruptedException
 	{
 		// Wait for pool to have room available.
 		semaphore.acquire();
@@ -274,6 +276,7 @@ public class QueuedPool<T> implements Collection<T>
 
 			T element = queue.poll();
 			pool.add( element );
+			return element;
 		}
 	}
 
