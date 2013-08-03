@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:layout_gravity="center_vertical"
+			android:fillViewport="true">
+
+	<TextView android:layout_width="fill_parent"
+			  android:layout_height="wrap_content"
+			  android:gravity="center_horizontal"
+			  android:id="@+id/text"
+			  android:padding="10dp" />
+
+	<ProgressBar style="@android:style/Widget.Holo.ProgressBar.Horizontal"
+				 android:layout_width="match_parent"
+				 android:layout_height="wrap_content"
+				 android:id="@+id/progress_bar_multiple_connections_1"
+				 android:padding="15dp" />
+
+	<ProgressBar style="@android:style/Widget.Holo.ProgressBar.Horizontal"
+				 android:layout_width="match_parent"
+				 android:layout_height="wrap_content"
+				 android:id="@+id/progress_bar_multiple_connections_2"
+				 android:padding="15dp" />
+
+	<ProgressBar style="@android:style/Widget.Holo.ProgressBar.Horizontal"
+				 android:layout_width="match_parent"
+				 android:layout_height="wrap_content"
+				 android:id="@+id/progress_bar_multiple_connections_3"
+				 android:padding="15dp" />
+
+	<ProgressBar style="@android:style/Widget.Holo.ProgressBar.Horizontal"
+				 android:layout_width="match_parent"
+				 android:layout_height="wrap_content"
+				 android:id="@+id/progress_bar_multiple_connections_4"
+				 android:padding="15dp" />
+
+	<ProgressBar style="@android:style/Widget.Holo.ProgressBar.Horizontal"
+				 android:layout_width="match_parent"
+				 android:layout_height="wrap_content"
+				 android:id="@+id/progress_bar_multiple_connections_5"
+				 android:padding="15dp" />
+
+</ScrollView>
