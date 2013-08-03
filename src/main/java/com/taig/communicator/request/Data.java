@@ -1,5 +1,6 @@
 package com.taig.communicator.request;
 
+import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
 import com.taig.communicator.io.Countable;
 
@@ -192,6 +193,11 @@ public abstract class Data<C extends ContentType> extends Countable.Stream.Input
 				return addFile( getParameterHeader( name, mime, true ), file );
 			}
 
+			public Builder addBinaryFile( String name, String fileName, AssetFileDescriptor file, String mime ) throws IOException
+			{
+				return addFile( getParameterHeader( name, mime, true ), fileName, file.getLength(), file.createInputStream() );
+			}
+
 			public Builder addBinaryFile( String name, String fileName, long length, InputStream stream, String mime ) throws IOException
 			{
 				return addFile( getParameterHeader( name, mime, true ), fileName, length, stream );
@@ -200,6 +206,11 @@ public abstract class Data<C extends ContentType> extends Countable.Stream.Input
 			public Builder addTextFile( String name, File file, String charset ) throws IOException
 			{
 				return addFile( getParameterHeader( name, charset ), file );
+			}
+
+			public Builder addTextFile( String name, String fileName, AssetFileDescriptor file, String charset ) throws IOException
+			{
+				return addFile( getParameterHeader( name, charset ), fileName, file.getLength(), file.createInputStream() );
 			}
 
 			public Builder addTextFile( String name, String fileName, long length, InputStream stream, String charset ) throws IOException

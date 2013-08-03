@@ -20,10 +20,8 @@ public class Upload extends Interaction
 	@Override
 	public void interact() throws Exception
 	{
-		AssetFileDescriptor descriptor = context.getAssets().openFd( "File.txt" );
-
 		Data.Multipart data = new Data.Multipart.Builder()
-			.addTextFile( "upfile", "File.txt", descriptor.getLength(), descriptor.createInputStream(), "utf-8" )
+			.addTextFile( "upfile", "File.txt", context.getAssets().openFd( "File.txt" ), "utf-8" )
 			.addParameter( new Parameter( "note", "This is a test upload from Communicator/Android" ) )
 			.build();
 
