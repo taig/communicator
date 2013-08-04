@@ -152,6 +152,10 @@ GET( Text.class, "https://www.google.com" )                     // Send persiste
     .run();
 ````
 
+### Communicator (Asynchronous Request Execution)
+
+TODO
+
 [1]: http://android-developers.blogspot.de/2011/09/androids-http-clients.html
 [2]: https://github.com/Taig/Communicator/releases
 [3]: http://tools.android.com/recent/dealingwithdependenciesinandroidprojects
