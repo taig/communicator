@@ -8,6 +8,7 @@ import com.taig.communicator.request.Response;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.net.*;
+import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
 
@@ -134,7 +135,7 @@ public class Communicator implements Executor, Cancelable
 		protected Request request;
 
 		@Override
-		@SuppressWarnings( "unchecked" )
+		@SuppressWarnings("unchecked")
 		public void run()
 		{
 			try
@@ -157,12 +158,18 @@ public class Communicator implements Executor, Cancelable
 						request.getEventProxy().success( response );
 
 						// Handle cookies.
-						URI uri = request.getUrl().toURI();
-						for( HttpCookie cookie : response.getCookies() )
+						List<HttpCookie> cookies = response.getCookies();
+
+						if( cookies != null )
 						{
-							if( policy.shouldAccept( uri, cookie ) )
+							URI uri = request.getUrl().toURI();
+
+							for( HttpCookie cookie : cookies )
 							{
-								store.add( uri, cookie );
+								if( policy.shouldAccept( uri, cookie ) )
+								{
+									store.add( uri, cookie );
+								}
 							}
 						}
 					}
