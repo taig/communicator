@@ -142,7 +142,7 @@ Furthermore *Communicator* comes with a `CookieStore` implementation that persis
 CookieStore store = new PersistedCookieStore( MyActivity.this );
 Response response = HEAD( "https://www.google.com" ).request();
 
-for( HttpCookie cookie : response.getCookies )                  // Persist retrieved cookies.
+for( HttpCookie cookie : response.getCookies() )                // Persist retrieved cookies.
 {
 	store.add( reponse.getURL().toURI(), cookie );
 }

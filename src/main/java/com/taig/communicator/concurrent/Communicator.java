@@ -8,6 +8,7 @@ import com.taig.communicator.request.Response;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.net.*;
+import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
 
@@ -42,12 +43,21 @@ public class Communicator implements Executor, Cancelable
 		}
 	}
 
+	/**
+	 * Remove all queued {@link Request Requests} but finish all active Requests.
+	 *
+	 * @see #close()
+	 */
 	public void stop()
 	{
-		closed = true;
 		pool.clear();
 	}
 
+	/**
+	 * Remove all queued {@link Request Requests} and cancel all active Requests.
+	 *
+	 * @see #closeNow()
+	 */
 	@Override
 	public void cancel()
 	{
@@ -57,16 +67,49 @@ public class Communicator implements Executor, Cancelable
 		{
 			request.cancel();
 		}
-
-		for( Thread thread : threads )
-		{
-			thread.cancel();
-		}
 	}
 
 	public boolean isClosed()
 	{
 		return closed;
+	}
+
+	/**
+	 * Remove all queued {@link Request Requests} but finish all active Requests.
+	 * <p/>
+	 * This method terminates all active Threads after they finished active Requests. It is not possible to execute new
+	 * Requests after this call.
+	 *
+	 * @see #stop()
+	 */
+	public void close()
+	{
+		closed = true;
+		stop();
+
+		for( Thread thread : threads )
+		{
+			thread.close();
+		}
+	}
+
+	/**
+	 * Remove all queued {@link Request Requests} and cancel all active Requests.
+	 * <p/>
+	 * This method interrupts all active Threads immediately. It is not possible to execute new Requests after this
+	 * call.
+	 *
+	 * @see #cancel()
+	 */
+	public void closeNow()
+	{
+		closed = true;
+		stop();
+
+		for( Thread thread : threads )
+		{
+			thread.interrupt();
+		}
 	}
 
 	public boolean isTerminated()
@@ -129,9 +172,11 @@ public class Communicator implements Executor, Cancelable
 		pool.add( request, skipQueue );
 	}
 
-	protected class Thread extends java.lang.Thread implements Cancelable
+	protected class Thread extends java.lang.Thread
 	{
 		protected Request request;
+
+		protected boolean stopped = false;
 
 		@Override
 		@SuppressWarnings( "unchecked" )
@@ -139,7 +184,7 @@ public class Communicator implements Executor, Cancelable
 		{
 			try
 			{
-				while( !closed )
+				while( !closed && !stopped )
 				{
 					// Wait for pool access.
 					request = pool.promote();
@@ -157,12 +202,18 @@ public class Communicator implements Executor, Cancelable
 						request.getEventProxy().success( response );
 
 						// Handle cookies.
-						URI uri = request.getUrl().toURI();
-						for( HttpCookie cookie : response.getCookies() )
+						List<HttpCookie> cookies = response.getCookies();
+
+						if( cookies != null )
 						{
-							if( policy.shouldAccept( uri, cookie ) )
+							URI uri = request.getUrl().toURI();
+
+							for( HttpCookie cookie : cookies )
 							{
-								store.add( uri, cookie );
+								if( policy.shouldAccept( uri, cookie ) )
+								{
+									store.add( uri, cookie );
+								}
 							}
 						}
 					}
@@ -198,11 +249,41 @@ public class Communicator implements Executor, Cancelable
 		}
 
 		@Override
-		public void cancel()
+		public boolean isInterrupted()
 		{
+			return stopped || super.isInterrupted();
+		}
+
+		/**
+		 * Interrupt this thread immediately if it's blocking for some event. If it's currently performing a {@link
+		 * Request} cancel it.
+		 */
+		@Override
+		public void interrupt()
+		{
+			stopped = true;
+
 			if( request == null )
 			{
-				interrupt();
+				super.interrupt();
+			}
+			else
+			{
+				request.cancel();
+			}
+		}
+
+		/**
+		 * Finish the currently active {@link Request} and stop execution afterwards. If this Thread is currently
+		 * blocking for some event interrupt immediately.
+		 */
+		public void close()
+		{
+			stopped = true;
+
+			if( request == null )
+			{
+				super.interrupt();
 			}
 		}
 	}

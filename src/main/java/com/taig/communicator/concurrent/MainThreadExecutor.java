@@ -7,6 +7,8 @@ import java.util.concurrent.Executor;
 
 public class MainThreadExecutor implements Executor
 {
+	public static final Executor EXECUTOR = new MainThreadExecutor();
+
 	private Handler handler = new Handler( Looper.getMainLooper() );
 
 	@Override

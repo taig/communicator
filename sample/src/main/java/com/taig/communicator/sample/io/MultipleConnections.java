@@ -137,9 +137,9 @@ public class MultipleConnections extends Interaction
 		stop.setOnClickListener( new View.OnClickListener()
 		{
 			@Override
-			public void onClick( View v )
+			public void onClick( View view )
 			{
-				communicator.stop();
+				communicator.close();
 				getTextView().setText( "Stopped" );
 			}
 		} );
@@ -149,7 +149,7 @@ public class MultipleConnections extends Interaction
 			@Override
 			public void onClick( View view )
 			{
-				communicator.cancel();
+				communicator.closeNow();
 				getTextView().setText( "Cancelled" );
 			}
 		} );
