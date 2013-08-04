@@ -43,11 +43,21 @@ public class Communicator implements Executor, Cancelable
 		}
 	}
 
+	/**
+	 * Remove all queued {@link Request Requests} but finish all active Requests.
+	 *
+	 * @see #close()
+	 */
 	public void stop()
 	{
 		pool.clear();
 	}
 
+	/**
+	 * Remove all queued {@link Request Requests} and cancel all active Requests.
+	 *
+	 * @see #closeNow()
+	 */
 	@Override
 	public void cancel()
 	{
@@ -59,12 +69,28 @@ public class Communicator implements Executor, Cancelable
 		}
 	}
 
+	/**
+	 * Remove all queued {@link Request Requests} but finish all active Requests.
+	 * <p/>
+	 * This method terminates all active Threads after they finished active Requests. It is not possible to execute new
+	 * Requests after this call.
+	 *
+	 * @see #stop()
+	 */
 	public void close()
 	{
 		closed = true;
 		stop();
 	}
 
+	/**
+	 * Remove all queued {@link Request Requests} and cancel all active Requests.
+	 * <p/>
+	 * This method interrupts all active Threads immediately. It is not possible to execute new Requests after this
+	 * call.
+	 *
+	 * @see #cancel()
+	 */
 	public void closeNow()
 	{
 		close();
@@ -146,7 +172,7 @@ public class Communicator implements Executor, Cancelable
 		protected Request request;
 
 		@Override
-		@SuppressWarnings("unchecked")
+		@SuppressWarnings( "unchecked" )
 		public void run()
 		{
 			try
