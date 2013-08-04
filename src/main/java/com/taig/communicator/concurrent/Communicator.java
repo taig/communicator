@@ -1,21 +1,14 @@
 package com.taig.communicator.concurrent;
 
-import android.util.Log;
 import com.taig.communicator.io.Cancelable;
 import com.taig.communicator.request.Request;
-import com.taig.communicator.request.Response;
 
-import java.io.IOException;
-import java.io.InterruptedIOException;
 import java.net.*;
-import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
 
 public class Communicator implements Executor, Cancelable
 {
-	protected static final String TAG = Communicator.class.getName();
-
 	protected QueuedPool<Wrapper> pool;
 
 	protected Task[] tasks;
@@ -80,7 +73,8 @@ public class Communicator implements Executor, Cancelable
 	/**
 	 * Remove all queued elements but do not cancel active executions.
 	 * <p/>
-	 * This method terminates all active Threads after they finished execution. Calling {@link #execute(Runnable)} after
+	 * This method terminates all active Threads after they finished execution. Calling {@link #execute(Runnable)}
+	 * after
 	 * a <code>close()</code> will throw a {@link RejectedExecutionException}.
 	 *
 	 * @see #stop()
