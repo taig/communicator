@@ -79,6 +79,7 @@ public class Communicator implements Executor, Cancelable
 	 */
 	public void close()
 	{
+		// TODO Figure out what happens to threads that are currently stuck in QueuedPool.promote().
 		closed = true;
 		stop();
 	}
