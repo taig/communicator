@@ -45,7 +45,6 @@ public class Communicator implements Executor, Cancelable
 
 	public void stop()
 	{
-		closed = true;
 		pool.clear();
 	}
 
@@ -58,6 +57,18 @@ public class Communicator implements Executor, Cancelable
 		{
 			request.cancel();
 		}
+	}
+
+	public void close()
+	{
+		closed = true;
+		stop();
+	}
+
+	public void closeNow()
+	{
+		close();
+		cancel();
 
 		for( Thread thread : threads )
 		{
