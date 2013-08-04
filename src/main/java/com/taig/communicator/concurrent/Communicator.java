@@ -183,7 +183,7 @@ public class Communicator implements Executor, Cancelable
 		{
 			try
 			{
-				while( !closed && !stopped )
+				while( !isClosed() && !stopped )
 				{
 					element = pool.promote();
 					element.execute();
