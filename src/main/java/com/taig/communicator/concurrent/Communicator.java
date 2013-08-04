@@ -69,6 +69,11 @@ public class Communicator implements Executor, Cancelable
 		}
 	}
 
+	public boolean isClosed()
+	{
+		return closed;
+	}
+
 	/**
 	 * Remove all queued {@link Request Requests} but finish all active Requests.
 	 * <p/>
@@ -84,7 +89,7 @@ public class Communicator implements Executor, Cancelable
 
 		for( Thread thread : threads )
 		{
-			thread.cancel();
+			thread.close();
 		}
 	}
 
@@ -98,13 +103,13 @@ public class Communicator implements Executor, Cancelable
 	 */
 	public void closeNow()
 	{
-		close();
-		cancel();
-	}
+		closed = true;
+		stop();
 
-	public boolean isClosed()
-	{
-		return closed;
+		for( Thread thread : threads )
+		{
+			thread.interrupt();
+		}
 	}
 
 	public boolean isTerminated()
@@ -167,9 +172,11 @@ public class Communicator implements Executor, Cancelable
 		pool.add( request, skipQueue );
 	}
 
-	protected class Thread extends java.lang.Thread implements Cancelable
+	protected class Thread extends java.lang.Thread
 	{
 		protected Request request;
+
+		protected boolean stopped = false;
 
 		@Override
 		@SuppressWarnings( "unchecked" )
@@ -177,7 +184,7 @@ public class Communicator implements Executor, Cancelable
 		{
 			try
 			{
-				while( !closed )
+				while( !closed && !stopped )
 				{
 					// Wait for pool access.
 					request = pool.promote();
@@ -242,11 +249,41 @@ public class Communicator implements Executor, Cancelable
 		}
 
 		@Override
-		public void cancel()
+		public boolean isInterrupted()
 		{
+			return stopped || super.isInterrupted();
+		}
+
+		/**
+		 * Interrupt this thread immediately if it's blocking for some event. If it's currently performing a {@link
+		 * Request} cancel it.
+		 */
+		@Override
+		public void interrupt()
+		{
+			stopped = true;
+
 			if( request == null )
 			{
-				interrupt();
+				super.interrupt();
+			}
+			else
+			{
+				request.cancel();
+			}
+		}
+
+		/**
+		 * Finish the currently active {@link Request} and stop execution afterwards. If this Thread is currently
+		 * blocking for some event interrupt immediately.
+		 */
+		public void close()
+		{
+			stopped = true;
+
+			if( request == null )
+			{
+				super.interrupt();
 			}
 		}
 	}
