@@ -1,10 +1,9 @@
-package com.taig.communicator.request;
+package com.taig.communicator.data;
 
 import java.net.HttpURLConnection;
-import java.net.URLConnection;
 import java.util.*;
 
-import static com.taig.communicator.request.Header.Request.COOKIE;
+import static com.taig.communicator.data.Header.Request.COOKIE;
 
 /**
  * List of all HTTP-headers that may occur in a request- or a response-header.

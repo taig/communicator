@@ -20,15 +20,16 @@ public class Main extends Activity
 		super.onCreate( savedInstanceState );
 		setContentView( R.layout.main );
 
-		final Map<Integer, Class<?>> activities = new HashMap<Integer, Class<?>>();
+		final Map<Integer, Class<? extends Interaction>> activities = new HashMap<Integer, Class<? extends Interaction>>();
 		activities.put( button_simple_request, SimpleRequest.class );
 		activities.put( button_events, Events.class );
 		activities.put( button_custom_result_parser, CustomResultParser.class );
 		activities.put( button_form_send, FormSend.class );
 		activities.put( button_cookies, Cookies.class );
 		activities.put( button_upload, Upload.class );
+		activities.put( button_multiple_connections, MultipleConnections.class );
 
-		for( final Map.Entry<Integer, Class<?>> entry : activities.entrySet() )
+		for( final Map.Entry<Integer, Class<? extends Interaction>> entry : activities.entrySet() )
 		{
 			findViewById( entry.getKey() ).setOnClickListener( new View.OnClickListener()
 			{

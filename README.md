@@ -91,7 +91,7 @@ to interact with you app's user interface (e.g. updating a `ProgressBar`) withou
 
 In order to add form data (or more generally spoken key/value pairs) to the request body you have to specify the `data`
 argument in a `POST` or `PUT` request. More precisely *Communicator* demands you to supply your key/value pairs as
-`Map<String, String>`.
+`com.taig.communicator.data.Parameter`, a subclass of `Map<String, String>`.
 
 ````java
 Parameter params = new Parameter();
@@ -127,9 +127,8 @@ Last but not least you can also add cookies to a request header. The common user
 Response<Void> response = HEAD( "https://www.google.com" ).request();
 
 GET( Text.class, "https://www.google.com" )
-    .putCookie( response )                                      // Use cookies from another response.
-    .addCookie( new HttpCookie( "remember_me", "true" )         // Set single cookies.
-    .addHeader(                                                 // Do whatever the fuck you want.
+    .addCookie( new HttpCookie( "remember_me", "true" )
+    .addHeader(
         COOKIE,
         new HttpCookie( "js", "true" ),
         new HttpCookie( "flash", "false" ) )
@@ -143,9 +142,13 @@ Furthermore *Communicator* comes with a `CookieStore` implementation that persis
 CookieStore store = new PersistedCookieStore( MyActivity.this );
 Response response = HEAD( "https://www.google.com" ).request();
 
-store.add( response );                                          // Persist retrieved cookies.
+for( HttpCookie cookie : response.getCookies )                  // Persist retrieved cookies.
+{
+	store.add( reponse.getURL().toURI(), cookie );
+}
+
 GET( Text.class, "https://www.google.com" )                     // Send persisted cookies that are associated with
-    .putCookie( store )                                        // "google.com" along with the request.
+    .putCookie( store )                                         // "google.com" along with the request.
     .run();
 ````
 

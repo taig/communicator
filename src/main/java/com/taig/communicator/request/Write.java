@@ -1,5 +1,6 @@
 package com.taig.communicator.request;
 
+import com.taig.communicator.data.Data;
 import com.taig.communicator.event.Event;
 import com.taig.communicator.event.Updateable;
 import com.taig.communicator.method.Method;
