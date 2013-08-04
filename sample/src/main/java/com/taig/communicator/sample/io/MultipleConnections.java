@@ -128,11 +128,11 @@ public class MultipleConnections extends Interaction
 			}
 		} );
 
-		communicator.request( one );
-		communicator.request( two );
-		communicator.request( three );
-		communicator.request( four );
-		communicator.request( five );
+		communicator.execute( one );
+		communicator.execute( two );
+		communicator.execute( three );
+		communicator.execute( four );
+		communicator.execute( five );
 
 		stop.setOnClickListener( new View.OnClickListener()
 		{
