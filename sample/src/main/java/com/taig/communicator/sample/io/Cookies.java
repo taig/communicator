@@ -28,7 +28,7 @@ public class Cookies extends Interaction
 
 		for( HttpCookie cookie : response.getCookies() )
 		{
-			store.add( response.getURL().toURI(), cookie );
+			store.add( response.getUrl().toURI(), cookie );
 		}
 
 		HttpCookie globalCookie = new HttpCookie( "global", "cookie" );

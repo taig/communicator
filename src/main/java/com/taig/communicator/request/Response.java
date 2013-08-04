@@ -1,7 +1,5 @@
 package com.taig.communicator.request;
 
-import com.taig.communicator.result.Parser;
-
 import java.net.HttpCookie;
 import java.net.URL;
 import java.util.ArrayList;
@@ -26,7 +24,7 @@ public class Response
 		this.headers = headers;
 	}
 
-	public URL getURL()
+	public URL getUrl()
 	{
 		return url;
 	}
