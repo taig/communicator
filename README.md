@@ -154,7 +154,51 @@ GET( Text.class, "https://www.google.com" )                     // Send persiste
 
 ### Communicator (Asynchronous Request Execution)
 
-TODO
+In the `com.taig.communicator.concurrent` package there is an implementation of Java's `Executor`, called
+`Communicator`. This class servers to manage multiple, concurrent requests and is also able to manage cookies during
+HTTP interactions. Constructing a `Communicator` object requires you to specify the maximum amount of concurrent
+connections. It will then go ahead and spawn the same amount of Threads in order to process your following requests.
+
+````java
+Communicator communicator = new Communicator( 2 );
+communicator.execute( GET<String>( Text.class, "http://www.example.org" ) );
+communicator.execute( GET<String>( Text.class, "http://www.example.com" ) );
+communicator.execute( GET<String>( Text.class, "http://www.example.net" ) );
+````
+
+> **Please Note**
+> As defined in Java's `Executor` interface the method `execute( Runnable )` is not limited to `Request` objects, but
+> you should think twice before submitting anything else.
+
+`Communicator` keeps track of the request queue very accurately. If you need to perform an urgent request you are able
+to declare it's priority via the `execute( Runnable runnable, boolean skipQueue )` method.
+
+````java
+communicator.execute( GET<String>( Text.class, "http://www.example.xxx" ), true );
+````
+
+By default `Communicator` drops all cookies as its policy says `CookiePolicy.ACCEPT_NONE`. You can changes this behavior
+with the `accept( CookieStore, CookiePolicy )` method.
+
+````java
+communicator.accept( new PersistedCookieStore(), CookiePolicy.ACCEPT_ALL );
+communicator.accept( new PersistedCookieStore(), new CookiePolicy( "session", "sess", "SESSIONID" ) );
+````
+
+Creating a `Communicator` with its several Threads can become a memory intensive task. I advise you to do it only once
+during your app's lifecycle: Add a static reference from your application context and use it from all of your activities.
+
+Instead of using `Communicator` it is of course possible to feed any arbitrary `Executor` with `Request` objects (since
+they are `Runnables`). But I highly recommend you to use this implementation because it provides a variety of
+interruption methods to stop or cancel active requests. This is something you should keep in mind when facing Android's
+activity lifecycles: make sure to call `cancel()` or `stop()` when an activity is being destroyed and you won't need
+the requested content any more. Also don't forget to shut down the executor when the application is being destroyed
+(`close()` or `closeNow()`) to tear down the threads properly.
+
+> **Please Note**
+> Keep in mind that the concurrent processing of multiple resources (especially images) leads to a very high memory
+> consumption. If you're facing `OutOfMemoryExceptions` during your requests you should consider to reduce the amount of
+> simultaneous connections or to improve your Parser (e.g. forward the data immediately to the cache directory).
 
 [1]: http://android-developers.blogspot.de/2011/09/androids-http-clients.html
 [2]: https://github.com/Taig/Communicator/releases
