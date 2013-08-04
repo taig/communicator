@@ -7,7 +7,7 @@ object Build extends sbt.Build
 {
 	val communicator = ProjectRef( file( "../" ), "communicator" )
 
-	val main = Project( "communicator-sample", file( "." ), settings = androidDefaults )
+	val main = Project( "communicator-sample", file( "." ) )
 			.settings(
 				name := "CommunicatorSample",
 				version := "0.1",
