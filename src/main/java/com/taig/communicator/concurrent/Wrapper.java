@@ -10,7 +10,7 @@ import java.io.InterruptedIOException;
 import java.net.*;
 import java.util.List;
 
-public abstract class Wrapper<R extends java.lang.Runnable> implements Cancelable
+public abstract class Wrapper<R extends java.lang.Runnable> implements java.lang.Runnable, Cancelable
 {
 	protected final R runnable;
 
@@ -18,8 +18,6 @@ public abstract class Wrapper<R extends java.lang.Runnable> implements Cancelabl
 	{
 		this.runnable = runnable;
 	}
-
-	protected abstract void execute();
 
 	public static class Runnable extends Wrapper<java.lang.Runnable>
 	{
@@ -29,7 +27,7 @@ public abstract class Wrapper<R extends java.lang.Runnable> implements Cancelabl
 		}
 
 		@Override
-		protected void execute()
+		public void run()
 		{
 			runnable.run();
 		}
@@ -57,7 +55,7 @@ public abstract class Wrapper<R extends java.lang.Runnable> implements Cancelabl
 		}
 
 		@Override
-		protected void execute()
+		public void run()
 		{
 			Event<R>.Proxy event = runnable.getEventProxy();
 
