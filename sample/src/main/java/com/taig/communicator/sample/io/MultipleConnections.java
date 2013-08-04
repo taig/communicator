@@ -139,7 +139,7 @@ public class MultipleConnections extends Interaction
 			@Override
 			public void onClick( View v )
 			{
-				communicator.stop();
+				communicator.close();
 				getTextView().setText( "Stopped" );
 			}
 		} );
@@ -149,7 +149,7 @@ public class MultipleConnections extends Interaction
 			@Override
 			public void onClick( View view )
 			{
-				communicator.cancel();
+				communicator.closeNow();
 				getTextView().setText( "Cancelled" );
 			}
 		} );
