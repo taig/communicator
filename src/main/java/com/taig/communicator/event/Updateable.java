@@ -1,5 +1,6 @@
 package com.taig.communicator.event;
 
+import android.util.Log;
 import com.taig.communicator.io.Countable;
 
 import java.io.IOException;
@@ -26,7 +27,7 @@ public interface Updateable
 		{
 			int read = super.read();
 
-			if( read >= 0 && ++read % interval == 0 )
+			if( read >= 0 && ++this.read % interval == 0 )
 			{
 				update();
 			}

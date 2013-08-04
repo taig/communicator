@@ -8,5 +8,7 @@
 	<string name="cookies">Cookies</string>
 	<string name="upload">Upload</string>
 	<string name="cancel">Cancel</string>
+	<string name="multiple_connections">Multiple Connections</string>
+	<string name="stop">Stop</string>
 
 </resources>
