@@ -18,7 +18,7 @@ public class Communicator implements Executor, Cancelable
 
 	protected QueuedPool<Request> pool;
 
-	protected Thread[] threads;
+	protected Task[] tasks;
 
 	protected boolean closed = false;
 
@@ -34,12 +34,12 @@ public class Communicator implements Executor, Cancelable
 		}
 
 		this.pool = new QueuedPool<Request>( connections );
-		this.threads = new Thread[connections];
+		this.tasks = new Task[connections];
 
 		for( int i = 0; i < connections; i++ )
 		{
-			threads[i] = new Thread();
-			threads[i].start();
+			tasks[i] = new Task();
+			tasks[i].start();
 		}
 	}
 
@@ -87,9 +87,9 @@ public class Communicator implements Executor, Cancelable
 		closed = true;
 		stop();
 
-		for( Thread thread : threads )
+		for( Task task : tasks )
 		{
-			thread.close();
+			task.close();
 		}
 	}
 
@@ -106,17 +106,17 @@ public class Communicator implements Executor, Cancelable
 		closed = true;
 		stop();
 
-		for( Thread thread : threads )
+		for( Task task : tasks )
 		{
-			thread.interrupt();
+			task.interrupt();
 		}
 	}
 
 	public boolean isTerminated()
 	{
-		for( Thread thread : threads )
+		for( Task task : tasks )
 		{
-			if( thread.isAlive() )
+			if( task.isAlive() )
 			{
 				return false;
 			}
@@ -172,7 +172,7 @@ public class Communicator implements Executor, Cancelable
 		pool.add( request, skipQueue );
 	}
 
-	protected class Thread extends java.lang.Thread
+	protected class Task extends java.lang.Thread
 	{
 		protected Request request;
 
