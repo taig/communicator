@@ -1,10 +1,12 @@
 package com.taig.communicator.sample.io;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 import com.taig.communicator.concurrent.Communicator;
 import com.taig.communicator.event.Event;
+import com.taig.communicator.event.State;
 import com.taig.communicator.method.Get;
 import com.taig.communicator.sample.R;
 import com.taig.communicator.sample.result.ReadAndIgnore;
@@ -38,7 +40,7 @@ public class MultipleConnections extends Interaction
 	{
 		Communicator communicator = new Communicator( 2 );
 
-		Get<Void> one = GET( ReadAndIgnore.class, "http://d24w6bsrhbeh9d.cloudfront.net/photo/aq90zrQ_700b.jpg", new Event.Payload<Void>()
+		Get<Void> one = GET( ReadAndIgnore.class, "http://vhost2.hansenet.de/1_mb_file.bin", new Event.Payload<Void>()
 		{
 			@Override
 			protected void onReceive( int progress )
@@ -47,7 +49,7 @@ public class MultipleConnections extends Interaction
 			}
 		} );
 
-		Get<Void> two = GET( ReadAndIgnore.class, "http://d24w6bsrhbeh9d.cloudfront.net/photo/aq90zrQ_700b.jpg", new Event.Payload<Void>()
+		Get<Void> two = GET( ReadAndIgnore.class, "http://vhost2.hansenet.de/1_mb_file.bin", new Event.Payload<Void>()
 		{
 			@Override
 			protected void onReceive( int progress )
@@ -56,7 +58,7 @@ public class MultipleConnections extends Interaction
 			}
 		} );
 
-		Get<Void> three = GET( ReadAndIgnore.class, "http://d24w6bsrhbeh9d.cloudfront.net/photo/aq90zrQ_700b.jpg", new Event.Payload<Void>()
+		Get<Void> three = GET( ReadAndIgnore.class, "http://vhost2.hansenet.de/1_mb_file.bin", new Event.Payload<Void>()
 		{
 			@Override
 			protected void onReceive( int progress )
@@ -65,7 +67,7 @@ public class MultipleConnections extends Interaction
 			}
 		} );
 
-		Get<Void> four = GET( ReadAndIgnore.class, "http://d24w6bsrhbeh9d.cloudfront.net/photo/aq90zrQ_700b.jpg", new Event.Payload<Void>()
+		Get<Void> four = GET( ReadAndIgnore.class, "http://vhost2.hansenet.de/1_mb_file.bin", new Event.Payload<Void>()
 		{
 			@Override
 			protected void onReceive( int progress )
@@ -74,7 +76,7 @@ public class MultipleConnections extends Interaction
 			}
 		} );
 
-		Get<Void> five = GET( ReadAndIgnore.class, "http://d24w6bsrhbeh9d.cloudfront.net/photo/aq90zrQ_700b.jpg", new Event.Payload<Void>()
+		Get<Void> five = GET( ReadAndIgnore.class, "http://vhost2.hansenet.de/1_mb_file.bin", new Event.Payload<Void>()
 		{
 			@Override
 			protected void onReceive( int progress )
