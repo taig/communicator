@@ -46,6 +46,11 @@ public class Communicator implements Executor, Cancelable
 		{
 			request.cancel();
 		}
+
+		for( Thread thread : threads )
+		{
+			thread.cancel();
+		}
 	}
 
 	public boolean isClosed()
@@ -94,7 +99,7 @@ public class Communicator implements Executor, Cancelable
 		pool.add( request, skipQueue );
 	}
 
-	protected class Thread extends java.lang.Thread
+	protected class Thread extends java.lang.Thread implements Cancelable
 	{
 		protected Request request;
 
@@ -116,7 +121,17 @@ public class Communicator implements Executor, Cancelable
 				if( request != null )
 				{
 					request.cancel();
+					pool.demote( request );
 				}
+			}
+		}
+
+		@Override
+		public void cancel()
+		{
+			if( request == null )
+			{
+				interrupt();
 			}
 		}
 	}
