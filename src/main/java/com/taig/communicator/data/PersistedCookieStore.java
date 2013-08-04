@@ -43,35 +43,6 @@ public class PersistedCookieStore implements CookieStore
 		preferences.edit().putStringSet( host, cookies ).commit();
 	}
 
-	public void add( URI uri, String key, String value )
-	{
-		HttpCookie cookie = new HttpCookie( key, value );
-		cookie.setVersion( 0 );
-		add( uri, cookie );
-	}
-
-	public void add( Response response )
-	{
-		try
-		{
-			URI uri = response.getURL().toURI();
-			List<HttpCookie> cookies = response.getCookies();
-
-			if( cookies != null )
-			{
-				for( HttpCookie cookie : cookies )
-				{
-					add( uri, cookie );
-				}
-			}
-		}
-		catch( URISyntaxException exception )
-		{
-			Log.w( TAG, "The cookies of a Response were dropped because the associated " +
-						"URL (" + response.getURL() + ") could not be converted to an URI", exception );
-		}
-	}
-
 	@Override
 	public List<HttpCookie> get( URI uri )
 	{

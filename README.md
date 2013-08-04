@@ -127,9 +127,8 @@ Last but not least you can also add cookies to a request header. The common user
 Response<Void> response = HEAD( "https://www.google.com" ).request();
 
 GET( Text.class, "https://www.google.com" )
-    .putCookie( response )                                      // Use cookies from another response.
-    .addCookie( new HttpCookie( "remember_me", "true" )         // Set single cookies.
-    .addHeader(                                                 // Do whatever the fuck you want.
+    .addCookie( new HttpCookie( "remember_me", "true" )
+    .addHeader(
         COOKIE,
         new HttpCookie( "js", "true" ),
         new HttpCookie( "flash", "false" ) )
@@ -140,10 +139,14 @@ Furthermore *Communicator* comes with a `CookieStore` implementation that persis
 `SharedPreferences`. This is very useful if you have to store cookies beyond an app's lifecycle (e.g. a session cookie).
 
 ````java
-PersistedCookieStore store = new PersistedCookieStore( MyActivity.this );
+CookieStore store = new PersistedCookieStore( MyActivity.this );
 Response response = HEAD( "https://www.google.com" ).request();
 
-store.add( response );                                          // Persist retrieved cookies.
+for( HttpCookie cookie : response.getCookies )                  // Persist retrieved cookies.
+{
+	store.add( reponse.getURL().toURI(), cookie );
+}
+
 GET( Text.class, "https://www.google.com" )                     // Send persisted cookies that are associated with
     .putCookie( store )                                         // "google.com" along with the request.
     .run();
