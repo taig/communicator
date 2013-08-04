@@ -4,6 +4,7 @@ import com.taig.communicator.io.Cancelable;
 import com.taig.communicator.request.Request;
 
 import java.util.concurrent.Executor;
+import java.util.concurrent.RejectedExecutionException;
 
 public class Communicator implements Executor, Cancelable
 {
@@ -80,11 +81,16 @@ public class Communicator implements Executor, Cancelable
 
 	public void request( Request request )
 	{
-		pool.add( request );
+		request( request, false );
 	}
 
 	public void request( Request request, boolean skipQueue )
 	{
+		if( isClosed() )
+		{
+			throw new RejectedExecutionException( "Communicator has already been closed" );
+		}
+
 		pool.add( request, skipQueue );
 	}
 
