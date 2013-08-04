@@ -43,6 +43,12 @@ public class MultipleConnections extends Interaction
 	}
 
 	@Override
+	public String getIdleText()
+	{
+		return super.getIdleText() + " (2)";
+	}
+
+	@Override
 	public void interact() throws Exception
 	{
 		final Communicator communicator = new Communicator( 2 );
