@@ -1,4 +1,4 @@
-package com.taig.communicator.request;
+package com.taig.communicator.data;
 
 import java.net.HttpURLConnection;
 

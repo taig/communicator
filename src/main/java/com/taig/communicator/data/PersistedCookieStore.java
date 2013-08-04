@@ -1,8 +1,9 @@
-package com.taig.communicator.request;
+package com.taig.communicator.data;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
+import com.taig.communicator.request.Response;
 
 import java.net.CookieStore;
 import java.net.HttpCookie;

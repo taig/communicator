@@ -91,7 +91,7 @@ to interact with you app's user interface (e.g. updating a `ProgressBar`) withou
 
 In order to add form data (or more generally spoken key/value pairs) to the request body you have to specify the `data`
 argument in a `POST` or `PUT` request. More precisely *Communicator* demands you to supply your key/value pairs as
-`com.taig.communicator.request.Parameter`, a subclass of `Map<String, String>`.
+`com.taig.communicator.data.Parameter`, a subclass of `Map<String, String>`.
 
 ````java
 Parameter params = new Parameter();

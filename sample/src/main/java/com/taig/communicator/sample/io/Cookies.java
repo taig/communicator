@@ -3,7 +3,7 @@ package com.taig.communicator.sample.io;
 import android.content.Context;
 import android.os.Handler;
 import android.view.Gravity;
-import com.taig.communicator.request.PersistedCookieStore;
+import com.taig.communicator.data.PersistedCookieStore;
 import com.taig.communicator.request.Response;
 import com.taig.communicator.result.Text;
 

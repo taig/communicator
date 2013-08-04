@@ -1,4 +1,4 @@
-package com.taig.communicator.request;
+package com.taig.communicator.data;
 
 import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
@@ -11,11 +11,9 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 
-import static com.taig.communicator.request.Header.CRLF;
-import static com.taig.communicator.request.Header.Request.*;
 import static org.apache.http.protocol.HTTP.CONTENT_ENCODING;
 
-public abstract class Data<C extends ContentType> extends Countable.Stream.Input implements Appliable
+public abstract class Data<C extends Header.Request.ContentType> extends Countable.Stream.Input implements Appliable
 {
 	protected C contentType;
 
@@ -39,16 +37,16 @@ public abstract class Data<C extends ContentType> extends Countable.Stream.Input
 	@Override
 	public void apply( HttpURLConnection connection )
 	{
-		if( connection.getRequestProperty( CONTENT_TYPE ) == null )
+		if( connection.getRequestProperty( Header.Request.CONTENT_TYPE ) == null )
 		{
-			connection.setRequestProperty( CONTENT_TYPE, contentType.toString() );
+			connection.setRequestProperty( Header.Request.CONTENT_TYPE, contentType.toString() );
 		}
 
-		if( connection.getRequestProperty( CONTENT_LENGTH ) == null )
+		if( connection.getRequestProperty( Header.Request.CONTENT_LENGTH ) == null )
 		{
 			if( length > 0 )
 			{
-				connection.setRequestProperty( CONTENT_LENGTH, String.valueOf( length ) );
+				connection.setRequestProperty( Header.Request.CONTENT_LENGTH, String.valueOf( length ) );
 
 				if( length <= Integer.MAX_VALUE )
 				{
@@ -61,18 +59,18 @@ public abstract class Data<C extends ContentType> extends Countable.Stream.Input
 			}
 			else
 			{
-				connection.setRequestProperty( CONTENT_LENGTH, "0" );
+				connection.setRequestProperty( Header.Request.CONTENT_LENGTH, "0" );
 			}
 		}
 	}
 
-	public static class Form extends Data<ContentType.Form>
+	public static class Form extends Data<Header.Request.ContentType.Form>
 	{
 		protected String charset;
 
 		public Form( InputStream stream, long length )
 		{
-			super( stream, length, ContentType.FORM );
+			super( stream, length, Header.Request.ContentType.FORM );
 		}
 
 		public Form( Parameter parameters )
@@ -82,7 +80,7 @@ public abstract class Data<C extends ContentType> extends Countable.Stream.Input
 
 		public Form( Parameter parameters, String charset )
 		{
-			super( new ByteArrayInputStream( parameters.mkString( charset ).getBytes() ), ContentType.FORM );
+			super( new ByteArrayInputStream( parameters.mkString( charset ).getBytes() ), Header.Request.ContentType.FORM );
 			this.charset = charset;
 		}
 
@@ -103,25 +101,25 @@ public abstract class Data<C extends ContentType> extends Countable.Stream.Input
 		}
 	}
 
-	public static class Multipart extends Data<ContentType.Multipart>
+	public static class Multipart extends Data<Header.Request.ContentType.Multipart>
 	{
-		public Multipart( InputStream stream, long length, ContentType.Multipart contentType )
+		public Multipart( InputStream stream, long length, Header.Request.ContentType.Multipart contentType )
 		{
 			super( stream, length, contentType );
 		}
 
 		public static class Builder
 		{
-			protected ContentType.Multipart contentType;
+			protected Header.Request.ContentType.Multipart contentType;
 
 			protected LinkedList<Stream.Input> streams = new LinkedList<Stream.Input>();
 
 			public Builder()
 			{
-				this( new ContentType.Multipart() );
+				this( new Header.Request.ContentType.Multipart() );
 			}
 
-			public Builder( ContentType.Multipart contentType )
+			public Builder( Header.Request.ContentType.Multipart contentType )
 			{
 				this.contentType = contentType;
 			}
@@ -129,18 +127,18 @@ public abstract class Data<C extends ContentType> extends Countable.Stream.Input
 			public static Header getParameterHeader( String name )
 			{
 				Header headers = new Header();
-				headers.put( CONTENT_DISPOSITION, "form-data", "name=\"" + name + "\"" );
+				headers.put( Header.Request.CONTENT_DISPOSITION, "form-data", "name=\"" + name + "\"" );
 				return headers;
 			}
 
 			public static Header getParameterHeader( String name, String charset )
 			{
 				Header headers = getParameterHeader( name );
-				headers.put( CONTENT_TYPE, "text/plain" );
+				headers.put( Header.Request.CONTENT_TYPE, "text/plain" );
 
 				if( charset != null )
 				{
-					headers.add( CONTENT_TYPE, "charset=" + charset );
+					headers.add( Header.Request.CONTENT_TYPE, "charset=" + charset );
 				}
 
 				return headers;
@@ -152,12 +150,12 @@ public abstract class Data<C extends ContentType> extends Countable.Stream.Input
 
 				if( mime != null )
 				{
-					headers.put( CONTENT_TYPE, mime );
+					headers.put( Header.Request.CONTENT_TYPE, mime );
 				}
 
 				if( binary )
 				{
-					headers.put( CONTENT_TRANSFER_ENCODING, "binary" );
+					headers.put( Header.Request.CONTENT_TRANSFER_ENCODING, "binary" );
 				}
 
 				return headers;
@@ -226,7 +224,7 @@ public abstract class Data<C extends ContentType> extends Countable.Stream.Input
 			{
 				if( fileName != null )
 				{
-					headers.add( CONTENT_DISPOSITION, "filename=\"" + fileName + "\"" );
+					headers.add( Header.Request.CONTENT_DISPOSITION, "filename=\"" + fileName + "\"" );
 				}
 
 				return addInputStream( headers, new Stream.Input( stream, length ) );
@@ -248,8 +246,8 @@ public abstract class Data<C extends ContentType> extends Countable.Stream.Input
 
 			public Builder addInputStream( Header headers, Stream.Input stream )
 			{
-				String prefix = contentType.getSeparatingBoundary() + headers.mkString( "; " ) + CRLF;
-				String suffix = CRLF;
+				String prefix = contentType.getSeparatingBoundary() + headers.mkString( "; " ) + Header.CRLF;
+				String suffix = Header.CRLF;
 
 				long length = stream.getLength();
 
