@@ -146,6 +146,12 @@ public class Communicator implements Executor, Cancelable
 
 					try
 					{
+						// Add available cookies to the request.
+						if( store != null )
+						{
+							request.addCookie( store );
+						}
+
 						// Perform request.
 						Response response = request.request();
 						request.getEventProxy().success( response );
