@@ -85,10 +85,16 @@ public abstract class Request<R extends Response, E extends Event<R>> implements
 		return event;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @return <code>true</code>
+	 */
 	@Override
-	public void cancel()
+	public boolean cancel()
 	{
 		this.cancelled = true;
+		return true;
 	}
 
 	public boolean isCancelled()

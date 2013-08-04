@@ -13,7 +13,7 @@ import java.util.*;
 
 public class PersistedCookieStore implements CookieStore
 {
-	protected static final String TAG = PersistedCookieStore.class.getName();
+	private static final String TAG = PersistedCookieStore.class.getName();
 
 	protected static final String WILDCARD = "*";
 

@@ -1,24 +1,17 @@
 package com.taig.communicator.concurrent;
 
-import android.util.Log;
 import com.taig.communicator.io.Cancelable;
 import com.taig.communicator.request.Request;
-import com.taig.communicator.request.Response;
 
-import java.io.IOException;
-import java.io.InterruptedIOException;
 import java.net.*;
-import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
 
 public class Communicator implements Executor, Cancelable
 {
-	protected static final String TAG = Communicator.class.getName();
+	protected QueuedPool<Wrapper> pool;
 
-	protected QueuedPool<Request> pool;
-
-	protected Thread[] threads;
+	protected Task[] tasks;
 
 	protected boolean closed = false;
 
@@ -33,18 +26,18 @@ public class Communicator implements Executor, Cancelable
 			throw new IllegalArgumentException( "At least 1 connection has to be granted" );
 		}
 
-		this.pool = new QueuedPool<Request>( connections );
-		this.threads = new Thread[connections];
+		this.pool = new QueuedPool<Wrapper>( connections );
+		this.tasks = new Task[connections];
 
 		for( int i = 0; i < connections; i++ )
 		{
-			threads[i] = new Thread();
-			threads[i].start();
+			tasks[i] = new Task();
+			tasks[i].start();
 		}
 	}
 
 	/**
-	 * Remove all queued {@link Request Requests} but finish all active Requests.
+	 * Remove all queued elements but do not cancel active executions.
 	 *
 	 * @see #close()
 	 */
@@ -54,19 +47,22 @@ public class Communicator implements Executor, Cancelable
 	}
 
 	/**
-	 * Remove all queued {@link Request Requests} and cancel all active Requests.
+	 * Remove all queued elements and cancel all active executions, if possible.
 	 *
+	 * @return <code>true</code>
 	 * @see #closeNow()
 	 */
 	@Override
-	public void cancel()
+	public boolean cancel()
 	{
 		stop();
 
-		for( Request request : pool.getPool() )
+		for( Wrapper element : pool.getPool() )
 		{
-			request.cancel();
+			element.cancel();
 		}
+
+		return true;
 	}
 
 	public boolean isClosed()
@@ -75,10 +71,11 @@ public class Communicator implements Executor, Cancelable
 	}
 
 	/**
-	 * Remove all queued {@link Request Requests} but finish all active Requests.
+	 * Remove all queued elements but do not cancel active executions.
 	 * <p/>
-	 * This method terminates all active Threads after they finished active Requests. It is not possible to execute new
-	 * Requests after this call.
+	 * This method terminates all active Threads after they finished execution. Calling {@link #execute(Runnable)}
+	 * after
+	 * a <code>close()</code> will throw a {@link RejectedExecutionException}.
 	 *
 	 * @see #stop()
 	 */
@@ -87,17 +84,17 @@ public class Communicator implements Executor, Cancelable
 		closed = true;
 		stop();
 
-		for( Thread thread : threads )
+		for( Task task : tasks )
 		{
-			thread.close();
+			task.close();
 		}
 	}
 
 	/**
-	 * Remove all queued {@link Request Requests} and cancel all active Requests.
+	 * Remove all queued elements and cancel all active executions.
 	 * <p/>
-	 * This method interrupts all active Threads immediately. It is not possible to execute new Requests after this
-	 * call.
+	 * This method terminates all active Threads as soon as possible. Calling {@link #execute(Runnable)} after
+	 * a <code>closeNow()</code> will throw a {@link RejectedExecutionException}.
 	 *
 	 * @see #cancel()
 	 */
@@ -106,17 +103,17 @@ public class Communicator implements Executor, Cancelable
 		closed = true;
 		stop();
 
-		for( Thread thread : threads )
+		for( Task task : tasks )
 		{
-			thread.interrupt();
+			task.cancel();
 		}
 	}
 
 	public boolean isTerminated()
 	{
-		for( Thread thread : threads )
+		for( Task task : tasks )
 		{
-			if( thread.isAlive() )
+			if( task.isAlive() )
 			{
 				return false;
 			}
@@ -147,34 +144,30 @@ public class Communicator implements Executor, Cancelable
 	@Override
 	public void execute( Runnable runnable )
 	{
-		if( runnable instanceof Request )
-		{
-			request( (Request) runnable );
-		}
-		else
-		{
-			throw new IllegalArgumentException( "Please provide a " + Request.class.getName() + " object" );
-		}
+		execute( runnable, false );
 	}
 
-	public void request( Request request )
-	{
-		request( request, false );
-	}
-
-	public void request( Request request, boolean skipQueue )
+	@SuppressWarnings( "unchecked" )
+	public void execute( Runnable runnable, boolean skipQueue )
 	{
 		if( isClosed() )
 		{
 			throw new RejectedExecutionException( "Communicator has already been closed" );
 		}
 
-		pool.add( request, skipQueue );
+		if( runnable instanceof Request )
+		{
+			pool.add( new Wrapper.Request( (Request) runnable, store, policy ), skipQueue );
+		}
+		else
+		{
+			pool.add( new Wrapper.Runnable( runnable ), skipQueue );
+		}
 	}
 
-	protected class Thread extends java.lang.Thread
+	protected class Task extends Thread implements Cancelable
 	{
-		protected Request request;
+		protected Wrapper<?> element;
 
 		protected boolean stopped = false;
 
@@ -184,66 +177,20 @@ public class Communicator implements Executor, Cancelable
 		{
 			try
 			{
-				while( !closed && !stopped )
+				while( !isClosed() && !stopped )
 				{
-					// Wait for pool access.
-					request = pool.promote();
-
-					try
-					{
-						// Add available cookies to the request.
-						if( store != null )
-						{
-							request.addCookie( store );
-						}
-
-						// Perform request.
-						Response response = request.request();
-						request.getEventProxy().success( response );
-
-						// Handle cookies.
-						List<HttpCookie> cookies = response.getCookies();
-
-						if( cookies != null )
-						{
-							URI uri = request.getUrl().toURI();
-
-							for( HttpCookie cookie : cookies )
-							{
-								if( policy.shouldAccept( uri, cookie ) )
-								{
-									store.add( uri, cookie );
-								}
-							}
-						}
-					}
-					catch( URISyntaxException exception )
-					{
-						Log.w( TAG, "The cookies of a Response were dropped because the associated URL could not be " +
-							"converted to an URI", exception );
-					}
-					catch( InterruptedIOException exception )
-					{
-						// Don't fail/finish cancelled requests.
-					}
-					catch( IOException exception )
-					{
-						request.getEventProxy().failure( exception );
-					}
-					finally
-					{
-						// Leave pool.
-						pool.demote( request );
-						request = null;
-					}
+					element = pool.promote();
+					element.run();
+					pool.demote( element );
+					element = null;
 				}
 			}
 			catch( InterruptedException exception )
 			{
-				if( request != null )
+				if( element != null )
 				{
-					request.cancel();
-					pool.demote( request );
+					element.cancel();
+					pool.demote( element );
 				}
 			}
 		}
@@ -255,35 +202,35 @@ public class Communicator implements Executor, Cancelable
 		}
 
 		/**
-		 * Interrupt this thread immediately if it's blocking for some event. If it's currently performing a {@link
-		 * Request} cancel it.
+		 * Interrupt this thread immediately if it's blocking for an event. If it's currently executing an user object,
+		 * try to cancel it.
+		 *
+		 * @return <code>true</code>
 		 */
 		@Override
-		public void interrupt()
+		public boolean cancel()
 		{
 			stopped = true;
 
-			if( request == null )
+			if( element == null || !element.cancel() )
 			{
-				super.interrupt();
+				interrupt();
 			}
-			else
-			{
-				request.cancel();
-			}
+
+			return true;
 		}
 
 		/**
-		 * Finish the currently active {@link Request} and stop execution afterwards. If this Thread is currently
-		 * blocking for some event interrupt immediately.
+		 * Interrupt this thread immediately if it's blocking for an event. If it's currently executing an user object,
+		 * let it terminate properly.
 		 */
 		public void close()
 		{
 			stopped = true;
 
-			if( request == null )
+			if( element == null )
 			{
-				super.interrupt();
+				interrupt();
 			}
 		}
 	}
