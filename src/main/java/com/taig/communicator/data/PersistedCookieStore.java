@@ -1,8 +1,9 @@
-package com.taig.communicator.request;
+package com.taig.communicator.data;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
+import com.taig.communicator.request.Response;
 
 import java.net.CookieStore;
 import java.net.HttpCookie;
@@ -40,35 +41,6 @@ public class PersistedCookieStore implements CookieStore
 		Set<String> cookies = preferences.getStringSet( host, new HashSet<String>() );
 		cookies.add( cookie.toString() );
 		preferences.edit().putStringSet( host, cookies ).commit();
-	}
-
-	public void add( URI uri, String key, String value )
-	{
-		HttpCookie cookie = new HttpCookie( key, value );
-		cookie.setVersion( 0 );
-		add( uri, cookie );
-	}
-
-	public void add( Response response )
-	{
-		try
-		{
-			URI uri = response.getURL().toURI();
-			List<HttpCookie> cookies = response.getCookies();
-
-			if( cookies != null )
-			{
-				for( HttpCookie cookie : cookies )
-				{
-					add( uri, cookie );
-				}
-			}
-		}
-		catch( URISyntaxException exception )
-		{
-			Log.w( TAG, "The cookies of a Response were dropped because the associated " +
-						"URL (" + response.getURL() + ") could not be converted to an URI", exception );
-		}
 	}
 
 	@Override

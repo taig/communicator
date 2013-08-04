@@ -1,5 +1,6 @@
 package com.taig.communicator.request;
 
+import com.taig.communicator.data.Header;
 import com.taig.communicator.event.Event;
 import com.taig.communicator.event.State;
 import com.taig.communicator.io.Cancelable;
@@ -10,8 +11,8 @@ import java.io.InterruptedIOException;
 import java.net.*;
 import java.util.List;
 
-import static com.taig.communicator.request.Header.Request.ACCEPT_CHARSET;
-import static com.taig.communicator.request.Header.Request.COOKIE;
+import static com.taig.communicator.data.Header.Request.ACCEPT_CHARSET;
+import static com.taig.communicator.data.Header.Request.COOKIE;
 
 public abstract class Request<R extends Response, E extends Event<R>> implements Cancelable, Runnable
 {
@@ -77,6 +78,11 @@ public abstract class Request<R extends Response, E extends Event<R>> implements
 	{
 		this.event = event == null ? null : event.getProxy();
 		return this;
+	}
+
+	public Event<R>.Proxy getEventProxy()
+	{
+		return event;
 	}
 
 	@Override

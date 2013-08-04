@@ -3,10 +3,11 @@ package com.taig.communicator.sample.io;
 import android.content.Context;
 import android.os.Handler;
 import android.view.Gravity;
-import com.taig.communicator.request.PersistedCookieStore;
+import com.taig.communicator.data.PersistedCookieStore;
 import com.taig.communicator.request.Response;
 import com.taig.communicator.result.Text;
 
+import java.net.CookieStore;
 import java.net.HttpCookie;
 
 import static com.taig.communicator.method.Method.GET;
@@ -23,16 +24,23 @@ public class Cookies extends Interaction
 	public void interact() throws Exception
 	{
 		Response response = HEAD( "http://httpbin.org/cookies/set?user=Taig&pass=strawberries" ).request();
-		PersistedCookieStore store = new PersistedCookieStore( context );
-		store.add( response );
-		store.add( null, "global", "cookie" );
+		CookieStore store = new PersistedCookieStore( context );
 
-		HttpCookie cookie = new HttpCookie( "local", "cookie" );
-		cookie.setVersion( 0 );
+		for( HttpCookie cookie : response.getCookies() )
+		{
+			store.add( response.getURL().toURI(), cookie );
+		}
+
+		HttpCookie globalCookie = new HttpCookie( "global", "cookie" );
+		globalCookie.setVersion( 0 );
+		store.add( null, globalCookie );
+
+		HttpCookie localCookie = new HttpCookie( "local", "cookie" );
+		localCookie.setVersion( 0 );
 
 		final String manual = GET( Text.class, "http://httpbin.org/get" )
 			.putCookie( response )
-			.addCookie( cookie )
+			.addCookie( localCookie )
 			.request()
 			.getPayload();
 

@@ -9,7 +9,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import static com.taig.communicator.method.Method.*;
-import static com.taig.communicator.request.Header.Request.ACCEPT_ENCODING;
+import static com.taig.communicator.data.Header.Request.ACCEPT_ENCODING;
 
 public class Head extends Request<Response, Event<Response>>
 {
