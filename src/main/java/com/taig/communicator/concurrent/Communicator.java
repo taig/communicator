@@ -79,9 +79,13 @@ public class Communicator implements Executor, Cancelable
 	 */
 	public void close()
 	{
-		// TODO Figure out what happens to threads that are currently stuck in QueuedPool.promote().
 		closed = true;
 		stop();
+
+		for( Thread thread : threads )
+		{
+			thread.cancel();
+		}
 	}
 
 	/**
@@ -96,11 +100,6 @@ public class Communicator implements Executor, Cancelable
 	{
 		close();
 		cancel();
-
-		for( Thread thread : threads )
-		{
-			thread.cancel();
-		}
 	}
 
 	public boolean isClosed()
