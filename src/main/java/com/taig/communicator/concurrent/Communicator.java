@@ -59,7 +59,7 @@ public class Communicator implements Executor, Cancelable
 	 * @see #closeNow()
 	 */
 	@Override
-	public void cancel()
+	public boolean cancel()
 	{
 		stop();
 
@@ -67,6 +67,8 @@ public class Communicator implements Executor, Cancelable
 		{
 			request.cancel();
 		}
+
+		return true;
 	}
 
 	public boolean isClosed()
