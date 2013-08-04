@@ -85,6 +85,11 @@ public abstract class Request<R extends Response, E extends Event<R>> implements
 		return event;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @return <code>true</code>
+	 */
 	@Override
 	public boolean cancel()
 	{

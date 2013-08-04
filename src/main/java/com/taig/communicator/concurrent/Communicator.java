@@ -56,6 +56,7 @@ public class Communicator implements Executor, Cancelable
 	/**
 	 * Remove all queued {@link Request Requests} and cancel all active Requests.
 	 *
+	 * @return <code>true</code>
 	 * @see #closeNow()
 	 */
 	@Override
