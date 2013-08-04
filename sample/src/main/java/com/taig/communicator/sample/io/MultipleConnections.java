@@ -62,7 +62,7 @@ public class MultipleConnections extends Interaction
 			}
 		} );
 
-		Get<Void> two = GET( ReadAndIgnore.class, "http://vhost2.hansenet.de/1_mb_file.bin", new Event.Payload<Void>()
+		Get<Void> two = GET( ReadAndIgnore.class, "http://vhost2.hansenet.de/1_mb_file.bin.gz", new Event.Payload<Void>()
 		{
 			@Override
 			protected void onReceive( int progress )
