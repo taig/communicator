@@ -171,7 +171,7 @@ public class Communicator implements Executor, Cancelable
 		}
 	}
 
-	protected class Task extends java.lang.Thread implements Cancelable
+	protected class Task extends Thread implements Cancelable
 	{
 		protected Wrapper<?> element;
 
