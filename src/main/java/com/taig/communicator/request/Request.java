@@ -80,6 +80,11 @@ public abstract class Request<R extends Response, E extends Event<R>> implements
 		return this;
 	}
 
+	public Event<R>.Proxy getEventProxy()
+	{
+		return event;
+	}
+
 	@Override
 	public void cancel()
 	{
