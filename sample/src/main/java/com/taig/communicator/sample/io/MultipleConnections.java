@@ -1,13 +1,14 @@
 package com.taig.communicator.sample.io;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import com.taig.communicator.concurrent.Communicator;
 import com.taig.communicator.event.Event;
-import com.taig.communicator.event.State;
 import com.taig.communicator.method.Get;
+import com.taig.communicator.request.Response;
 import com.taig.communicator.sample.R;
 import com.taig.communicator.sample.result.ReadAndIgnore;
 
@@ -25,6 +26,10 @@ public class MultipleConnections extends Interaction
 
 	protected ProgressBar progressBar5;
 
+	protected Button stop;
+
+	protected Button cancel;
+
 	public MultipleConnections( Context context )
 	{
 		super( context, View.inflate( context, R.layout.multiple_progress, null ) );
@@ -33,12 +38,14 @@ public class MultipleConnections extends Interaction
 		this.progressBar3 = (ProgressBar) main.findViewById( R.id.progress_bar_multiple_connections_3 );
 		this.progressBar4 = (ProgressBar) main.findViewById( R.id.progress_bar_multiple_connections_4 );
 		this.progressBar5 = (ProgressBar) main.findViewById( R.id.progress_bar_multiple_connections_5 );
+		this.stop = (Button) main.findViewById( R.id.button_stop );
+		this.cancel = (Button) main.findViewById( R.id.button_cancel );
 	}
 
 	@Override
 	public void interact() throws Exception
 	{
-		Communicator communicator = new Communicator( 2 );
+		final Communicator communicator = new Communicator( 2 );
 
 		Get<Void> one = GET( ReadAndIgnore.class, "http://vhost2.hansenet.de/1_mb_file.bin", new Event.Payload<Void>()
 		{
@@ -46,6 +53,12 @@ public class MultipleConnections extends Interaction
 			protected void onReceive( int progress )
 			{
 				progressBar1.setProgress( progress );
+			}
+
+			@Override
+			protected void onSuccess( Response.Payload<Void> response )
+			{
+				updateText();
 			}
 		} );
 
@@ -56,6 +69,12 @@ public class MultipleConnections extends Interaction
 			{
 				progressBar2.setProgress( progress );
 			}
+
+			@Override
+			protected void onSuccess( Response.Payload<Void> response )
+			{
+				updateText();
+			}
 		} );
 
 		Get<Void> three = GET( ReadAndIgnore.class, "http://vhost2.hansenet.de/1_mb_file.bin", new Event.Payload<Void>()
@@ -64,6 +83,12 @@ public class MultipleConnections extends Interaction
 			protected void onReceive( int progress )
 			{
 				progressBar3.setProgress( progress );
+			}
+
+			@Override
+			protected void onSuccess( Response.Payload<Void> response )
+			{
+				updateText();
 			}
 		} );
 
@@ -74,6 +99,12 @@ public class MultipleConnections extends Interaction
 			{
 				progressBar4.setProgress( progress );
 			}
+
+			@Override
+			protected void onSuccess( Response.Payload<Void> response )
+			{
+				updateText();
+			}
 		} );
 
 		Get<Void> five = GET( ReadAndIgnore.class, "http://vhost2.hansenet.de/1_mb_file.bin", new Event.Payload<Void>()
@@ -83,6 +114,12 @@ public class MultipleConnections extends Interaction
 			{
 				progressBar5.setProgress( progress );
 			}
+
+			@Override
+			protected void onSuccess( Response.Payload<Void> response )
+			{
+				updateText();
+			}
 		} );
 
 		communicator.request( one );
@@ -90,5 +127,39 @@ public class MultipleConnections extends Interaction
 		communicator.request( three );
 		communicator.request( four );
 		communicator.request( five );
+
+		stop.setOnClickListener( new View.OnClickListener()
+		{
+			@Override
+			public void onClick( View v )
+			{
+				communicator.stop();
+				getTextView().setText( "Stopped" );
+			}
+		} );
+
+		cancel.setOnClickListener( new View.OnClickListener()
+		{
+			@Override
+			public void onClick( View view )
+			{
+				communicator.cancel();
+				getTextView().setText( "Cancelled" );
+			}
+		} );
+	}
+
+	protected void updateText()
+	{
+		TextView textView = getTextView();
+
+		if( textView.getText().equals( getIdleText() ) )
+		{
+			textView.setText( "+" );
+		}
+		else
+		{
+			textView.setText( textView.getText() + "+" );
+		}
 	}
 }
