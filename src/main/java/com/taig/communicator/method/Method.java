@@ -12,7 +12,30 @@ public abstract class Method
 {
 	public enum Type
 	{
-		DELETE, GET, HEAD, POST, PUT
+		/**
+		 * @see Delete
+		 */
+		DELETE,
+
+		/**
+		 * @see Get
+		 */
+		GET,
+
+		/**
+		 * @see Head
+		 */
+		HEAD,
+
+		/**
+		 * @see Post
+		 */
+		POST,
+
+		/**
+		 * @see Put
+		 */
+		PUT
 	}
 
 	public static <T> Get<T> GET( Class<? extends Parser<T>> parser, String url ) throws MalformedURLException

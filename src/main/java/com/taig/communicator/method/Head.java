@@ -23,6 +23,7 @@ import static com.taig.communicator.data.Header.Request.ACCEPT_ENCODING;
  * differs from the current entity (as would be indicated by a change in Content-Length, Content-MD5, ETag or
  * Last-Modified), then the cache MUST treat the cache entry as stale.
  *
+ * @see Method#HEAD( java.net.URL, com.taig.communicator.event.Event )
  * @see <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html">http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html</a>
  */
 public class Head extends Request<Response, Event<Response>>
