@@ -41,8 +41,9 @@ the source's URL and the server's response headers.
 ### Custom Parser
 
 A Parser is responsible for converting the connection's `InputStream` into something that makes sense for you.
-If you take a look at `com.taig.communicator.result` you will find two predefined Parsers: `Text` for converting the
-stream into a `String` and `Image` to get an `android.graphics.Bitmap`.
+If you take a look at `com.taig.communicator.result` you will find three predefined Parsers: `Text` for converting the
+stream into a `String`, `Image` to get an `android.graphics.Bitmap` and `Ignore` in case you don't care about the server
+response.
 
 In order to create your own Parser (e.g. for processing HTML or JSON) all you have to do is creating a new class that
 implements the `com.taig.communicator.result.Parser` interface.
@@ -90,14 +91,14 @@ to interact with you app's user interface (e.g. updating a `ProgressBar`) withou
 
 In order to add form data (or more generally spoken key/value pairs) to the request body you have to specify the `data`
 argument in a `POST` or `PUT` request. More precisely *Communicator* demands you to supply your key/value pairs as
-`Map<String, String>`.
+`com.taig.communicator.data.Parameter`, a subclass of `Map<String, String>`.
 
 ````java
-Map<String, String> params = new HashMap<String, String>();
+Parameter params = new Parameter();
 params.put( "email", "my.taig@gmail.com" );
 params.put( "pass", "As if!" );
 
-POST( Text.class, "https://facebook.com/login.php", Data.from( params ) ).run();
+POST( Text.class, "https://facebook.com/login.php", params ).run();
 ````
 
 The supplied data will then be properly encoded for transmission and the request headers `Content-Length` and
@@ -105,7 +106,17 @@ The supplied data will then be properly encoded for transmission and the request
 
 #### Binary Data (File Upload)
 
-TODO
+Since a `multipart/fom-data` request tends to have way more complex headers than a simple `form-url-encoded` request,
+*Communicator* provides a Builder to allow a simple header build up.
+
+````java
+Data data = new Data.Multipart.Builder()
+	.addParameter( params )
+	.addTextFile( "cv", new File( "/my_cv.txt" ), "utf-8" )
+	.build();
+
+POST( Text.class, "http://some.webservice.com", data ).run();
+````
 
 #### Cookies
 
@@ -116,10 +127,11 @@ Last but not least you can also add cookies to a request header. The common user
 Response<Void> response = HEAD( "https://www.google.com" ).request();
 
 GET( Text.class, "https://www.google.com" )
-    .setCookies( response.getCookies() )                        // Set a List of HttpCookies.
-    .setCookies( response )                                     // Use cookies from another response.
-    .addCookie( new HttpCookie( "remember_me", "true" )         // Set single cookies.
-    .addCookie( "session", "1234" )                             // Do whatever the fuck you want.
+    .addCookie( new HttpCookie( "remember_me", "true" )
+    .addHeader(
+        COOKIE,
+        new HttpCookie( "js", "true" ),
+        new HttpCookie( "flash", "false" ) )
     .run();
 ````
 
@@ -127,14 +139,66 @@ Furthermore *Communicator* comes with a `CookieStore` implementation that persis
 `SharedPreferences`. This is very useful if you have to store cookies beyond an app's lifecycle (e.g. a session cookie).
 
 ````java
-CookieStore store = new CookieStore( MyActivity.this );
+CookieStore store = new PersistedCookieStore( MyActivity.this );
 Response response = HEAD( "https://www.google.com" ).request();
 
-store.add( response );                                          // Persist retrieved cookies.
+for( HttpCookie cookie : response.getCookies() )                // Persist retrieved cookies.
+{
+	store.add( reponse.getURL().toURI(), cookie );
+}
+
 GET( Text.class, "https://www.google.com" )                     // Send persisted cookies that are associated with
-    .setCookies( store )                                        // "google.com" along with the request.
+    .putCookie( store )                                         // "google.com" along with the request.
     .run();
 ````
+
+### Communicator (Asynchronous Request Execution)
+
+In the `com.taig.communicator.concurrent` package there is an implementation of Java's `Executor`, called
+`Communicator`. This class servers to manage multiple, concurrent requests and is also able to manage cookies during
+HTTP interactions. Constructing a `Communicator` object requires you to specify the maximum amount of concurrent
+connections. It will then go ahead and spawn the same amount of Threads in order to process your following requests.
+
+````java
+Communicator communicator = new Communicator( 2 );
+communicator.execute( GET<String>( Text.class, "http://www.example.org" ) );
+communicator.execute( GET<String>( Text.class, "http://www.example.com" ) );
+communicator.execute( GET<String>( Text.class, "http://www.example.net" ) );
+````
+
+> **Please Note**
+> As defined in Java's `Executor` interface the method `execute( Runnable )` is not limited to `Request` objects, but
+> you should think twice before submitting anything else.
+
+`Communicator` keeps track of the request queue very accurately. If you need to perform an urgent request you are able
+to declare it's priority via the `execute( Runnable runnable, boolean skipQueue )` method.
+
+````java
+communicator.execute( GET<String>( Text.class, "http://www.example.xxx" ), true );
+````
+
+By default `Communicator` drops all cookies as its policy says `CookiePolicy.ACCEPT_NONE`. You can changes this behavior
+with the `accept( CookieStore, CookiePolicy )` method.
+
+````java
+communicator.accept( new PersistedCookieStore(), CookiePolicy.ACCEPT_ALL );
+communicator.accept( new PersistedCookieStore(), new CookiePolicy( "session", "sess", "SESSIONID" ) );
+````
+
+Creating a `Communicator` with its several Threads can become a memory intensive task. I advise you to do it only once
+during your app's lifecycle: Add a static reference from your application context and use it from all of your activities.
+
+Instead of using `Communicator` it is of course possible to feed any arbitrary `Executor` with `Request` objects (since
+they are `Runnables`). But I highly recommend you to use this implementation because it provides a variety of
+interruption methods to stop or cancel active requests. This is something you should keep in mind when facing Android's
+activity lifecycles: make sure to call `cancel()` or `stop()` when an activity is being destroyed and you won't need
+the requested content any more. Also don't forget to shut down the executor when the application is being destroyed
+(`close()` or `closeNow()`) to tear down the threads properly.
+
+> **Please Note**
+> Keep in mind that the concurrent processing of multiple resources (especially images) leads to a very high memory
+> consumption. If you're facing `OutOfMemoryExceptions` during your requests you should consider to reduce the amount of
+> simultaneous connections or to improve your Parser (e.g. forward the data immediately to the cache directory).
 
 [1]: http://android-developers.blogspot.de/2011/09/androids-http-clients.html
 [2]: https://github.com/Taig/Communicator/releases

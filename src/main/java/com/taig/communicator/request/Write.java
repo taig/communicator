@@ -1,5 +1,6 @@
 package com.taig.communicator.request;
 
+import com.taig.communicator.data.Data;
 import com.taig.communicator.event.Event;
 import com.taig.communicator.event.Updateable;
 import com.taig.communicator.method.Method;
@@ -11,9 +12,6 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-import static com.taig.communicator.request.Header.Request.CONTENT_LENGTH;
-import static com.taig.communicator.request.Header.Request.CONTENT_TYPE;
-
 public abstract class Write<T> extends Read<T>
 {
 	protected Data data;
@@ -21,7 +19,7 @@ public abstract class Write<T> extends Read<T>
 	public Write( Method.Type method, URL url, Data data, Event.Payload<T> event )
 	{
 		super( method, url, event );
-		setData( data );
+		this.data = data;
 	}
 
 	public Data getData()
@@ -29,28 +27,16 @@ public abstract class Write<T> extends Read<T>
 		return data;
 	}
 
-	public Write<T> setData( Data data )
-	{
-		this.data = data;
-
-		if( data != null )
-		{
-			setHeader( CONTENT_TYPE, data.getContentType().toString() );
-			setHeader( CONTENT_LENGTH, data.getLength() > 0 ? String.valueOf( data.getLength() ) : "0" );
-		}
-		else
-		{
-			setHeader( CONTENT_TYPE, null );
-			setHeader( CONTENT_LENGTH, "0" );
-		}
-
-		return this;
-	}
-
 	@Override
 	public HttpURLConnection connect() throws IOException
 	{
 		HttpURLConnection connection = super.connect();
+
+		if( data != null )
+		{
+			data.apply( connection );
+		}
+
 		connection.setDoOutput( true );
 		return connection;
 	}
@@ -66,7 +52,7 @@ public abstract class Write<T> extends Read<T>
 	{
 		if( data != null )
 		{
-			int length = data.getLength();
+			long length = data.getLength();
 			Updateable.Output output = new Send( connection.getOutputStream(), length );
 
 			try
@@ -94,7 +80,7 @@ public abstract class Write<T> extends Read<T>
 
 	protected class Send extends Updateable.Output
 	{
-		public Send( OutputStream stream, int length )
+		public Send( OutputStream stream, long length )
 		{
 			super( stream, length );
 		}

@@ -1,6 +1,6 @@
 package com.taig.communicator.request;
 
-import android.util.Log;
+import com.taig.communicator.data.Header;
 import com.taig.communicator.event.Event;
 import com.taig.communicator.event.State;
 import com.taig.communicator.io.Cancelable;
@@ -8,18 +8,15 @@ import com.taig.communicator.method.Method;
 
 import java.io.IOException;
 import java.io.InterruptedIOException;
-import java.net.CookieStore;
 import java.net.*;
-import java.util.*;
+import java.util.List;
 
-import static com.taig.communicator.request.Header.Request.ACCEPT_CHARSET;
-import static com.taig.communicator.request.Header.Request.COOKIE;
+import static com.taig.communicator.data.Header.Request.ACCEPT_CHARSET;
+import static com.taig.communicator.data.Header.Request.COOKIE;
 
 public abstract class Request<R extends Response, E extends Event<R>> implements Cancelable, Runnable
 {
 	public static final String CHARSET = "UTF-8";
-
-	protected static final String TAG = Request.class.getName();
 
 	protected Method.Type method;
 
@@ -47,14 +44,14 @@ public abstract class Request<R extends Response, E extends Event<R>> implements
 
 	protected boolean userInteraction = false;
 
-	protected Map<String, Collection<String>> headers = new HashMap<String, Collection<String>>();
+	protected Header headers = new Header();
 
 	public Request( Method.Type method, URL url, E event )
 	{
 		this.method = method;
 		this.url = url;
 		setEvent( event );
-		setHeader( ACCEPT_CHARSET, CHARSET );
+		headers.put( ACCEPT_CHARSET, CHARSET );
 	}
 
 	public Method.Type getMethod()
@@ -72,16 +69,32 @@ public abstract class Request<R extends Response, E extends Event<R>> implements
 		return url;
 	}
 
+	public Header getHeader()
+	{
+		return headers;
+	}
+
 	public Request<R, E> setEvent( E event )
 	{
 		this.event = event == null ? null : event.getProxy();
 		return this;
 	}
 
+	public Event<R>.Proxy getEventProxy()
+	{
+		return event;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @return <code>true</code>
+	 */
 	@Override
-	public void cancel()
+	public boolean cancel()
 	{
 		this.cancelled = true;
+		return true;
 	}
 
 	public boolean isCancelled()
@@ -93,158 +106,6 @@ public abstract class Request<R extends Response, E extends Event<R>> implements
 	{
 		State state = getState();
 		return state == State.START || state == State.SEND || state == State.RECEIVE;
-	}
-
-	public Request<R, E> addHeader( String key, String value )
-	{
-		Collection<String> values = this.headers.get( key );
-
-		if( values == null )
-		{
-			setHeader( key, value );
-		}
-		else
-		{
-			values.add( value );
-		}
-
-		return this;
-	}
-
-	public Request<R, E> setHeader( String key, String value )
-	{
-		Collection<String> values = new ArrayList<String>();
-		values.add( value );
-		return setHeaders( key, values );
-	}
-
-	public Request<R, E> addHeaders( String key, Collection<String> values )
-	{
-		for( String value : values )
-		{
-			addHeader( key, value );
-		}
-
-		return this;
-	}
-
-	public Request<R, E> setHeaders( String key, Collection<String> values )
-	{
-		if( values == null )
-		{
-			this.headers.remove( key );
-		}
-		else
-		{
-			this.headers.put( key, values );
-		}
-
-		return this;
-	}
-
-	public Request<R, E> setHeaders( Map<String, Collection<String>> headers )
-	{
-		this.headers = headers;
-		return this;
-	}
-
-	public Request<R, E> addCookie( HttpCookie cookie )
-	{
-		return addHeader( COOKIE, cookie.toString() );
-	}
-
-	public Request<R, E> addCookie( String key, String value )
-	{
-		HttpCookie cookie = new HttpCookie( key, value );
-		cookie.setVersion( 0 );
-		return addCookie( cookie );
-	}
-
-	public Request<R, E> setCookie( HttpCookie cookie )
-	{
-		return setHeader( COOKIE, cookie.toString() );
-	}
-
-	public Request<R, E> setCookie( String key, String value )
-	{
-		HttpCookie cookie = new HttpCookie( key, value );
-		cookie.setVersion( 0 );
-		return setCookie( cookie );
-	}
-
-	public Request<R, E> addCookies( Collection<HttpCookie> cookies )
-	{
-		for( HttpCookie cookie : cookies )
-		{
-			addCookie( cookie );
-		}
-
-		return this;
-	}
-
-	public Request<R, E> addCookies( CookieStore store )
-	{
-		try
-		{
-			addCookies( store.get( url.toURI() ) );
-		}
-		catch( URISyntaxException exception )
-		{
-			Log.w( TAG, "The cookies of a CookieStore couldn't be added to a Request because the associated " +
-						"URL (" + url + ") could not be converted to an URI", exception );
-		}
-
-		return this;
-	}
-
-	public Request<R, E> addCookies( Response response )
-	{
-		List<HttpCookie> cookies = response.getCookies();
-
-		if( cookies != null )
-		{
-			addCookies( cookies );
-		}
-
-		return this;
-	}
-
-	public Request<R, E> setCookies( Collection<HttpCookie> cookies )
-	{
-		Collection<String> values = null;
-
-		if( cookies != null )
-		{
-			values = new ArrayList<String>();
-
-			for( HttpCookie cookie : cookies )
-			{
-				values.add( cookie.toString() );
-			}
-		}
-
-		return setHeaders( COOKIE, values );
-	}
-
-	public Request<R, E> setCookies( CookieStore store )
-	{
-		try
-		{
-			List<HttpCookie> cookies = store.get( url.toURI() );
-			setCookies( cookies.isEmpty() ? null : cookies );
-		}
-		catch( URISyntaxException exception )
-		{
-			Log.w( TAG, "The cookies of a CookieStore couldn't be added to a Request because the associated " +
-						"URL (" + url + ") could not be converted to an URI", exception );
-		}
-
-		return this;
-	}
-
-	public Request<R, E> setCookies( Response response )
-	{
-		return setCookies( response.getCookies() );
 	}
 
 	public Request<R, E> allowUserInteraction( boolean allow )
@@ -295,6 +156,66 @@ public abstract class Request<R extends Response, E extends Event<R>> implements
 		return this;
 	}
 
+	public Request<R, E> putHeader( String key, Object... values )
+	{
+		headers.put( key, values );
+		return this;
+	}
+
+	public Request<R, E> addHeader( String key, Object... values )
+	{
+		headers.add( key, values );
+		return this;
+	}
+
+	public Request<R, E> putCookie( HttpCookie... cookies )
+	{
+		return putHeader( COOKIE, (Object[]) cookies );
+	}
+
+	public Request<R, E> putCookie( Response response )
+	{
+		List<HttpCookie> cookies = response.getCookies();
+		return putCookie( cookies.toArray( new HttpCookie[cookies.size()] ) );
+	}
+
+	public Request<R, E> putCookie( CookieStore store )
+	{
+		try
+		{
+			List<HttpCookie> cookies = store.get( url.toURI() );
+			return addCookie( cookies.toArray( new HttpCookie[cookies.size()] ) );
+		}
+		catch( URISyntaxException exception )
+		{
+			throw new RuntimeException( "Could not convert request URL '" + url + "' to an URI" );
+		}
+	}
+
+	public Request<R, E> addCookie( HttpCookie... cookies )
+	{
+		return addHeader( COOKIE, (Object[]) cookies );
+	}
+
+	public Request<R, E> addCookie( Response response )
+	{
+		List<HttpCookie> cookies = response.getCookies();
+		return addCookie( cookies.toArray( new HttpCookie[cookies.size()] ) );
+	}
+
+	public Request<R, E> addCookie( CookieStore store )
+	{
+		try
+		{
+			List<HttpCookie> cookies = store.get( url.toURI() );
+			return addCookie( cookies.toArray( new HttpCookie[cookies.size()] ) );
+		}
+		catch( URISyntaxException exception )
+		{
+			throw new RuntimeException( "Could not convert request URL '" + url + "' to an URI" );
+		}
+	}
+
 	public HttpURLConnection connect() throws IOException
 	{
 		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -316,19 +237,7 @@ public abstract class Request<R extends Response, E extends Event<R>> implements
 			connection.setFixedLengthStreamingMode( contentLength );
 		}
 
-		for( Map.Entry<String, Collection<String>> header : this.headers.entrySet() )
-		{
-			StringBuilder builder = new StringBuilder();
-			String delimiter = header.getKey().equals( COOKIE ) ? "; " : ",";
-
-			for( Iterator<String> iterator = header.getValue().iterator(); iterator.hasNext(); )
-			{
-				builder.append( iterator.next() ).append( iterator.hasNext() ? delimiter : "" );
-			}
-
-			connection.setRequestProperty( header.getKey(), builder.toString() );
-		}
-
+		headers.apply( connection );
 		return connection;
 	}
 
@@ -423,13 +332,13 @@ public abstract class Request<R extends Response, E extends Event<R>> implements
 			}
 		}
 
-		public void send( int total )
+		public void send( long total )
 		{
 			current = State.SEND;
 			sending( 0, total );
 		}
 
-		public void sending( int current, int total )
+		public void sending( int current, long total )
 		{
 			if( event != null )
 			{
@@ -443,7 +352,7 @@ public abstract class Request<R extends Response, E extends Event<R>> implements
 			receiving( 0, total );
 		}
 
-		public void receiving( int current, int total )
+		public void receiving( int current, long total )
 		{
 			if( event != null )
 			{

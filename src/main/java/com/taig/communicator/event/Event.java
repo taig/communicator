@@ -1,10 +1,10 @@
 package com.taig.communicator.event;
 
-import com.taig.communicator.concurrent.MainThreadExecutor;
 import com.taig.communicator.request.Response;
 
 import java.io.InterruptedIOException;
-import java.util.concurrent.Executor;
+
+import static com.taig.communicator.concurrent.MainThreadExecutor.EXECUTOR;
 
 public abstract class Event<R extends Response>
 {
@@ -19,11 +19,11 @@ public abstract class Event<R extends Response>
 
 	protected void onCancel( InterruptedIOException exception ) {}
 
-	protected void onSend( int current, int total ) {}
+	protected void onSend( long current, long total ) {}
 
 	protected void onSend( int progress ) {}
 
-	protected void onReceive( int current, int total ) {}
+	protected void onReceive( long current, long total ) {}
 
 	protected void onReceive( int progress ) {}
 
@@ -48,7 +48,7 @@ public abstract class Event<R extends Response>
 			@Override
 			public void success( final Response.Payload<T> response )
 			{
-				executor.execute( new Runnable()
+				EXECUTOR.execute( new Runnable()
 				{
 					@Override
 					public void run()
@@ -65,8 +65,6 @@ public abstract class Event<R extends Response>
 
 	public class Proxy
 	{
-		protected Executor executor = new MainThreadExecutor();
-
 		public Event<R> getEvent()
 		{
 			return Event.this;
@@ -74,7 +72,7 @@ public abstract class Event<R extends Response>
 
 		public void start()
 		{
-			executor.execute( new Runnable()
+			EXECUTOR.execute( new Runnable()
 			{
 				@Override
 				public void run()
@@ -87,7 +85,7 @@ public abstract class Event<R extends Response>
 
 		public void cancel( final InterruptedIOException exception )
 		{
-			executor.execute( new Runnable()
+			EXECUTOR.execute( new Runnable()
 			{
 				@Override
 				public void run()
@@ -98,9 +96,9 @@ public abstract class Event<R extends Response>
 			} );
 		}
 
-		public void send( final int current, final int total )
+		public void send( final int current, final long total )
 		{
-			executor.execute( new Runnable()
+			EXECUTOR.execute( new Runnable()
 			{
 				@Override
 				public void run()
@@ -116,9 +114,9 @@ public abstract class Event<R extends Response>
 			} );
 		}
 
-		public void receive( final int current, final int total )
+		public void receive( final int current, final long total )
 		{
-			executor.execute( new Runnable()
+			EXECUTOR.execute( new Runnable()
 			{
 				@Override
 				public void run()
@@ -136,7 +134,7 @@ public abstract class Event<R extends Response>
 
 		public void success( final R response )
 		{
-			executor.execute( new Runnable()
+			EXECUTOR.execute( new Runnable()
 			{
 				@Override
 				public void run()
@@ -150,7 +148,7 @@ public abstract class Event<R extends Response>
 
 		public void failure( final Throwable error )
 		{
-			executor.execute( new Runnable()
+			EXECUTOR.execute( new Runnable()
 			{
 				@Override
 				public void run()

@@ -1,33 +1,35 @@
-package com.taig.communicator.request;
+package com.taig.communicator.data;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
+import com.taig.communicator.request.Response;
 
+import java.net.CookieStore;
 import java.net.HttpCookie;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
 
-public class CookieStore implements java.net.CookieStore
+public class PersistedCookieStore implements CookieStore
 {
-	protected static final String TAG = CookieStore.class.getName();
+	private static final String TAG = PersistedCookieStore.class.getName();
 
 	protected static final String WILDCARD = "*";
 
 	protected SharedPreferences preferences;
 
-	public CookieStore( Context context )
+	public PersistedCookieStore( Context context )
 	{
-		this( context, "com.taig.communicator.CookieStore", Context.MODE_PRIVATE );
+		this( context, "com.taig.communicator.PersistedCookieStore", Context.MODE_PRIVATE );
 	}
 
-	public CookieStore( Context context, String preference, int mode )
+	public PersistedCookieStore( Context context, String preference, int mode )
 	{
 		this( context.getSharedPreferences( preference, mode ) );
 	}
 
-	public CookieStore( SharedPreferences preferences )
+	public PersistedCookieStore( SharedPreferences preferences )
 	{
 		this.preferences = preferences;
 	}
@@ -39,35 +41,6 @@ public class CookieStore implements java.net.CookieStore
 		Set<String> cookies = preferences.getStringSet( host, new HashSet<String>() );
 		cookies.add( cookie.toString() );
 		preferences.edit().putStringSet( host, cookies ).commit();
-	}
-
-	public void add( URI uri, String key, String value )
-	{
-		HttpCookie cookie = new HttpCookie( key, value );
-		cookie.setVersion( 0 );
-		add( uri, cookie );
-	}
-
-	public void add( Response response )
-	{
-		try
-		{
-			URI uri = response.getURL().toURI();
-			List<HttpCookie> cookies = response.getCookies();
-
-			if( cookies != null )
-			{
-				for( HttpCookie cookie : cookies )
-				{
-					add( uri, cookie );
-				}
-			}
-		}
-		catch( URISyntaxException exception )
-		{
-			Log.w( TAG, "The cookies of a Response were dropped because the associated " +
-						"URL (" + response.getURL() + ") could not be converted to an URI", exception );
-		}
 	}
 
 	@Override
@@ -166,12 +139,6 @@ public class CookieStore implements java.net.CookieStore
 	public boolean removeAll()
 	{
 		Map<String, ?> store = preferences.getAll();
-
-		if( store != null && !store.isEmpty() )
-		{
-			return preferences.edit().clear().commit();
-		}
-
-		return false;
+		return store != null && !store.isEmpty() && preferences.edit().clear().commit();
 	}
 }

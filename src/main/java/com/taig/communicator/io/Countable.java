@@ -1,34 +1,40 @@
 package com.taig.communicator.io;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
 public interface Countable
 {
-	public int getLength();
+	public long getLength();
 
 	public interface Stream
 	{
-		public static abstract class Input extends InputStream implements Countable
+		public static class Input extends InputStream implements Countable
 		{
 			protected InputStream stream;
 
-			protected int length;
+			protected long length;
 
 			public Input( InputStream stream )
 			{
 				this( stream, -1 );
 			}
 
-			public Input( InputStream stream, int length )
+			public Input( ByteArrayInputStream stream )
+			{
+				this( stream, stream.available() );
+			}
+
+			public Input( InputStream stream, long length )
 			{
 				this.stream = stream;
 				this.length = length;
 			}
 
 			@Override
-			public int getLength()
+			public long getLength()
 			{
 				return length;
 			}
@@ -88,25 +94,25 @@ public interface Countable
 			}
 		}
 
-		public abstract class Output extends OutputStream implements Countable
+		public class Output extends OutputStream implements Countable
 		{
 			protected OutputStream stream;
 
-			protected int length;
+			protected long length;
 
 			public Output( OutputStream stream )
 			{
 				this( stream, -1 );
 			}
 
-			public Output( OutputStream stream, int length )
+			public Output( OutputStream stream, long length )
 			{
 				this.stream = stream;
 				this.length = length;
 			}
 
 			@Override
-			public int getLength()
+			public long getLength()
 			{
 				return length;
 			}

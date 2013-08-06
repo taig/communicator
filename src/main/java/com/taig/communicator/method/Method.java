@@ -1,7 +1,7 @@
 package com.taig.communicator.method;
 
 import com.taig.communicator.event.Event;
-import com.taig.communicator.request.Data;
+import com.taig.communicator.data.Data;
 import com.taig.communicator.request.Response;
 import com.taig.communicator.result.Parser;
 
