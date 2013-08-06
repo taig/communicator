@@ -178,7 +178,7 @@ public abstract class Method
 		return new Put<T>( parser, url, data, event );
 	}
 
-	protected static <T> Parser<T> createParser( Class<? extends Parser<T>> type )
+	private static <T> Parser<T> createParser( Class<? extends Parser<T>> type )
 	{
 		try
 		{
