@@ -404,15 +404,15 @@ public abstract class Method
 	{
 		try
 		{
-			if( type == Text.class )
+			if( Text.class.isAssignableFrom( type ) )
 			{
 				return (Parser<T>) Parser.TEXT;
 			}
-			else if( type == Image.class )
+			else if( Image.class.isAssignableFrom( type ) )
 			{
 				return (Parser<T>) Parser.IMAGE;
 			}
-			else if( type == Ignore.class )
+			else if( Ignore.class.isAssignableFrom( type ) )
 			{
 				return (Parser<T>) Parser.IGNORE;
 			}
