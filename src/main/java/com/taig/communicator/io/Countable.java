@@ -5,28 +5,63 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+/**
+ * Adds an explicit availability of length data to a class. This interface is intended for use with streams to overcome
+ * a streams generally considered unreliable <code>available()</code> method.
+ */
 public interface Countable
 {
+	/**
+	 * Retrieve the resource's total amount of bytes or <code>-1</code> if unknown.
+	 *
+	 * @return The resource's total amount of bytes or <code>-1</code> if unknown.
+	 */
 	public long getLength();
 
-	public interface Stream
+	/**
+	 * This interface serves the sole purpose to maintain a proper namespace (e.g. {@link Countable.Stream.Input}) and
+	 * is not designated to be used in any other way.
+	 */
+	public interface Stream extends Countable
 	{
-		public static class Input extends InputStream implements Countable
+		/**
+		 * An {@link InputStream} wrapper that implements the {@link Countable} interface. It is able to give
+		 * information on its underlying resource's size.
+		 */
+		public static class Input extends InputStream implements Stream
 		{
-			protected InputStream stream;
+			private InputStream stream;
 
-			protected long length;
+			private long length;
 
+			/**
+			 * Create an {@link Input} with unknown resource length.
+			 *
+			 * @param stream The {@link InputStream} to be wrapped with unknown resource length.
+			 */
 			public Input( InputStream stream )
 			{
 				this( stream, -1 );
 			}
 
+			/**
+			 * Create an {@link Input} based on a {@link ByteArrayInputStream}, that provides a reliable length
+			 * retrieval via its {@link InputStream#available()} method.
+			 *
+			 * @param stream The ByteArrayInputStream to be wrapped.
+			 */
 			public Input( ByteArrayInputStream stream )
 			{
 				this( stream, stream.available() );
 			}
 
+			/**
+			 * Create an {@link Input}.
+			 *
+			 * @param stream The {@link InputStream} to be wrapped.
+			 * @param length The length of the InputStream's underlying resource (amount of bytes) or <code>-1</code>
+			 *               if unknown.
+			 */
 			public Input( InputStream stream, long length )
 			{
 				this.stream = stream;
@@ -94,17 +129,33 @@ public interface Countable
 			}
 		}
 
-		public class Output extends OutputStream implements Countable
+		/**
+		 * An {@link OutputStream} wrapper that implements the {@link Countable} interface. It is able to give
+		 * information on its underlying resource's size.
+		 */
+		public class Output extends OutputStream implements Stream
 		{
-			protected OutputStream stream;
+			private OutputStream stream;
 
-			protected long length;
+			private long length;
 
+			/**
+			 * Create an {@link Output} with unknown resource length.
+			 *
+			 * @param stream The {@link OutputStream} to be wrapped with unknown resource length.
+			 */
 			public Output( OutputStream stream )
 			{
 				this( stream, -1 );
 			}
 
+			/**
+			 * Create an {@link Output}.
+			 *
+			 * @param stream The {@link OutputStream} to be wrapped.
+			 * @param length The length of the OutputStream's underlying resource (amount of bytes) or <code>-1</code>
+			 *               if unknown.
+			 */
 			public Output( OutputStream stream, long length )
 			{
 				this.stream = stream;

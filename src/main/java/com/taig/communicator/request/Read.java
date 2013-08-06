@@ -69,7 +69,7 @@ public abstract class Read<T> extends Request<Response.Payload<T>, Event.Payload
 				throw new InterruptedIOException( "Connection cancelled" );
 			}
 
-			state.receiving( read, length );
+			state.receiving( read, getLength() );
 		}
 	}
 }

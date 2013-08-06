@@ -44,13 +44,13 @@ public abstract class Data<C extends Header.Request.ContentType> extends Countab
 
 		if( connection.getRequestProperty( Header.Request.CONTENT_LENGTH ) == null )
 		{
-			if( length > 0 )
+			if( getLength() > 0 )
 			{
-				connection.setRequestProperty( Header.Request.CONTENT_LENGTH, String.valueOf( length ) );
+				connection.setRequestProperty( Header.Request.CONTENT_LENGTH, String.valueOf( getLength() ) );
 
-				if( length <= Integer.MAX_VALUE )
+				if( getLength() <= Integer.MAX_VALUE )
 				{
-					connection.setFixedLengthStreamingMode( (int) length );
+					connection.setFixedLengthStreamingMode( (int) getLength() );
 				}
 				else
 				{

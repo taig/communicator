@@ -93,7 +93,7 @@ public abstract class Write<T> extends Read<T>
 				throw new InterruptedIOException( "Connection cancelled" );
 			}
 
-			state.sending( written, length );
+			state.sending( written, getLength() );
 		}
 	}
 }
