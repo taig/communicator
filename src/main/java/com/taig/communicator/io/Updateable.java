@@ -75,7 +75,9 @@ public interface Updateable
 		@Override
 		public long skip( long n ) throws IOException
 		{
-			return super.skip( n );
+			long skipped = super.skip( n );
+			read += skipped;
+			return skipped;
 		}
 
 		@Override
