@@ -5,7 +5,9 @@ import com.taig.communicator.data.Data;
 import com.taig.communicator.request.Request;
 import com.taig.communicator.request.Response;
 import com.taig.communicator.result.Ignore;
+import com.taig.communicator.result.Image;
 import com.taig.communicator.result.Parser;
+import com.taig.communicator.result.Text;
 
 import java.net.URL;
 import java.util.List;
@@ -136,7 +138,7 @@ public abstract class Method
 	 */
 	public static Delete<Response, Event<Response>, Void> DELETE( URL url, Data data, Event<Response> event )
 	{
-		return new Delete<Response, Event<Response>, Void>( Ignore.PARSER, url, data, event )
+		return new Delete<Response, Event<Response>, Void>( Parser.IGNORE, url, data, event )
 		{
 			@Override
 			protected Response summarize( URL url, int code, String message, Map<String, List<String>> headers, Void body )
@@ -326,7 +328,7 @@ public abstract class Method
 	 */
 	public static Put<Response, Event<Response>, Void> PUT( URL url, Data data, Event<Response> event )
 	{
-		return new Put<Response, Event<Response>, Void>( Ignore.PARSER, url, data, event )
+		return new Put<Response, Event<Response>, Void>( Parser.IGNORE, url, data, event )
 		{
 			@Override
 			protected Response summarize( URL url, int code, String message, Map<String, List<String>> headers, Void body )
@@ -397,11 +399,27 @@ public abstract class Method
 	 * @return The instantiated Parser.
 	 * @throws RuntimeException If the given Parser class does not have a default constructor.
 	 */
+	@SuppressWarnings( "unchecked" )
 	protected static <T> Parser<T> createParser( Class<? extends Parser<T>> type )
 	{
 		try
 		{
-			return type.getConstructor().newInstance();
+			if( type == Text.class )
+			{
+				return (Parser<T>) Parser.TEXT;
+			}
+			else if( type == Image.class )
+			{
+				return (Parser<T>) Parser.IMAGE;
+			}
+			else if( type == Ignore.class )
+			{
+				return (Parser<T>) Parser.IGNORE;
+			}
+			else
+			{
+				return type.getConstructor().newInstance();
+			}
 		}
 		catch( Exception exception )
 		{
