@@ -4,6 +4,7 @@ import com.taig.communicator.event.Event;
 import com.taig.communicator.data.Data;
 import com.taig.communicator.request.Request;
 import com.taig.communicator.request.Response;
+import com.taig.communicator.result.Ignore;
 import com.taig.communicator.result.Parser;
 
 import java.net.URL;
@@ -87,6 +88,46 @@ public abstract class Method
 	public static <T> Get<T> GET( Parser<T> parser, URL url, Event.Payload<T> event )
 	{
 		return new Get<T>( parser, url, event );
+	}
+
+	/**
+	 * Create an HTTP DELETE {@link Request} with {@link Event} callbacks, but ignore the
+	 * server's response payload.
+	 *
+	 * @param url   The resource's {@link URL}.
+	 * @param event The Event callbacks that will be executed during the request. May be <code>null</code>.
+	 * @return An instance of {@link Delete}.
+	 */
+	public static Delete<Void> DELETE( URL url, Event.Payload<Void> event )
+	{
+		return DELETE( url, null, event );
+	}
+
+	/**
+	 * Create an HTTP DELETE {@link Request} with payload {@link Data}, but ignore the
+	 * server's response payload.
+	 *
+	 * @param url  The resource's {@link URL}.
+	 * @param data The payload Data that will be added to the Request body. May be <code>null</code>.
+	 * @return An instance of {@link Delete}.
+	 */
+	public static Delete<Void> DELETE( URL url, Data data )
+	{
+		return DELETE( url, data, null );
+	}
+
+	/**
+	 * Create an HTTP DELETE {@link Request} with payload {@link Data} and {@link Event} callbacks, but ignore the
+	 * server's response payload.
+	 *
+	 * @param url   The resource's {@link URL}.
+	 * @param data  The payload Data that will be added to the Request body. May be <code>null</code>.
+	 * @param event The Event callbacks that will be executed during the request. May be <code>null</code>.
+	 * @return An instance of {@link Delete}.
+	 */
+	public static Delete<Void> DELETE( URL url, Data data, Event.Payload<Void> event )
+	{
+		return new Delete<Void>( new Ignore(), url, data, event );
 	}
 
 	/**
