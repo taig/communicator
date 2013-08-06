@@ -1,6 +1,5 @@
 package com.taig.communicator.event;
 
-import android.util.Log;
 import com.taig.communicator.io.Countable;
 
 import java.io.IOException;
