@@ -1,13 +1,11 @@
 package com.taig.communicator.method;
 
 import com.taig.communicator.event.Event;
-import com.taig.communicator.event.Updateable;
+import com.taig.communicator.io.Updateable;
 import com.taig.communicator.request.Read;
-import com.taig.communicator.request.Request;
 import com.taig.communicator.request.Response;
 
 import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;

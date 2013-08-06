@@ -1,15 +1,33 @@
-package com.taig.communicator.event;
-
-import com.taig.communicator.io.Countable;
+package com.taig.communicator.io;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+/**
+ * Adds the ability to a class to run an update routine (implemented by a child class) on a specific event.
+ * <p/>
+ * This interface is designated to be used with streams and should provide updates whenever a specific amount of bytes
+ * has been read or written.
+ *
+ * @see Input
+ * @see Output
+ */
 public interface Updateable
 {
+	/**
+	 * Run the update routine.
+	 * <p/>
+	 * This method is used as a callback to be implemented by a subclass, it should therefore not be called explicitly.
+	 *
+	 * @throws IOException
+	 */
 	public void update() throws IOException;
 
+	/**
+	 * An {@link InputStream} wrapper that implements the {@link Updateable} interface. It calls the update callback
+	 * each time a specific amount of bytes has been read.
+	 */
 	abstract class Input extends Countable.Stream.Input implements Updateable
 	{
 		protected int interval = 4096;
@@ -91,6 +109,10 @@ public interface Updateable
 		}
 	}
 
+	/**
+	 * An {@link OutputStream} wrapper that implements the {@link Updateable} interface. It calls the update callback
+	 * each time a specific amount of bytes has been written.
+	 */
 	abstract class Output extends Countable.Stream.Output implements Updateable
 	{
 		protected int interval = 4096;
