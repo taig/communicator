@@ -8,6 +8,9 @@ import java.io.OutputStream;
 /**
  * Adds an explicit availability of length data to a class. This interface is intended for use with streams to overcome
  * a streams generally considered unreliable <code>available()</code> method.
+ *
+ * @see Stream.Input
+ * @see Stream.Output
  */
 public interface Countable
 {

@@ -65,7 +65,7 @@ public abstract class Put<R extends Response, E extends Event<R>, T> extends Wri
 	}
 
 	@Override
-	protected T read( URL url, Updateable.Input input ) throws IOException
+	protected T read( URL url, Updateable.Stream.Input input ) throws IOException
 	{
 		return parser.parse( url, input );
 	}

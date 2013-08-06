@@ -41,7 +41,7 @@ public abstract class Read<R extends Response, E extends Event<R>, T> extends Re
 	protected T receive( HttpURLConnection connection ) throws IOException
 	{
 		int length = connection.getContentLength();
-		Updateable.Input input = new Receive( connection.getInputStream(), length );
+		Updateable.Stream.Input input = new Receive( connection.getInputStream(), length );
 
 		try
 		{
@@ -54,11 +54,11 @@ public abstract class Read<R extends Response, E extends Event<R>, T> extends Re
 		}
 	}
 
-	protected abstract T read( URL url, Updateable.Input input ) throws IOException;
+	protected abstract T read( URL url, Updateable.Stream.Input input ) throws IOException;
 
 	protected abstract R summarize( URL url, int code, String message, Map<String, List<String>> headers, T body );
 
-	protected class Receive extends Updateable.Input
+	protected class Receive extends Updateable.Stream.Input
 	{
 		public Receive( InputStream stream, long length )
 		{

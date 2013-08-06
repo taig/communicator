@@ -37,7 +37,7 @@ public class Head extends Read<Response, Event<Response>, Void>
 	}
 
 	@Override
-	protected Void read( URL url, Updateable.Input input ) throws IOException
+	protected Void read( URL url, Updateable.Stream.Input input ) throws IOException
 	{
 		return null;
 	}

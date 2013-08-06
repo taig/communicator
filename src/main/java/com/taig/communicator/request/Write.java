@@ -53,7 +53,7 @@ public abstract class Write<R extends Response, E extends Event<R>, T> extends R
 		if( data != null )
 		{
 			long length = data.getLength();
-			Updateable.Output output = new Send( connection.getOutputStream(), length );
+			Updateable.Stream.Output output = new Send( connection.getOutputStream(), length );
 
 			try
 			{
@@ -68,7 +68,7 @@ public abstract class Write<R extends Response, E extends Event<R>, T> extends R
 		}
 	}
 
-	protected void write( Updateable.Output output, InputStream data ) throws IOException
+	protected void write( Updateable.Stream.Output output, InputStream data ) throws IOException
 	{
 		byte[] buffer = new byte[1024];
 
@@ -78,7 +78,7 @@ public abstract class Write<R extends Response, E extends Event<R>, T> extends R
 		}
 	}
 
-	protected class Send extends Updateable.Output
+	protected class Send extends Updateable.Stream.Output
 	{
 		public Send( OutputStream stream, long length )
 		{

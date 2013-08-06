@@ -61,7 +61,7 @@ public abstract class Post<R extends Response, E extends Event<R>, T> extends Wr
 	}
 
 	@Override
-	protected T read( URL url, Updateable.Input input ) throws IOException
+	protected T read( URL url, Updateable.Stream.Input input ) throws IOException
 	{
 		return parser.parse( url, input );
 	}
