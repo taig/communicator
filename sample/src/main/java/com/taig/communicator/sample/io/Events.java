@@ -7,6 +7,7 @@ import android.widget.ProgressBar;
 import com.taig.communicator.event.Event;
 import com.taig.communicator.event.State;
 import com.taig.communicator.method.Get;
+import com.taig.communicator.request.Response;
 import com.taig.communicator.sample.R;
 import com.taig.communicator.sample.result.ReadAndIgnore;
 
@@ -37,7 +38,7 @@ public class Events extends Interaction
 	@Override
 	public void interact() throws Exception
 	{
-		final Get<Void> request = GET( ReadAndIgnore.class, new URL( "http://vhost2.hansenet.de/1_mb_file.bin" ), new Event.Payload<Void>()
+		final Get request = GET( ReadAndIgnore.class, new URL( "http://vhost2.hansenet.de/1_mb_file.bin" ), new Event.Payload<Void>()
 		{
 			@Override
 			protected void onEvent( State state )
