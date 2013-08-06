@@ -81,7 +81,15 @@ public interface Updateable
 		@Override
 		public int available() throws IOException
 		{
-			return super.available();
+			if( getLength() > -1 )
+			{
+				long available = getLength() - read;
+				return (int) Math.min( Integer.MAX_VALUE, available );
+			}
+			else
+			{
+				return super.available();
+			}
 		}
 
 		@Override
