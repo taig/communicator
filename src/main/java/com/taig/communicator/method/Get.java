@@ -12,7 +12,7 @@ import static com.taig.communicator.method.Method.*;
 
 public class Get<T> extends Read<T>
 {
-	protected Parser<T> parser;
+	private Parser<T> parser;
 
 	public Get( Parser<T> parser, URL url, Event.Payload<T> event )
 	{

@@ -13,7 +13,7 @@ import static com.taig.communicator.method.Method.*;
 
 public class Post<T> extends Write<T>
 {
-	protected Parser<T> parser;
+	private Parser<T> parser;
 
 	public Post( Parser<T> parser, URL url, Data data, Event.Payload<T> event )
 	{
