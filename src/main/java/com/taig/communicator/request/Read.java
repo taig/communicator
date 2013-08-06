@@ -9,10 +9,12 @@ import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.List;
+import java.util.Map;
 
-public abstract class Read<T> extends Request<Response.Payload<T>, Event.Payload<T>>
+public abstract class Read<R extends Response, E extends Event<R>, T> extends Request<R, E>
 {
-	public Read( Method.Type method, URL url, Event.Payload<T> event )
+	public Read( Method.Type method, URL url, E event )
 	{
 		super( method, url, event );
 	}
@@ -26,9 +28,9 @@ public abstract class Read<T> extends Request<Response.Payload<T>, Event.Payload
 	}
 
 	@Override
-	protected Response.Payload<T> talk( HttpURLConnection connection ) throws IOException
+	protected R talk( HttpURLConnection connection ) throws IOException
 	{
-		return new Response.Payload<T>(
+		return summarize(
 			url,
 			connection.getResponseCode(),
 			connection.getResponseMessage(),
@@ -53,6 +55,8 @@ public abstract class Read<T> extends Request<Response.Payload<T>, Event.Payload
 	}
 
 	protected abstract T read( URL url, Updateable.Input input ) throws IOException;
+
+	protected abstract R summarize( URL url, int code, String message, Map<String, List<String>> headers, T body );
 
 	protected class Receive extends Updateable.Input
 	{

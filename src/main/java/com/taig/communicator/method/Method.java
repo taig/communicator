@@ -8,6 +8,8 @@ import com.taig.communicator.result.Ignore;
 import com.taig.communicator.result.Parser;
 
 import java.net.URL;
+import java.util.List;
+import java.util.Map;
 
 /**
  * A collection of several factory method to easily instantiate {@link Request Requests}. Using on of these methods is
@@ -54,7 +56,7 @@ public abstract class Method
 	 * @param <T>    The resource's type after successful parsing.
 	 * @return An instance of {@link Get}.
 	 */
-	public static <T> Get<T> GET( Class<? extends Parser<T>> parser, URL url )
+	public static <T> Get<Response.Payload<T>, Event.Payload<T>, T> GET( Class<? extends Parser<T>> parser, URL url )
 	{
 		return GET( parser, url, null );
 	}
@@ -68,7 +70,7 @@ public abstract class Method
 	 * @param <T>    The resource's type after successful parsing.
 	 * @return An instance of {@link Get}.
 	 */
-	public static <T> Get<T> GET( Class<? extends Parser<T>> parser, URL url, Event.Payload<T> event )
+	public static <T> Get<Response.Payload<T>, Event.Payload<T>, T> GET( Class<? extends Parser<T>> parser, URL url, Event.Payload<T> event )
 	{
 		return GET( createParser( parser ), url, event );
 	}
@@ -85,9 +87,16 @@ public abstract class Method
 	 * @param <T>    The resource's type after successful parsing.
 	 * @return An instance of {@link Get}.
 	 */
-	public static <T> Get<T> GET( Parser<T> parser, URL url, Event.Payload<T> event )
+	public static <T> Get<Response.Payload<T>, Event.Payload<T>, T> GET( Parser<T> parser, URL url, Event.Payload<T> event )
 	{
-		return new Get<T>( parser, url, event );
+		return new Get<Response.Payload<T>, Event.Payload<T>, T>( parser, url, event )
+		{
+			@Override
+			protected Response.Payload<T> summarize( URL url, int code, String message, Map<String, List<String>> headers, T body )
+			{
+				return new Response.Payload<T>( url, code, message, headers, body );
+			}
+		};
 	}
 
 	/**
@@ -98,7 +107,7 @@ public abstract class Method
 	 * @param event The Event callbacks that will be executed during the request. May be <code>null</code>.
 	 * @return An instance of {@link Delete}.
 	 */
-	public static Delete<Void> DELETE( URL url, Event.Payload<Void> event )
+	public static Delete<Response, Event<Response>, Void> DELETE( URL url, Event<Response> event )
 	{
 		return DELETE( url, null, event );
 	}
@@ -111,7 +120,7 @@ public abstract class Method
 	 * @param data The payload Data that will be added to the Request body. May be <code>null</code>.
 	 * @return An instance of {@link Delete}.
 	 */
-	public static Delete<Void> DELETE( URL url, Data data )
+	public static Delete<Response, Event<Response>, Void> DELETE( URL url, Data data )
 	{
 		return DELETE( url, data, null );
 	}
@@ -125,9 +134,16 @@ public abstract class Method
 	 * @param event The Event callbacks that will be executed during the request. May be <code>null</code>.
 	 * @return An instance of {@link Delete}.
 	 */
-	public static Delete<Void> DELETE( URL url, Data data, Event.Payload<Void> event )
+	public static Delete<Response, Event<Response>, Void> DELETE( URL url, Data data, Event<Response> event )
 	{
-		return new Delete<Void>( new Ignore(), url, data, event );
+		return new Delete<Response, Event<Response>, Void>( new Ignore(), url, data, event )
+		{
+			@Override
+			protected Response summarize( URL url, int code, String message, Map<String, List<String>> headers, Void body )
+			{
+				return new Response( url, code, message, headers );
+			}
+		};
 	}
 
 	/**
@@ -138,7 +154,7 @@ public abstract class Method
 	 * @param <T>    The resource's type after successful parsing.
 	 * @return An instance of {@link Delete}.
 	 */
-	public static <T> Delete<T> DELETE( Class<? extends Parser<T>> parser, URL url )
+	public static <T> Delete<Response.Payload<T>, Event.Payload<T>, T> DELETE( Class<? extends Parser<T>> parser, URL url )
 	{
 		return DELETE( parser, url, null, null );
 	}
@@ -152,7 +168,7 @@ public abstract class Method
 	 * @param <T>    The resource's type after successful parsing.
 	 * @return An instance of {@link Delete}.
 	 */
-	public static <T> Delete<T> DELETE( Class<? extends Parser<T>> parser, URL url, Event.Payload<T> event )
+	public static <T> Delete<Response.Payload<T>, Event.Payload<T>, T> DELETE( Class<? extends Parser<T>> parser, URL url, Event.Payload<T> event )
 	{
 		return DELETE( parser, url, null, event );
 	}
@@ -166,7 +182,7 @@ public abstract class Method
 	 * @param <T>    The resource's type after successful parsing.
 	 * @return An instance of {@link Delete}.
 	 */
-	public static <T> Delete<T> DELETE( Class<? extends Parser<T>> parser, URL url, Data data )
+	public static <T> Delete<Response.Payload<T>, Event.Payload<T>, T> DELETE( Class<? extends Parser<T>> parser, URL url, Data data )
 	{
 		return DELETE( parser, url, data, null );
 	}
@@ -181,7 +197,7 @@ public abstract class Method
 	 * @param <T>    The resource's type after successful parsing.
 	 * @return An instance of {@link Delete}.
 	 */
-	public static <T> Delete<T> DELETE( Class<? extends Parser<T>> parser, URL url, Data data, Event.Payload<T> event )
+	public static <T> Delete<Response.Payload<T>, Event.Payload<T>, T> DELETE( Class<? extends Parser<T>> parser, URL url, Data data, Event.Payload<T> event )
 	{
 		return DELETE( createParser( parser ), url, data, event );
 	}
@@ -199,9 +215,16 @@ public abstract class Method
 	 * @param <T>    The resource's type after successful parsing.
 	 * @return An instance of {@link Delete}.
 	 */
-	public static <T> Delete<T> DELETE( Parser<T> parser, URL url, Data data, Event.Payload<T> event )
+	public static <T> Delete<Response.Payload<T>, Event.Payload<T>, T> DELETE( Parser<T> parser, URL url, Data data, Event.Payload<T> event )
 	{
-		return new Delete<T>( parser, url, data, event );
+		return new Delete<Response.Payload<T>, Event.Payload<T>, T>( parser, url, data, event )
+		{
+			@Override
+			protected Response.Payload<T> summarize( URL url, int code, String message, Map<String, List<String>> headers, T body )
+			{
+				return new Response.Payload<T>( url, code, message, headers, body );
+			}
+		};
 	}
 
 	/**
@@ -236,7 +259,7 @@ public abstract class Method
 	 * @param <T>    The resource's type after successful parsing.
 	 * @return An instance of {@link Post}.
 	 */
-	public static <T> Post<T> POST( Class<? extends Parser<T>> parser, URL url, Data data )
+	public static <T> Post<Response.Payload<T>, Event.Payload<T>, T> POST( Class<? extends Parser<T>> parser, URL url, Data data )
 	{
 		return POST( parser, url, data, null );
 	}
@@ -251,7 +274,7 @@ public abstract class Method
 	 * @param <T>    The resource's type after successful parsing.
 	 * @return An instance of {@link Post}.
 	 */
-	public static <T> Post<T> POST( Class<? extends Parser<T>> parser, URL url, Data data, Event.Payload<T> event )
+	public static <T> Post<Response.Payload<T>, Event.Payload<T>, T> POST( Class<? extends Parser<T>> parser, URL url, Data data, Event.Payload<T> event )
 	{
 		return POST( createParser( parser ), url, data, event );
 	}
@@ -269,9 +292,16 @@ public abstract class Method
 	 * @param <T>    The resource's type after successful parsing.
 	 * @return An instance of {@link Post}.
 	 */
-	public static <T> Post<T> POST( Parser<T> parser, URL url, Data data, Event.Payload<T> event )
+	public static <T> Post<Response.Payload<T>, Event.Payload<T>, T> POST( Parser<T> parser, URL url, Data data, Event.Payload<T> event )
 	{
-		return new Post<T>( parser, url, data, event );
+		return new Post<Response.Payload<T>, Event.Payload<T>, T>( parser, url, data, event )
+		{
+			@Override
+			protected Response.Payload<T> summarize( URL url, int code, String message, Map<String, List<String>> headers, T body )
+			{
+				return new Response.Payload<T>( url, code, message, headers, body );
+			}
+		};
 	}
 
 	/**
@@ -283,7 +313,7 @@ public abstract class Method
 	 * @param <T>    The resource's type after successful parsing.
 	 * @return An instance of {@link Put}.
 	 */
-	public static <T> Put<T> PUT( Class<? extends Parser<T>> parser, URL url, Data data )
+	public static <T> Put<Response.Payload<T>, Event.Payload<T>, T> PUT( Class<? extends Parser<T>> parser, URL url, Data data )
 	{
 		return PUT( parser, url, data, null );
 	}
@@ -298,7 +328,7 @@ public abstract class Method
 	 * @param <T>    The resource's type after successful parsing.
 	 * @return An instance of {@link Put}.
 	 */
-	public static <T> Put<T> PUT( Class<? extends Parser<T>> parser, URL url, Data data, Event.Payload<T> event )
+	public static <T> Put<Response.Payload<T>, Event.Payload<T>, T> PUT( Class<? extends Parser<T>> parser, URL url, Data data, Event.Payload<T> event )
 	{
 		return PUT( createParser( parser ), url, data, event );
 	}
@@ -316,9 +346,16 @@ public abstract class Method
 	 * @param <T>    The resource's type after successful parsing.
 	 * @return An instance of {@link Put}.
 	 */
-	public static <T> Put<T> PUT( Parser<T> parser, URL url, Data data, Event.Payload<T> event )
+	public static <T> Put<Response.Payload<T>, Event.Payload<T>, T> PUT( Parser<T> parser, URL url, Data data, Event.Payload<T> event )
 	{
-		return new Put<T>( parser, url, data, event );
+		return new Put<Response.Payload<T>, Event.Payload<T>, T>( parser, url, data, event )
+		{
+			@Override
+			protected Response.Payload<T> summarize( URL url, int code, String message, Map<String, List<String>> headers, T body )
+			{
+				return new Response.Payload<T>( url, code, message, headers, body );
+			}
+		};
 	}
 
 	/**

@@ -12,11 +12,11 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-public abstract class Write<T> extends Read<T>
+public abstract class Write<R extends Response, E extends Event<R>, T> extends Read<R, E, T>
 {
 	protected Data data;
 
-	public Write( Method.Type method, URL url, Data data, Event.Payload<T> event )
+	public Write( Method.Type method, URL url, Data data, E event )
 	{
 		super( method, url, event );
 		this.data = data;
@@ -42,7 +42,7 @@ public abstract class Write<T> extends Read<T>
 	}
 
 	@Override
-	protected Response.Payload<T> talk( HttpURLConnection connection ) throws IOException
+	protected R talk( HttpURLConnection connection ) throws IOException
 	{
 		send( connection );
 		return super.talk( connection );

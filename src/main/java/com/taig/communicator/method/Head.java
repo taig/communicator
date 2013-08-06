@@ -1,12 +1,16 @@
 package com.taig.communicator.method;
 
 import com.taig.communicator.event.Event;
+import com.taig.communicator.event.Updateable;
+import com.taig.communicator.request.Read;
 import com.taig.communicator.request.Request;
 import com.taig.communicator.request.Response;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.List;
+import java.util.Map;
 
 import static com.taig.communicator.method.Method.*;
 import static com.taig.communicator.data.Header.Request.ACCEPT_ENCODING;
@@ -26,7 +30,7 @@ import static com.taig.communicator.data.Header.Request.ACCEPT_ENCODING;
  * @see Method#HEAD( java.net.URL, com.taig.communicator.event.Event )
  * @see <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html">http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html</a>
  */
-public class Head extends Request<Response, Event<Response>>
+public class Head extends Read<Response, Event<Response>, Void>
 {
 	public Head( URL url, Event<Response> event )
 	{
@@ -35,12 +39,14 @@ public class Head extends Request<Response, Event<Response>>
 	}
 
 	@Override
-	protected Response talk( HttpURLConnection connection ) throws IOException
+	protected Void read( URL url, Updateable.Input input ) throws IOException
 	{
-		return new Response(
-			url,
-			connection.getResponseCode(),
-			connection.getResponseMessage(),
-			connection.getHeaderFields() );
+		return null;
+	}
+
+	@Override
+	protected Response summarize( URL url, int code, String message, Map<String, List<String>> headers, Void body )
+	{
+		return new Response( url, code, message, headers );
 	}
 }
