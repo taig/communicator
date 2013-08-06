@@ -6,6 +6,8 @@ import java.net.URL;
 
 public class Ignore implements Parser<Void>
 {
+	public static final Ignore PARSER = new Ignore();
+
 	@Override
 	public Void parse( URL url, InputStream stream ) throws IOException
 	{

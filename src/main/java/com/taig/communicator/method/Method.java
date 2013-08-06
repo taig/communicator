@@ -136,7 +136,7 @@ public abstract class Method
 	 */
 	public static Delete<Response, Event<Response>, Void> DELETE( URL url, Data data, Event<Response> event )
 	{
-		return new Delete<Response, Event<Response>, Void>( new Ignore(), url, data, event )
+		return new Delete<Response, Event<Response>, Void>( Ignore.PARSER, url, data, event )
 		{
 			@Override
 			protected Response summarize( URL url, int code, String message, Map<String, List<String>> headers, Void body )
@@ -326,7 +326,7 @@ public abstract class Method
 	 */
 	public static Put<Response, Event<Response>, Void> PUT( URL url, Data data, Event<Response> event )
 	{
-		return new Put<Response, Event<Response>, Void>( new Ignore(), url, data, event )
+		return new Put<Response, Event<Response>, Void>( Ignore.PARSER, url, data, event )
 		{
 			@Override
 			protected Response summarize( URL url, int code, String message, Map<String, List<String>> headers, Void body )
