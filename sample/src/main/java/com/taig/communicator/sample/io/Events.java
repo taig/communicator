@@ -7,7 +7,6 @@ import android.widget.ProgressBar;
 import com.taig.communicator.event.Event;
 import com.taig.communicator.event.State;
 import com.taig.communicator.method.Get;
-import com.taig.communicator.request.Response;
 import com.taig.communicator.sample.R;
 import com.taig.communicator.sample.result.ReadAndIgnore;
 

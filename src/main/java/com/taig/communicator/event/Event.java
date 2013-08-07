@@ -15,7 +15,7 @@ import static com.taig.communicator.io.Updateable.*;
  * A collection of callback methods that shall be implemented by subclassing the Event class, overriding the desired
  * methods. Event callbacks are part of a {@link Request} and the overridden methods will be executed during its
  * lifecycle.
- *
+ * <p/>
  * All subclassed Event callbacks will be executed on the main thread!
  *
  * @param <R> The Request's {@link Response} type.
@@ -283,8 +283,11 @@ public abstract class Event<R extends Response>
 				@Override
 				public void run()
 				{
-					// TODO only trigger once
-					onEvent( State.SEND );
+					if( current == 0 )
+					{
+						onEvent( State.SEND );
+					}
+
 					onSend( current, total );
 
 					if( total > 0 )
@@ -302,8 +305,11 @@ public abstract class Event<R extends Response>
 				@Override
 				public void run()
 				{
-					// TODO only trigger once
-					onEvent( State.RECEIVE );
+					if( current == 0 )
+					{
+						onEvent( State.RECEIVE );
+					}
+
 					onReceive( current, total );
 
 					if( total > 0 )

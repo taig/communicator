@@ -63,12 +63,11 @@ public abstract class Read<R extends Response, E extends Event<R>, T> extends Re
 	 */
 	protected T receive( HttpURLConnection connection ) throws IOException
 	{
-		int length = connection.getContentLength();
-		Updateable.Stream.Input input = new Receive( connection.getInputStream(), length );
+		Updateable.Stream.Input input = new Receive( connection.getInputStream(), connection.getContentLength() );
 
 		try
 		{
-			state.receive( length );
+			state.receive();
 			return read( url, input );
 		}
 		finally

@@ -552,11 +552,9 @@ public abstract class Request<R extends Response, E extends Event<R>> implements
 			}
 		}
 
-		public void send( long total )
+		public void send()
 		{
 			current = State.SEND;
-			// TODO figure out if this even works..
-			sending( 0, total );
 		}
 
 		public void sending( int current, long total )
@@ -567,10 +565,9 @@ public abstract class Request<R extends Response, E extends Event<R>> implements
 			}
 		}
 
-		public void receive( int total )
+		public void receive()
 		{
 			current = State.RECEIVE;
-			receiving( 0, total );
 		}
 
 		public void receiving( int current, long total )

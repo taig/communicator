@@ -30,14 +30,14 @@ public interface Updateable
 	 */
 	public interface Stream extends Updateable
 	{
+		public static final int INTERVAL = 4096;
+
 		/**
 		 * An {@link InputStream} wrapper that implements the {@link Updateable} interface. It calls the update callback
 		 * each time a specific amount of bytes has been read.
 		 */
 		abstract class Input extends Countable.Stream.Input implements Stream
 		{
-			protected int interval = 4096;
-
 			protected int read = 0;
 
 			public Input( InputStream stream, long length )
@@ -48,14 +48,13 @@ public interface Updateable
 			@Override
 			public int read() throws IOException
 			{
-				int read = super.read();
-
-				if( read >= 0 && ++this.read % interval == 0 )
+				if( this.read % INTERVAL == 0 )
 				{
 					update();
 				}
 
-				return read;
+				this.read++;
+				return super.read();
 			}
 
 			@Override
@@ -69,7 +68,7 @@ public interface Updateable
 			{
 				int read = super.read( bytes, offset, length );
 
-				if( interval - ( this.read % interval ) <= read )
+				if( this.read == 0 || INTERVAL - ( this.read % INTERVAL ) <= read )
 				{
 					update();
 				}
@@ -131,8 +130,6 @@ public interface Updateable
 		 */
 		abstract class Output extends Countable.Stream.Output implements Stream
 		{
-			protected int interval = 4096;
-
 			protected int written = 0;
 
 			public Output( OutputStream stream, long length )
@@ -143,11 +140,12 @@ public interface Updateable
 			@Override
 			public void write( int b ) throws IOException
 			{
-				if( ++written % interval == 0 )
+				if( written % INTERVAL == 0 )
 				{
 					update();
 				}
 
+				written++;
 				super.write( b );
 			}
 
@@ -160,12 +158,12 @@ public interface Updateable
 			@Override
 			public void write( byte[] bytes, int offset, int length ) throws IOException
 			{
-				if( interval - ( this.written % interval ) <= length )
+				if( written == 0 || INTERVAL - ( written % INTERVAL ) <= length )
 				{
 					update();
 				}
 
-				this.written += length;
+				written += length;
 				super.write( bytes, offset, length );
 			}
 

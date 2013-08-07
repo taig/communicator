@@ -89,12 +89,11 @@ public abstract class Write<R extends Response, E extends Event<R>, T> extends R
 	{
 		if( data != null )
 		{
-			long length = data.getLength();
-			Updateable.Stream.Output output = new Send( connection.getOutputStream(), length );
+			Updateable.Stream.Output output = new Send( connection.getOutputStream(), data.getLength() );
 
 			try
 			{
-				state.send( length );
+				state.send();
 				write( output, data );
 			}
 			finally
