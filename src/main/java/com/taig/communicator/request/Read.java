@@ -78,7 +78,7 @@ public abstract class Read<R extends Response, E extends Event<R>, T> extends Re
 	}
 
 	/**
-	 * Parse the connection's {@link InputStream}.
+	 * Read and parse the connection's {@link InputStream}.
 	 *
 	 * @param url   The requested {@link URL}.
 	 * @param input The connection's InputStream.
