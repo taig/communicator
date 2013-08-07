@@ -200,7 +200,7 @@ public abstract class Event<R extends Response>
 		 * A proxy class that bundles the {@link Event.Payload} callback calls into a clear API. Not designated for
 		 * external usage.
 		 */
-		class Proxy extends Event<Response.Payload<T>>.Proxy
+		public class Proxy extends Event<Response.Payload<T>>.Proxy
 		{
 			@Override
 			public void success( final Response.Payload<T> response )
@@ -223,7 +223,7 @@ public abstract class Event<R extends Response>
 	/**
 	 * A proxy class that bundles the {@link Event} callback calls into a clear API. Not designated for external usage.
 	 */
-	class Proxy
+	public class Proxy
 	{
 		/**
 		 * Retrieve the underlying {@link Event} that is being proxied.
