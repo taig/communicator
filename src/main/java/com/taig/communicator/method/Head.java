@@ -1,11 +1,11 @@
 package com.taig.communicator.method;
 
 import com.taig.communicator.event.Event;
-import com.taig.communicator.io.Updateable;
 import com.taig.communicator.request.Read;
 import com.taig.communicator.request.Response;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +37,7 @@ public class Head extends Read<Response, Event<Response>, Void>
 	}
 
 	@Override
-	protected Void read( URL url, Updateable.Stream.Input input ) throws IOException
+	protected Void read( URL url, InputStream input ) throws IOException
 	{
 		return null;
 	}

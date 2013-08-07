@@ -20,7 +20,7 @@ public interface Updateable
 	 * <p/>
 	 * This method is used as a callback to be implemented by a subclass, it should therefore not be called explicitly.
 	 *
-	 * @throws IOException
+	 * @throws IOException Allows the update callback to interrupt the execution.
 	 */
 	public void update() throws IOException;
 

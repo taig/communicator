@@ -1,13 +1,13 @@
 package com.taig.communicator.method;
 
 import com.taig.communicator.event.Event;
-import com.taig.communicator.io.Updateable;
 import com.taig.communicator.data.Data;
 import com.taig.communicator.request.Response;
 import com.taig.communicator.request.Write;
 import com.taig.communicator.result.Parser;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 
 import static com.taig.communicator.method.Method.*;
@@ -65,7 +65,7 @@ public abstract class Put<R extends Response, E extends Event<R>, T> extends Wri
 	}
 
 	@Override
-	protected T read( URL url, Updateable.Stream.Input input ) throws IOException
+	protected T read( URL url, InputStream input ) throws IOException
 	{
 		return parser.parse( url, input );
 	}
