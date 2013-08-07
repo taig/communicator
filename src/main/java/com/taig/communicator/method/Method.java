@@ -2,164 +2,424 @@ package com.taig.communicator.method;
 
 import com.taig.communicator.event.Event;
 import com.taig.communicator.data.Data;
+import com.taig.communicator.request.Request;
 import com.taig.communicator.request.Response;
+import com.taig.communicator.result.Ignore;
+import com.taig.communicator.result.Image;
 import com.taig.communicator.result.Parser;
+import com.taig.communicator.result.Text;
 
-import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
+import java.util.Map;
 
+/**
+ * A collection of several factory method to easily instantiate {@link Request Requests}. Using on of these methods is
+ * the recommended way to create a Request.
+ */
 public abstract class Method
 {
+	/**
+	 * The supported HTTP Method types.
+	 */
 	public enum Type
 	{
-		DELETE, GET, HEAD, POST, PUT
+		/**
+		 * @see Delete
+		 */
+		DELETE,
+
+		/**
+		 * @see Get
+		 */
+		GET,
+
+		/**
+		 * @see Head
+		 */
+		HEAD,
+
+		/**
+		 * @see Post
+		 */
+		POST,
+
+		/**
+		 * @see Put
+		 */
+		PUT
 	}
 
-	public static <T> Get<T> GET( Class<? extends Parser<T>> parser, String url ) throws MalformedURLException
+	/**
+	 * Create an HTTP GET {@link Request}.
+	 *
+	 * @param parser The {@link Class} of a {@link Parser} used to evaluate the server's response.
+	 * @param url    The resource's {@link URL}.
+	 * @param <T>    The resource's type after successful parsing.
+	 * @return An instance of {@link Get}.
+	 */
+	public static <T> Get<Response.Payload<T>, Event.Payload<T>, T> GET( Class<? extends Parser<T>> parser, URL url )
 	{
 		return GET( parser, url, null );
 	}
 
-	public static <T> Get<T> GET( Class<? extends Parser<T>> parser, String url, Event.Payload<T> event ) throws MalformedURLException
-	{
-		return GET( parser, new URL( url ), event );
-	}
-
-	public static <T> Get<T> GET( Class<? extends Parser<T>> parser, URL url )
-	{
-		return GET( parser, url, null );
-	}
-
-	public static <T> Get<T> GET( Class<? extends Parser<T>> parser, URL url, Event.Payload<T> event )
+	/**
+	 * Create an HTTP GET {@link Request} with {@link Event} callbacks.
+	 *
+	 * @param parser The {@link Class} of a {@link Parser} used to evaluate the server's response.
+	 * @param url    The resource's {@link URL}.
+	 * @param event  The Event callbacks that will be executed during the request. May be <code>null</code>.
+	 * @param <T>    The resource's type after successful parsing.
+	 * @return An instance of {@link Get}.
+	 */
+	public static <T> Get<Response.Payload<T>, Event.Payload<T>, T> GET( Class<? extends Parser<T>> parser, URL url, Event.Payload<T> event )
 	{
 		return GET( createParser( parser ), url, event );
 	}
 
-	public static <T> Get<T> GET( Parser<T> parser, URL url, Event.Payload<T> event )
+	/**
+	 * Create an HTTP GET {@link Request} with {@link Event} callbacks.
+	 * <p/>
+	 * This method accepts an actual {@link Parser} object (instead of a Parser {@link Class}) for complex use cases
+	 * when a simple Parser with default constructor is not sufficient.
+	 *
+	 * @param parser The Parser used to evaluate the server's response.
+	 * @param url    The resource's {@link URL}.
+	 * @param event  The Event callbacks that will be executed during the request. May be <code>null</code>.
+	 * @param <T>    The resource's type after successful parsing.
+	 * @return An instance of {@link Get}.
+	 */
+	public static <T> Get<Response.Payload<T>, Event.Payload<T>, T> GET( Parser<T> parser, URL url, Event.Payload<T> event )
 	{
-		return new Get<T>( parser, url, event );
+		return new Get<Response.Payload<T>, Event.Payload<T>, T>( parser, url, event )
+		{
+			@Override
+			protected Response.Payload<T> summarize( URL url, int code, String message, Map<String, List<String>> headers, T body )
+			{
+				return new Response.Payload<T>( url, code, message, headers, body );
+			}
+		};
 	}
 
-	public static <T> Delete<T> DELETE( Class<? extends Parser<T>> parser, String url ) throws MalformedURLException
+	/**
+	 * Create an HTTP DELETE {@link Request} with {@link Event} callbacks, but ignore the
+	 * server's response payload.
+	 *
+	 * @param url   The resource's {@link URL}.
+	 * @param event The Event callbacks that will be executed during the request. May be <code>null</code>.
+	 * @return An instance of {@link Delete}.
+	 */
+	public static Delete<Response, Event<Response>, Void> DELETE( URL url, Event<Response> event )
+	{
+		return DELETE( url, null, event );
+	}
+
+	/**
+	 * Create an HTTP DELETE {@link Request} with payload {@link Data}, but ignore the
+	 * server's response payload.
+	 *
+	 * @param url  The resource's {@link URL}.
+	 * @param data The payload Data that will be added to the Request body. May be <code>null</code>.
+	 * @return An instance of {@link Delete}.
+	 */
+	public static Delete<Response, Event<Response>, Void> DELETE( URL url, Data data )
+	{
+		return DELETE( url, data, null );
+	}
+
+	/**
+	 * Create an HTTP DELETE {@link Request} with payload {@link Data} and {@link Event} callbacks, but ignore the
+	 * server's response payload.
+	 *
+	 * @param url   The resource's {@link URL}.
+	 * @param data  The payload Data that will be added to the Request body. May be <code>null</code>.
+	 * @param event The Event callbacks that will be executed during the request. May be <code>null</code>.
+	 * @return An instance of {@link Delete}.
+	 */
+	public static Delete<Response, Event<Response>, Void> DELETE( URL url, Data data, Event<Response> event )
+	{
+		return new Delete<Response, Event<Response>, Void>( Parser.IGNORE, url, data, event )
+		{
+			@Override
+			protected Response summarize( URL url, int code, String message, Map<String, List<String>> headers, Void body )
+			{
+				return new Response( url, code, message, headers );
+			}
+		};
+	}
+
+	/**
+	 * Create an HTTP DELETE {@link Request}.
+	 *
+	 * @param parser The {@link Class} of a {@link Parser} used to evaluate the server's response.
+	 * @param url    The resource's {@link URL}.
+	 * @param <T>    The resource's type after successful parsing.
+	 * @return An instance of {@link Delete}.
+	 */
+	public static <T> Delete<Response.Payload<T>, Event.Payload<T>, T> DELETE( Class<? extends Parser<T>> parser, URL url )
 	{
 		return DELETE( parser, url, null, null );
 	}
 
-	public static <T> Delete<T> DELETE( Class<? extends Parser<T>> parser, String url, Event.Payload<T> event ) throws MalformedURLException
-	{
-		return DELETE( parser, new URL( url ), null, event );
-	}
-
-	public static <T> Delete<T> DELETE( Class<? extends Parser<T>> parser, String url, Data data ) throws MalformedURLException
-	{
-		return DELETE( parser, url, data, null );
-	}
-
-	public static <T> Delete<T> DELETE( Class<? extends Parser<T>> parser, String url, Data data, Event.Payload<T> event ) throws MalformedURLException
-	{
-		return DELETE( parser, new URL( url ), data, event );
-	}
-
-	public static <T> Delete<T> DELETE( Class<? extends Parser<T>> parser, URL url )
-	{
-		return DELETE( parser, url, null, null );
-	}
-
-	public static <T> Delete<T> DELETE( Class<? extends Parser<T>> parser, URL url, Event.Payload<T> event )
+	/**
+	 * Create an HTTP DELETE {@link Request} with {@link Event} callbacks.
+	 *
+	 * @param parser The {@link Class} of a {@link Parser} used to evaluate the server's response.
+	 * @param url    The resource's {@link URL}.
+	 * @param event  The Event callbacks that will be executed during the request. May be <code>null</code>.
+	 * @param <T>    The resource's type after successful parsing.
+	 * @return An instance of {@link Delete}.
+	 */
+	public static <T> Delete<Response.Payload<T>, Event.Payload<T>, T> DELETE( Class<? extends Parser<T>> parser, URL url, Event.Payload<T> event )
 	{
 		return DELETE( parser, url, null, event );
 	}
 
-	public static <T> Delete<T> DELETE( Class<? extends Parser<T>> parser, URL url, Data data )
+	/**
+	 * Create an HTTP DELETE {@link Request} with payload {@link Data}.
+	 *
+	 * @param parser The {@link Class} of a {@link Parser} used to evaluate the server's response.
+	 * @param url    The resource's {@link URL}.
+	 * @param data   The payload Data that will be added to the Request body. May be <code>null</code>.
+	 * @param <T>    The resource's type after successful parsing.
+	 * @return An instance of {@link Delete}.
+	 */
+	public static <T> Delete<Response.Payload<T>, Event.Payload<T>, T> DELETE( Class<? extends Parser<T>> parser, URL url, Data data )
 	{
 		return DELETE( parser, url, data, null );
 	}
 
-	public static <T> Delete<T> DELETE( Class<? extends Parser<T>> parser, URL url, Data data, Event.Payload<T> event )
+	/**
+	 * Create an HTTP DELETE {@link Request} with payload {@link Data} and {@link Event} callbacks.
+	 *
+	 * @param parser The {@link Class} of a {@link Parser} used to evaluate the server's response.
+	 * @param url    The resource's {@link URL}.
+	 * @param data   The payload Data that will be added to the Request body. May be <code>null</code>.
+	 * @param event  The Event callbacks that will be executed during the request. May be <code>null</code>.
+	 * @param <T>    The resource's type after successful parsing.
+	 * @return An instance of {@link Delete}.
+	 */
+	public static <T> Delete<Response.Payload<T>, Event.Payload<T>, T> DELETE( Class<? extends Parser<T>> parser, URL url, Data data, Event.Payload<T> event )
 	{
 		return DELETE( createParser( parser ), url, data, event );
 	}
 
-	public static <T> Delete<T> DELETE( Parser<T> parser, URL url, Data data, Event.Payload<T> event )
+	/**
+	 * Create an HTTP DELETE {@link Request} with payload {@link Data} and {@link Event} callbacks.
+	 * <p/>
+	 * This method accepts an actual {@link Parser} object (instead of a Parser {@link Class}) for complex use cases
+	 * when a simple Parser with default constructor is not sufficient.
+	 *
+	 * @param parser The Parser used to evaluate the server's response.
+	 * @param url    The resource's {@link URL}.
+	 * @param data   The payload Data that will be added to the Request body. May be <code>null</code>.
+	 * @param event  The Event callbacks that will be executed during the request. May be <code>null</code>.
+	 * @param <T>    The resource's type after successful parsing.
+	 * @return An instance of {@link Delete}.
+	 */
+	public static <T> Delete<Response.Payload<T>, Event.Payload<T>, T> DELETE( Parser<T> parser, URL url, Data data, Event.Payload<T> event )
 	{
-		return new Delete<T>( parser, url, data, event );
+		return new Delete<Response.Payload<T>, Event.Payload<T>, T>( parser, url, data, event )
+		{
+			@Override
+			protected Response.Payload<T> summarize( URL url, int code, String message, Map<String, List<String>> headers, T body )
+			{
+				return new Response.Payload<T>( url, code, message, headers, body );
+			}
+		};
 	}
 
-	public static Head HEAD( String url ) throws MalformedURLException
-	{
-		return HEAD( url, null );
-	}
-
-	public static Head HEAD( String url, Event<Response> event ) throws MalformedURLException
-	{
-		return HEAD( new URL( url ), event );
-	}
-
+	/**
+	 * Create an HTTP HEAD {@link Request}.
+	 *
+	 * @param url The resource's {@link URL}.
+	 * @return An instance of {@link Head}.
+	 */
 	public static Head HEAD( URL url )
 	{
 		return HEAD( url, null );
 	}
 
+	/**
+	 * Create an HTTP HEAD {@link Request} with {@link Event} callbacks.
+	 *
+	 * @param url   The resource's {@link URL}.
+	 * @param event The Event callbacks that will be executed during the request. May be <code>null</code>.
+	 * @return An instance of {@link Head}.
+	 */
 	public static Head HEAD( URL url, Event<Response> event )
 	{
 		return new Head( url, event );
 	}
 
-	public static <T> Post<T> POST( Class<? extends Parser<T>> parser, String url, Data data ) throws MalformedURLException
+	/**
+	 * Create an HTTP POST {@link Request}.
+	 *
+	 * @param parser The {@link Class} of a {@link Parser} used to evaluate the server's response.
+	 * @param url    The resource's {@link URL}.
+	 * @param data   The payload Data that will be added to the Request body. May be <code>null</code>.
+	 * @param <T>    The resource's type after successful parsing.
+	 * @return An instance of {@link Post}.
+	 */
+	public static <T> Post<Response.Payload<T>, Event.Payload<T>, T> POST( Class<? extends Parser<T>> parser, URL url, Data data )
 	{
 		return POST( parser, url, data, null );
 	}
 
-	public static <T> Post<T> POST( Class<? extends Parser<T>> parser, String url, Data data, Event.Payload<T> event ) throws MalformedURLException
+	/**
+	 * Create an HTTP POST {@link Request} with {@link Event} callbacks.
+	 *
+	 * @param parser The {@link Class} of a {@link Parser} used to evaluate the server's response.
+	 * @param url    The resource's {@link URL}.
+	 * @param data   The payload Data that will be added to the Request body. May be <code>null</code>.
+	 * @param event  The Event callbacks that will be executed during the request. May be <code>null</code>.
+	 * @param <T>    The resource's type after successful parsing.
+	 * @return An instance of {@link Post}.
+	 */
+	public static <T> Post<Response.Payload<T>, Event.Payload<T>, T> POST( Class<? extends Parser<T>> parser, URL url, Data data, Event.Payload<T> event )
 	{
-		return POST( parser, new URL( url ), data, event );
+		return POST( createParser( parser ), url, data, event );
 	}
 
-	public static <T> Post<T> POST( Class<? extends Parser<T>> parser, URL url, Data data )
+	/**
+	 * Create an HTTP POST {@link Request} with {@link Event} callbacks.
+	 * <p/>
+	 * This method accepts an actual {@link Parser} object (instead of a Parser {@link Class}) for complex use cases
+	 * when a simple Parser with default constructor is not sufficient.
+	 *
+	 * @param parser The {@link Class} of a {@link Parser} used to evaluate the server's response.
+	 * @param url    The resource's {@link URL}.
+	 * @param data   The payload Data that will be added to the Request body. May be <code>null</code>.
+	 * @param event  The Event callbacks that will be executed during the request. May be <code>null</code>.
+	 * @param <T>    The resource's type after successful parsing.
+	 * @return An instance of {@link Post}.
+	 */
+	public static <T> Post<Response.Payload<T>, Event.Payload<T>, T> POST( Parser<T> parser, URL url, Data data, Event.Payload<T> event )
 	{
-		return POST( parser, url, data, null );
+		return new Post<Response.Payload<T>, Event.Payload<T>, T>( parser, url, data, event )
+		{
+			@Override
+			protected Response.Payload<T> summarize( URL url, int code, String message, Map<String, List<String>> headers, T body )
+			{
+				return new Response.Payload<T>( url, code, message, headers, body );
+			}
+		};
 	}
 
-	public static <T> Post<T> POST( Class<? extends Parser<T>> parser, URL url, Data data, Event.Payload<T> event )
+	/**
+	 * Create an HTTP PUT {@link Request}, but ignore the server's response payload.
+	 *
+	 * @param url  The resource's {@link URL}.
+	 * @param data The payload Data that will be added to the Request body. May be <code>null</code>.
+	 * @return An instance of {@link Put}.
+	 */
+	public static Put<Response, Event<Response>, Void> PUT( URL url, Data data )
 	{
-		return new Post<T>( createParser( parser ), url, data, event );
+		return PUT( url, data, null );
 	}
 
-	public static <T> Post<T> POST( Parser<T> parser, URL url, Data data, Event.Payload<T> event )
+	/**
+	 * Create an HTTP PUT {@link Request} with {@link Event} callbacks, but ignore the server's response payload.
+	 *
+	 * @param url   The resource's {@link URL}.
+	 * @param data  The payload Data that will be added to the Request body. May be <code>null</code>.
+	 * @param event The Event callbacks that will be executed during the request. May be <code>null</code>.
+	 * @return An instance of {@link Put}.
+	 */
+	public static Put<Response, Event<Response>, Void> PUT( URL url, Data data, Event<Response> event )
 	{
-		return POST( parser, url, data, event );
+		return new Put<Response, Event<Response>, Void>( Parser.IGNORE, url, data, event )
+		{
+			@Override
+			protected Response summarize( URL url, int code, String message, Map<String, List<String>> headers, Void body )
+			{
+				return new Response( url, code, message, headers );
+			}
+		};
 	}
 
-	public static <T> Put<T> PUT( Class<? extends Parser<T>> parser, String url, Data data ) throws MalformedURLException
+	/**
+	 * Create an HTTP PUT {@link Request}.
+	 *
+	 * @param parser The {@link Class} of a {@link Parser} used to evaluate the server's response.
+	 * @param url    The resource's {@link URL}.
+	 * @param data   The payload Data that will be added to the Request body. May be <code>null</code>.
+	 * @param <T>    The resource's type after successful parsing.
+	 * @return An instance of {@link Put}.
+	 */
+	public static <T> Put<Response.Payload<T>, Event.Payload<T>, T> PUT( Class<? extends Parser<T>> parser, URL url, Data data )
 	{
 		return PUT( parser, url, data, null );
 	}
 
-	public static <T> Put<T> PUT( Class<? extends Parser<T>> parser, String url, Data data, Event.Payload<T> event ) throws MalformedURLException
-	{
-		return PUT( parser, new URL( url ), data, event );
-	}
-
-	public static <T> Put<T> PUT( Class<? extends Parser<T>> parser, URL url, Data data )
-	{
-		return PUT( parser, url, data, null );
-	}
-
-	public static <T> Put<T> PUT( Class<? extends Parser<T>> parser, URL url, Data data, Event.Payload<T> event )
+	/**
+	 * Create an HTTP PUT {@link Request} with {@link Event} callbacks.
+	 *
+	 * @param parser The {@link Class} of a {@link Parser} used to evaluate the server's response.
+	 * @param url    The resource's {@link URL}.
+	 * @param data   The payload Data that will be added to the Request body. May be <code>null</code>.
+	 * @param event  The Event callbacks that will be executed during the request. May be <code>null</code>.
+	 * @param <T>    The resource's type after successful parsing.
+	 * @return An instance of {@link Put}.
+	 */
+	public static <T> Put<Response.Payload<T>, Event.Payload<T>, T> PUT( Class<? extends Parser<T>> parser, URL url, Data data, Event.Payload<T> event )
 	{
 		return PUT( createParser( parser ), url, data, event );
 	}
 
-	public static <T> Put<T> PUT( Parser<T> parser, URL url, Data data, Event.Payload<T> event )
+	/**
+	 * Create an HTTP PUT {@link Request} with {@link Event} callbacks.
+	 * <p/>
+	 * This method accepts an actual {@link Parser} object (instead of a Parser {@link Class}) for complex use cases
+	 * when a simple Parser with default constructor is not sufficient.
+	 *
+	 * @param parser The {@link Class} of a {@link Parser} used to evaluate the server's response.
+	 * @param url    The resource's {@link URL}.
+	 * @param data   The payload Data that will be added to the Request body. May be <code>null</code>.
+	 * @param event  The Event callbacks that will be executed during the request. May be <code>null</code>.
+	 * @param <T>    The resource's type after successful parsing.
+	 * @return An instance of {@link Put}.
+	 */
+	public static <T> Put<Response.Payload<T>, Event.Payload<T>, T> PUT( Parser<T> parser, URL url, Data data, Event.Payload<T> event )
 	{
-		return new Put<T>( parser, url, data, event );
+		return new Put<Response.Payload<T>, Event.Payload<T>, T>( parser, url, data, event )
+		{
+			@Override
+			protected Response.Payload<T> summarize( URL url, int code, String message, Map<String, List<String>> headers, T body )
+			{
+				return new Response.Payload<T>( url, code, message, headers, body );
+			}
+		};
 	}
 
+	/**
+	 * Create an instance of a {@link Parser} via reflection.
+	 *
+	 * @param type The class of the Parser to instantiate.
+	 * @return The instantiated Parser.
+	 * @throws RuntimeException If the given Parser class does not have a default constructor.
+	 */
+	@SuppressWarnings( "unchecked" )
 	protected static <T> Parser<T> createParser( Class<? extends Parser<T>> type )
 	{
 		try
 		{
-			return type.getConstructor().newInstance();
+			if( Text.class.isAssignableFrom( type ) )
+			{
+				return (Parser<T>) Parser.TEXT;
+			}
+			else if( Image.class.isAssignableFrom( type ) )
+			{
+				return (Parser<T>) Parser.IMAGE;
+			}
+			else if( Ignore.class.isAssignableFrom( type ) )
+			{
+				return (Parser<T>) Parser.IGNORE;
+			}
+			else
+			{
+				return type.getConstructor().newInstance();
+			}
 		}
 		catch( Exception exception )
 		{

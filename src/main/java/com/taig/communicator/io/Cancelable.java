@@ -1,5 +1,9 @@
 package com.taig.communicator.io;
 
+/**
+ * The Cancelable interface is used for classes that execute time-consuming tasks and adds a possibility to stop that
+ * execution in a proper manner.
+ */
 public interface Cancelable
 {
 	/**

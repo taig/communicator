@@ -9,6 +9,7 @@ import com.taig.communicator.result.Text;
 
 import java.net.CookieStore;
 import java.net.HttpCookie;
+import java.net.URL;
 
 import static com.taig.communicator.method.Method.GET;
 import static com.taig.communicator.method.Method.HEAD;
@@ -23,7 +24,7 @@ public class Cookies extends Interaction
 	@Override
 	public void interact() throws Exception
 	{
-		Response response = HEAD( "http://httpbin.org/cookies/set?user=Taig&pass=strawberries" ).request();
+		Response response = HEAD( new URL( "http://httpbin.org/cookies/set?user=Taig&pass=strawberries" ) ).request();
 		CookieStore store = new PersistedCookieStore( context );
 
 		for( HttpCookie cookie : response.getCookies() )
@@ -38,13 +39,13 @@ public class Cookies extends Interaction
 		HttpCookie localCookie = new HttpCookie( "local", "cookie" );
 		localCookie.setVersion( 0 );
 
-		final String manual = GET( Text.class, "http://httpbin.org/get" )
+		final String manual = GET( Text.class, new URL( "http://httpbin.org/get" ) )
 			.putCookie( response )
 			.addCookie( localCookie )
 			.request()
 			.getPayload();
 
-		final String automatic = GET( Text.class, "http://httpbin.org/get" )
+		final String automatic = GET( Text.class, new URL( "http://httpbin.org/get" ) )
 			.putCookie( store )
 			.request()
 			.getPayload();

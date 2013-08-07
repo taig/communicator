@@ -7,6 +7,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
+/**
+ * An implementation of {@link Parser} that translates the server's response into a {@link Bitmap}.
+ */
 public class Image implements Parser<Bitmap>
 {
 	@Override

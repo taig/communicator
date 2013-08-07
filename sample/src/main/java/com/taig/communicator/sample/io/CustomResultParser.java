@@ -4,6 +4,8 @@ import android.content.Context;
 import com.taig.communicator.event.Event;
 import com.taig.communicator.sample.result.Headline;
 
+import java.net.URL;
+
 import static com.taig.communicator.method.Method.GET;
 
 public class CustomResultParser extends Interaction
@@ -16,7 +18,7 @@ public class CustomResultParser extends Interaction
 	@Override
 	public void interact() throws Exception
 	{
-		GET( Headline.class, "http://stackoverflow.com", new Event.Payload<String>()
+		GET( Headline.class, new URL( "http://stackoverflow.com" ), new Event.Payload<String>()
 		{
 			@Override
 			protected void onSuccess( String content )
