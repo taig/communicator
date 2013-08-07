@@ -166,7 +166,7 @@ communicator.execute( GET<String>( Text.class, "http://www.example.com" ) );
 communicator.execute( GET<String>( Text.class, "http://www.example.net" ) );
 ````
 
-> **Please Note**
+> **Please Note**  
 > As defined in Java's `Executor` interface the method `execute( Runnable )` is not limited to `Request` objects, but
 > you should think twice before submitting anything else.
 
@@ -195,7 +195,7 @@ activity lifecycles: make sure to call `cancel()` or `stop()` when an activity i
 the requested content any more. Also don't forget to shut down the executor when the application is being destroyed
 (`close()` or `closeNow()`) to tear down the threads properly.
 
-> **Please Note**
+> **Please Note**  
 > Keep in mind that the concurrent processing of multiple resources (especially images) leads to a very high memory
 > consumption. If you're facing `OutOfMemoryExceptions` during your requests you should consider to reduce the amount of
 > simultaneous connections or to improve your Parser (e.g. forward the data immediately to the cache directory).
