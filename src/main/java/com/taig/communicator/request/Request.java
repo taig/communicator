@@ -261,6 +261,7 @@ public abstract class Request<R extends Response, E extends Event<R>> implements
 			state.start();
 			connection = connect();
 			connection.connect();
+			state.connect();
 
 			if( cancelled )
 			{
@@ -322,6 +323,16 @@ public abstract class Request<R extends Response, E extends Event<R>> implements
 			}
 		}
 
+		public void connect()
+		{
+			current = State.CONNECT;
+
+			if( event != null )
+			{
+				event.connect();
+			}
+		}
+
 		public void cancel( InterruptedIOException exception )
 		{
 			current = State.CANCEL;
@@ -335,6 +346,7 @@ public abstract class Request<R extends Response, E extends Event<R>> implements
 		public void send( long total )
 		{
 			current = State.SEND;
+			// TODO figure out if this even works..
 			sending( 0, total );
 		}
 
