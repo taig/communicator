@@ -43,6 +43,8 @@ public abstract class Event<R extends Response>
 	/**
 	 * Triggers right after the {@link Request} has been started (with {@link Request#run()} or {@link
 	 * Request#request()}) and before a connection to the server is started.
+	 *
+	 * @see State#START
 	 */
 	protected void onStart()
 	{
@@ -51,6 +53,8 @@ public abstract class Event<R extends Response>
 
 	/**
 	 * Triggers right after the connection has been opened successfully.
+	 *
+	 * @see State#CONNECT
 	 */
 	protected void onConnect()
 	{
@@ -64,6 +68,7 @@ public abstract class Event<R extends Response>
 	 * not be fired.
 	 *
 	 * @param exception The {@link InterruptedIOException} thrown by cancelling the Request.
+	 * @see State#CANCEL
 	 */
 	protected void onCancel( InterruptedIOException exception )
 	{
@@ -75,6 +80,7 @@ public abstract class Event<R extends Response>
 	 *
 	 * @param current The already received amount of bytes.
 	 * @param total   The total amount of bytes to send or <code>-1</code> if unknown.
+	 * @see State#SEND
 	 */
 	protected void onSend( long current, long total )
 	{
@@ -88,6 +94,7 @@ public abstract class Event<R extends Response>
 	 * is <code>> 0</code>.
 	 *
 	 * @param progress The current upload progress as a value between 0 and 100.
+	 * @see State#SEND
 	 */
 	protected void onSend( int progress )
 	{
@@ -104,6 +111,7 @@ public abstract class Event<R extends Response>
 	 *
 	 * @param current The already sent amount of bytes.
 	 * @param total   The total amount of bytes to receive or <code>-1</code> if unknown.
+	 * @see State#RECEIVE
 	 */
 	protected void onReceive( long current, long total )
 	{
@@ -120,6 +128,7 @@ public abstract class Event<R extends Response>
 	 * bytes to be transferred. This value is not necessarily correct. Use with caution.
 	 *
 	 * @param progress The current download progress as a value between 0 and 100.
+	 * @see State#RECEIVE
 	 */
 	protected void onReceive( int progress )
 	{
@@ -130,6 +139,7 @@ public abstract class Event<R extends Response>
 	 * Triggers when the {@link Request} has completed successfully and the response has already been parsed.
 	 *
 	 * @param response The Request's {@link Response} ({@link R}).
+	 * @see State#SUCCESS
 	 */
 	protected void onSuccess( R response )
 	{
@@ -143,6 +153,7 @@ public abstract class Event<R extends Response>
 	 *
 	 * @param error The {@link Throwable} that caused the Request to fail.
 	 * @see #onCancel(InterruptedIOException)
+	 * @see State#FAILURE
 	 */
 	protected void onFailure( Throwable error )
 	{
@@ -152,6 +163,9 @@ public abstract class Event<R extends Response>
 	/**
 	 * Triggers when the {@link Request} has finished either after {@link #onSuccess(Response)} or {@link
 	 * #onFailure(Throwable)}.
+	 *
+	 * @see #onSuccess(Response)
+	 * @see #onFailure(Throwable)
 	 */
 	protected void onFinish()
 	{
