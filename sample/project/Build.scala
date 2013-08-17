@@ -1,6 +1,5 @@
 import sbt._
 import sbt.Keys._
-import sbtandroid.AndroidDefaults
 import sbtandroid.AndroidPlugin._
 
 object Build extends sbt.Build
