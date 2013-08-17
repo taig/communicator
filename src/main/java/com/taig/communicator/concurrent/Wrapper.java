@@ -3,6 +3,7 @@ package com.taig.communicator.concurrent;
 import android.util.Log;
 import com.taig.communicator.event.Event;
 import com.taig.communicator.io.Cancelable;
+import com.taig.communicator.request.Request;
 import com.taig.communicator.request.Response;
 
 import java.io.IOException;
@@ -17,6 +18,19 @@ public abstract class Wrapper<R extends java.lang.Runnable> implements java.lang
 	public Wrapper( R runnable )
 	{
 		this.runnable = runnable;
+	}
+
+	@SuppressWarnings( "unchecked" )
+	public static Wrapper newInstance( java.lang.Runnable runnable, CookieStore store, CookiePolicy policy )
+	{
+		if( runnable instanceof com.taig.communicator.request.Request )
+		{
+			return new Request( (com.taig.communicator.request.Request) runnable, store, policy );
+		}
+		else
+		{
+			return new Runnable( runnable );
+		}
 	}
 
 	public static class Runnable extends Wrapper<java.lang.Runnable>

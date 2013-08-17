@@ -5,13 +5,13 @@ import java.util.concurrent.Semaphore;
 
 public class QueuedPool<T> implements Collection<T>
 {
-	protected int size;
+	private int size;
 
-	protected Deque<T> queue = new LinkedList<T>();
+	private Deque<T> queue = new LinkedList<T>();
 
-	protected Collection<T> pool = new ArrayList<T>();
+	private Collection<T> pool = new ArrayList<T>();
 
-	protected Semaphore semaphore;
+	private Semaphore semaphore;
 
 	public QueuedPool( int size )
 	{
