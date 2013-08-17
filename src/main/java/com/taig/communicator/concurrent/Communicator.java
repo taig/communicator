@@ -222,14 +222,7 @@ public class Communicator implements Executor, Cancelable
 			throw new RejectedExecutionException( "Communicator has already been closed" );
 		}
 
-		if( runnable instanceof Request )
-		{
-			pool.add( new Wrapper.Request( (Request) runnable, store, policy ), skipQueue );
-		}
-		else
-		{
-			pool.add( new Wrapper.Runnable( runnable ), skipQueue );
-		}
+		pool.add( Wrapper.newInstance( runnable, store, policy ), skipQueue );
 	}
 
 	/**
