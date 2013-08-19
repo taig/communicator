@@ -27,6 +27,13 @@ public class Header extends HashMap<String, Object[]> implements Appliable
 	public static final String CONNECTION = "Connection";
 
 	/**
+	 * The type of encoding used on the data.
+	 *
+	 * @see <a href="http://en.wikipedia.org/wiki/HTTP_compression">HTTP compression</a>
+	 */
+	public static final String CONTENT_ENCODING = "Content-Encoding";
+
+	/**
 	 * Implementation-specific headers that may have various effects anywhere along the request-response chain.
 	 */
 	public static final String PRAGMA = "Pragma";
@@ -495,13 +502,6 @@ public class Header extends HashMap<String, Object[]> implements Appliable
 		 * filename for dynamic content. Quotes are necessary with special characters.
 		 */
 		public static final String CONTENT_DISPOSITION = "Content-Disposition";
-
-		/**
-		 * The type of encoding used on the data.
-		 *
-		 * @see <a href="http://en.wikipedia.org/wiki/HTTP_compression">HTTP compression</a>
-		 */
-		public static final String CONTENT_ENCODING = "Content-Encoding";
 
 		/**
 		 * The language the content is in.
