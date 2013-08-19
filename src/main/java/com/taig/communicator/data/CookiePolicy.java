@@ -10,9 +10,9 @@ import java.util.Map;
  */
 public class CookiePolicy implements java.net.CookiePolicy
 {
-	protected static final String WILDCARD = "*";
+	private static final String WILDCARD = "*";
 
-	protected Map<String, String[]> rules = new HashMap<String, String[]>();
+	private Map<String, String[]> rules = new HashMap<String, String[]>();
 
 	/**
 	 * Create a new {@link CookiePolicy} that only permits certain hosts (extracted from the supplied {@link URI}), but
