@@ -3,7 +3,6 @@ package com.taig.communicator.data;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
-import com.taig.communicator.request.Response;
 
 import java.net.CookieStore;
 import java.net.HttpCookie;
@@ -11,24 +10,45 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
 
+/**
+ * An implementation of {@link CookieStore} that persists all stored cookie via Android's {@link SharedPreferences}.
+ */
 public class PersistedCookieStore implements CookieStore
 {
 	private static final String TAG = PersistedCookieStore.class.getName();
 
-	protected static final String WILDCARD = "*";
+	private static final String WILDCARD = "*";
 
-	protected SharedPreferences preferences;
+	private SharedPreferences preferences;
 
+	/**
+	 * Construct a {@link PersistedCookieStore} with a default value for its {@link SharedPreferences} name and the
+	 * operating mode set to {@link Context#MODE_PRIVATE}.
+	 *
+	 * @param context The {@link Context}.
+	 */
 	public PersistedCookieStore( Context context )
 	{
 		this( context, "com.taig.communicator.PersistedCookieStore", Context.MODE_PRIVATE );
 	}
 
+	/**
+	 * Construct a {@link PersistedCookieStore}.
+	 *
+	 * @param context    The {@link Context}.
+	 * @param preference The name of the {@link SharedPreferences}.
+	 * @param mode       The operation mode of the SharedPreferences.
+	 */
 	public PersistedCookieStore( Context context, String preference, int mode )
 	{
 		this( context.getSharedPreferences( preference, mode ) );
 	}
 
+	/**
+	 * Construct a {@link PersistedCookieStore}.
+	 *
+	 * @param preferences The {@link SharedPreferences}.
+	 */
 	public PersistedCookieStore( SharedPreferences preferences )
 	{
 		this.preferences = preferences;
