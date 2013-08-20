@@ -18,7 +18,7 @@ public class CustomResultParser extends Interaction
 	@Override
 	public void interact() throws Exception
 	{
-		GET( Headline.class, new URL( "http://stackoverflow.com" ), new Event.Payload<String>()
+		GET( new Headline(), new URL( "http://stackoverflow.com" ), new Event.Payload<String>()
 		{
 			@Override
 			protected void onSuccess( String content )

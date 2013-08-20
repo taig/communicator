@@ -5,7 +5,7 @@ import android.os.Handler;
 import android.view.Gravity;
 import com.taig.communicator.data.PersistedCookieStore;
 import com.taig.communicator.request.Response;
-import com.taig.communicator.result.Text;
+import com.taig.communicator.result.Parser;
 
 import java.net.CookieStore;
 import java.net.HttpCookie;
@@ -39,13 +39,13 @@ public class Cookies extends Interaction
 		HttpCookie localCookie = new HttpCookie( "local", "cookie" );
 		localCookie.setVersion( 0 );
 
-		final String manual = GET( Text.class, new URL( "http://httpbin.org/get" ) )
+		final String manual = GET( Parser.TEXT, new URL( "http://httpbin.org/get" ) )
 			.putCookie( response )
 			.addCookie( localCookie )
 			.request()
 			.getPayload();
 
-		final String automatic = GET( Text.class, new URL( "http://httpbin.org/get" ) )
+		final String automatic = GET( Parser.TEXT, new URL( "http://httpbin.org/get" ) )
 			.putCookie( store )
 			.request()
 			.getPayload();

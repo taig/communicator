@@ -23,7 +23,7 @@ public class Events extends Interaction
 
 	public Events( Context context )
 	{
-		super( context, View.inflate( context, R.layout.progress, null ) );
+		super( context, R.layout.progress );
 		this.progressBar = (ProgressBar) main.findViewById( R.id.progress_bar_events );
 		this.cancel = (Button) main.findViewById( R.id.button_cancel );
 	}
@@ -37,7 +37,7 @@ public class Events extends Interaction
 	@Override
 	public void interact() throws Exception
 	{
-		final Get request = GET( ReadAndIgnore.class, new URL( "http://vhost2.hansenet.de/1_mb_file.bin" ), new Event.Payload<Void>()
+		final Get request = GET( new ReadAndIgnore(), new URL( "http://vhost2.hansenet.de/1_mb_file.bin" ), new Event.Payload<Void>()
 		{
 			@Override
 			protected void onEvent( State state )

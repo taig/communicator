@@ -23,6 +23,7 @@ public class Main extends Activity
 		final Map<Integer, Class<? extends Interaction>> activities = new HashMap<Integer, Class<? extends Interaction>>();
 		activities.put( button_simple_request, SimpleRequest.class );
 		activities.put( button_events, Events.class );
+		activities.put( button_image, Image.class );
 		activities.put( button_custom_result_parser, CustomResultParser.class );
 		activities.put( button_form_send, FormSend.class );
 		activities.put( button_cookies, Cookies.class );

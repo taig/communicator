@@ -9,9 +9,9 @@ devices.
 
 ## Installation
 
-[Download] [3] the latest release as a `*.jar` file and add it to your Android app's `libs/` folder. Android will
-take care of adding the dependency to your classpath. You're already good to go now. If you want more from life than
-simplicity: read [this] [4].
+Download the [latest release] [2] as a `*.jar` file and add it to your app's `libs/` folder. Android will take care of
+adding the dependency to your classpath. You're already good to go now. If you want more from life than simplicity: read
+[this] [3].
 
 ## Usage
 
@@ -26,14 +26,13 @@ trouble building it then there's an `*.apk` in the download section waiting for 
 
 ````java
 import static com.taig.communicator.method.Method.*;
-import com.taig.communicator.result.Text;
-import com.taig.communicator.result.Image;
+import com.taig.communicator.result.Parser;
 
-Response.Payload<String> source = GET( Text.class, "http://www.android.com/" ).followRedirects( true ).request();
-Response.Payload<Bitmap> logo = GET( Image.class, "http://www.android.com/images/logo.png" ).request();
+Response.Payload<String> source = GET( Parser.TEXT, new URL( "http://www.android.com/" ) ).followRedirects( true ).request();
+Response.Payload<Bitmap> logo = GET( Parser.IMAGE, new URL( "http://www.android.com/images/logo.png" ) ).request();
 ````
 
-The first argument, `Text.class`, is a Parser that will be executed in order to process the connection's `InputStream`.
+The first argument, `Parser.TEXT`, is a Parser that will be executed in order to process the connection's `InputStream`.
 After successful request execution you will retrieve a `Response<T>` object that wraps the parsed payload as well as
 the source's URL and the server's response headers.
 
@@ -65,7 +64,7 @@ Events provide a very simple way of interacting with your application during req
 `com.taig.communicator.Method` takes an additional parameter `Event<T>`.
 
 ````java
-GET<String>( Text.class, "http://www.android.com/", new Event<String>()
+GET<String>( Parser.TEXT, new URL( "http://www.android.com/" ), new Event<String>()
 {
 	@Override
 	protected void onReceive( int progress )
@@ -97,7 +96,7 @@ Parameter params = new Parameter();
 params.put( "email", "my.taig@gmail.com" );
 params.put( "pass", "As if!" );
 
-POST( Text.class, "https://facebook.com/login.php", params ).run();
+POST( Parser.TEXT, new URL( "https://facebook.com/login.php" ), params ).run();
 ````
 
 The supplied data will then be properly encoded for transmission and the request headers `Content-Length` and
@@ -114,7 +113,7 @@ Data data = new Data.Multipart.Builder()
 	.addTextFile( "cv", new File( "/my_cv.txt" ), "utf-8" )
 	.build();
 
-POST( Text.class, "http://some.webservice.com", data ).run();
+POST( Parser.TEXT, new URL( "http://some.webservice.com" ), data ).run();
 ````
 
 #### Cookies
@@ -123,9 +122,9 @@ Last but not least you can also add cookies to a request header. The common user
 `Set-Cookie` directive in a server's response header.
 
 ````java
-Response<Void> response = HEAD( "https://www.google.com" ).request();
+Response<Void> response = HEAD( new URL( "https://www.google.com" ) ).request();
 
-GET( Text.class, "https://www.google.com" )
+GET( Parser.TEXT, new URL( "https://www.google.com" ) )
     .addCookie( new HttpCookie( "remember_me", "true" )
     .addHeader(
         COOKIE,
@@ -139,14 +138,14 @@ Furthermore *Communicator* comes with a `CookieStore` implementation that persis
 
 ````java
 CookieStore store = new PersistedCookieStore( MyActivity.this );
-Response response = HEAD( "https://www.google.com" ).request();
+Response response = HEAD( new URL( "https://www.google.com" ) ).request();
 
 for( HttpCookie cookie : response.getCookies() )                // Persist retrieved cookies.
 {
 	store.add( reponse.getURL().toURI(), cookie );
 }
 
-GET( Text.class, "https://www.google.com" )                     // Send persisted cookies that are associated with
+GET( Parser.TEXT, new URL( "https://www.google.com" ) )         // Send persisted cookies that are associated with
     .putCookie( store )                                         // "google.com" along with the request.
     .run();
 ````
@@ -160,9 +159,9 @@ connections. It will then go ahead and spawn the same amount of Threads in order
 
 ````java
 Communicator communicator = new Communicator( 2 );
-communicator.execute( GET<String>( Text.class, "http://www.example.org" ) );
-communicator.execute( GET<String>( Text.class, "http://www.example.com" ) );
-communicator.execute( GET<String>( Text.class, "http://www.example.net" ) );
+communicator.execute( GET<String>( Text.class, new URL( "http://www.example.org" ) ) );
+communicator.execute( GET<String>( Text.class, new URL( "http://www.example.com" ) ) );
+communicator.execute( GET<String>( Text.class, new URL( "http://www.example.net" ) ) );
 ````
 
 > **Please Note**  
@@ -173,7 +172,7 @@ communicator.execute( GET<String>( Text.class, "http://www.example.net" ) );
 to declare it's priority via the `execute( Runnable runnable, boolean skipQueue )` method.
 
 ````java
-communicator.execute( GET<String>( Text.class, "http://www.example.xxx" ), true );
+communicator.execute( GET<String>( Parser.TEXT, new URL( "http://www.example.xxx" ) ), true );
 ````
 
 By default `Communicator` drops all cookies as its policy says `CookiePolicy.ACCEPT_NONE`. You can changes this behavior

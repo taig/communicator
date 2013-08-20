@@ -92,7 +92,7 @@ public class Response
 	public String[] getHeader( String key )
 	{
 		Object[] headers = this.headers.get( key );
-		return Arrays.copyOf( headers, headers.length, String[].class );
+		return headers != null ? Arrays.copyOf( headers, headers.length, String[].class ) : null;
 	}
 
 	/**

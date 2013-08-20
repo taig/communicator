@@ -2,10 +2,10 @@ package com.taig.communicator.sample.io;
 
 import android.content.Context;
 import android.view.Gravity;
-import com.taig.communicator.event.Event;
 import com.taig.communicator.data.Data;
 import com.taig.communicator.data.Parameter;
-import com.taig.communicator.result.Text;
+import com.taig.communicator.event.Event;
+import com.taig.communicator.result.Parser;
 
 import java.net.URL;
 
@@ -26,7 +26,7 @@ public class FormSend extends Interaction
 		params.put( "password", "strawberry" );
 		params.put( "remember", "true" );
 
-		POST( Text.class, new URL( "http://httpbin.org/post" ), new Data.Form( params, "utf-8" ), new Event.Payload<String>()
+		POST( Parser.TEXT, new URL( "http://httpbin.org/post" ), new Data.Form( params, "utf-8" ), new Event.Payload<String>()
 		{
 			@Override
 			protected void onSuccess( String content )

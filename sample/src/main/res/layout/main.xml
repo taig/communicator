@@ -24,6 +24,12 @@
 
 		<Button android:layout_width="fill_parent"
 				android:layout_height="wrap_content"
+				android:id="@+id/button_image"
+				android:padding="10dp"
+				android:text="@string/image" />
+
+		<Button android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
 				android:id="@+id/button_custom_result_parser"
 				android:padding="10dp"
 				android:text="@string/custom_result_parser" />
