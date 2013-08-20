@@ -46,11 +46,18 @@ public class Example extends Activity
 					{
 						interaction.interact();
 					}
-					catch( Exception exception )
+					catch( final Exception exception )
 					{
-						interaction.getTextView().setText( exception.getLocalizedMessage() );
-						interaction.getTextView().setTextColor( getResources().getColor( R.color.holo_red_light ) );
-						Log.e( TAG, exception.getMessage(), exception );
+						runOnUiThread( new Runnable()
+						{
+							@Override
+							public void run()
+							{
+								interaction.getTextView().setText( exception.getLocalizedMessage() );
+								interaction.getTextView().setTextColor( getResources().getColor( R.color.holo_red_light ) );
+								Log.e( TAG, exception.getMessage(), exception );
+							}
+						} );
 					}
 				}
 			} );
