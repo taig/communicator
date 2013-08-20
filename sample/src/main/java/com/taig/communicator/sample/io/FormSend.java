@@ -2,11 +2,10 @@ package com.taig.communicator.sample.io;
 
 import android.content.Context;
 import android.view.Gravity;
-import com.taig.communicator.event.Event;
 import com.taig.communicator.data.Data;
 import com.taig.communicator.data.Parameter;
+import com.taig.communicator.event.Event;
 import com.taig.communicator.result.Parser;
-import com.taig.communicator.result.Text;
 
 import java.net.URL;
 

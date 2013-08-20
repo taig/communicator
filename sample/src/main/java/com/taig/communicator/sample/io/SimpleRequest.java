@@ -4,7 +4,6 @@ import android.content.Context;
 import com.taig.communicator.event.Event;
 import com.taig.communicator.request.Response;
 import com.taig.communicator.result.Parser;
-import com.taig.communicator.result.Text;
 
 import java.net.URL;
 

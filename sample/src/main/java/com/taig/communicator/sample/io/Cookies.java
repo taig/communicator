@@ -6,7 +6,6 @@ import android.view.Gravity;
 import com.taig.communicator.data.PersistedCookieStore;
 import com.taig.communicator.request.Response;
 import com.taig.communicator.result.Parser;
-import com.taig.communicator.result.Text;
 
 import java.net.CookieStore;
 import java.net.HttpCookie;

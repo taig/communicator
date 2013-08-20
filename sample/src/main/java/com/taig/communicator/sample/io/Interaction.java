@@ -13,7 +13,12 @@ public abstract class Interaction
 
 	public Interaction( Context context )
 	{
-		this( context, View.inflate( context, R.layout.text, null ) );
+		this( context, R.layout.text );
+	}
+	
+	public Interaction( Context context, int layout )
+	{
+		this( context, View.inflate( context, layout, null ) );
 	}
 
 	public Interaction( Context context, View main )

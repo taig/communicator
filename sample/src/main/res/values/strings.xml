@@ -10,5 +10,6 @@
 	<string name="cancel">Cancel</string>
 	<string name="multiple_connections">Multiple Connections</string>
 	<string name="stop">Stop</string>
+	<string name="image">Image</string>
 
 </resources>

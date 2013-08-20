@@ -35,7 +35,7 @@ public class MultipleConnections extends Interaction
 
 	public MultipleConnections( Context context )
 	{
-		super( context, View.inflate( context, R.layout.multiple_progress, null ) );
+		super( context, R.layout.multiple_progress );
 		this.progressBar1 = (ProgressBar) main.findViewById( R.id.progress_bar_multiple_connections_1 );
 		this.progressBar2 = (ProgressBar) main.findViewById( R.id.progress_bar_multiple_connections_2 );
 		this.progressBar3 = (ProgressBar) main.findViewById( R.id.progress_bar_multiple_connections_3 );

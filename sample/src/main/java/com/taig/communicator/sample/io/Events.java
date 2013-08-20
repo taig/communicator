@@ -23,7 +23,7 @@ public class Events extends Interaction
 
 	public Events( Context context )
 	{
-		super( context, View.inflate( context, R.layout.progress, null ) );
+		super( context, R.layout.progress );
 		this.progressBar = (ProgressBar) main.findViewById( R.id.progress_bar_events );
 		this.cancel = (Button) main.findViewById( R.id.button_cancel );
 	}
