@@ -9,6 +9,7 @@ import com.taig.communicator.concurrent.Communicator;
 import com.taig.communicator.event.Event;
 import com.taig.communicator.method.Get;
 import com.taig.communicator.request.Response;
+import com.taig.communicator.result.Parser;
 import com.taig.communicator.sample.R;
 import com.taig.communicator.sample.result.ReadAndIgnore;
 
@@ -54,8 +55,9 @@ public class MultipleConnections extends Interaction
 	public void interact() throws Exception
 	{
 		final Communicator communicator = new Communicator( 2 );
+		Parser<Void> ignore = new ReadAndIgnore();
 
-		Get one = GET( ReadAndIgnore.class, new URL( "http://vhost2.hansenet.de/1_mb_file.bin" ), new Event.Payload<Void>()
+		Get one = GET( ignore, new URL( "http://vhost2.hansenet.de/1_mb_file.bin" ), new Event.Payload<Void>()
 		{
 			@Override
 			protected void onReceive( int progress )
@@ -70,7 +72,7 @@ public class MultipleConnections extends Interaction
 			}
 		} );
 
-		Get two = GET( ReadAndIgnore.class, new URL( "http://vhost2.hansenet.de/1_mb_file.bin.gz" ), new Event.Payload<Void>()
+		Get two = GET( ignore, new URL( "http://vhost2.hansenet.de/1_mb_file.bin.gz" ), new Event.Payload<Void>()
 		{
 			@Override
 			protected void onReceive( int progress )
@@ -85,7 +87,7 @@ public class MultipleConnections extends Interaction
 			}
 		} );
 
-		Get three = GET( ReadAndIgnore.class, new URL( "http://vhost2.hansenet.de/1_mb_file.bin" ), new Event.Payload<Void>()
+		Get three = GET( ignore, new URL( "http://vhost2.hansenet.de/1_mb_file.bin" ), new Event.Payload<Void>()
 		{
 			@Override
 			protected void onReceive( int progress )
@@ -100,7 +102,7 @@ public class MultipleConnections extends Interaction
 			}
 		} );
 
-		Get four = GET( ReadAndIgnore.class, new URL( "http://vhost2.hansenet.de/1_mb_file.bin" ), new Event.Payload<Void>()
+		Get four = GET( ignore, new URL( "http://vhost2.hansenet.de/1_mb_file.bin" ), new Event.Payload<Void>()
 		{
 			@Override
 			protected void onReceive( int progress )
@@ -115,7 +117,7 @@ public class MultipleConnections extends Interaction
 			}
 		} );
 
-		Get five = GET( ReadAndIgnore.class, new URL( "http://vhost2.hansenet.de/1_mb_file.bin" ), new Event.Payload<Void>()
+		Get five = GET( ignore, new URL( "http://vhost2.hansenet.de/1_mb_file.bin" ), new Event.Payload<Void>()
 		{
 			@Override
 			protected void onReceive( int progress )

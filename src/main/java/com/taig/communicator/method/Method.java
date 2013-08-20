@@ -58,7 +58,7 @@ public abstract class Method
 	 * @param <T>    The resource's type after successful parsing.
 	 * @return An instance of {@link Get}.
 	 */
-	public static <T> Get<Response.Payload<T>, Event.Payload<T>, T> GET( Class<? extends Parser<T>> parser, URL url )
+	public static <T> Get<Response.Payload<T>, Event.Payload<T>, T> GET( Parser<T> parser, URL url )
 	{
 		return GET( parser, url, null );
 	}
@@ -67,23 +67,6 @@ public abstract class Method
 	 * Create an HTTP GET {@link Request} with {@link Event} callbacks.
 	 *
 	 * @param parser The {@link Class} of a {@link Parser} used to evaluate the server's response.
-	 * @param url    The resource's {@link URL}.
-	 * @param event  The Event callbacks that will be executed during the request. May be <code>null</code>.
-	 * @param <T>    The resource's type after successful parsing.
-	 * @return An instance of {@link Get}.
-	 */
-	public static <T> Get<Response.Payload<T>, Event.Payload<T>, T> GET( Class<? extends Parser<T>> parser, URL url, Event.Payload<T> event )
-	{
-		return GET( createParser( parser ), url, event );
-	}
-
-	/**
-	 * Create an HTTP GET {@link Request} with {@link Event} callbacks.
-	 * <p/>
-	 * This method accepts an actual {@link Parser} object (instead of a Parser {@link Class}) for complex use cases
-	 * when a simple Parser with default constructor is not sufficient.
-	 *
-	 * @param parser The Parser used to evaluate the server's response.
 	 * @param url    The resource's {@link URL}.
 	 * @param event  The Event callbacks that will be executed during the request. May be <code>null</code>.
 	 * @param <T>    The resource's type after successful parsing.
@@ -156,7 +139,7 @@ public abstract class Method
 	 * @param <T>    The resource's type after successful parsing.
 	 * @return An instance of {@link Delete}.
 	 */
-	public static <T> Delete<Response.Payload<T>, Event.Payload<T>, T> DELETE( Class<? extends Parser<T>> parser, URL url )
+	public static <T> Delete<Response.Payload<T>, Event.Payload<T>, T> DELETE( Parser<T> parser, URL url )
 	{
 		return DELETE( parser, url, null, null );
 	}
@@ -170,7 +153,7 @@ public abstract class Method
 	 * @param <T>    The resource's type after successful parsing.
 	 * @return An instance of {@link Delete}.
 	 */
-	public static <T> Delete<Response.Payload<T>, Event.Payload<T>, T> DELETE( Class<? extends Parser<T>> parser, URL url, Event.Payload<T> event )
+	public static <T> Delete<Response.Payload<T>, Event.Payload<T>, T> DELETE( Parser<T> parser, URL url, Event.Payload<T> event )
 	{
 		return DELETE( parser, url, null, event );
 	}
@@ -184,7 +167,7 @@ public abstract class Method
 	 * @param <T>    The resource's type after successful parsing.
 	 * @return An instance of {@link Delete}.
 	 */
-	public static <T> Delete<Response.Payload<T>, Event.Payload<T>, T> DELETE( Class<? extends Parser<T>> parser, URL url, Data data )
+	public static <T> Delete<Response.Payload<T>, Event.Payload<T>, T> DELETE( Parser<T> parser, URL url, Data data )
 	{
 		return DELETE( parser, url, data, null );
 	}
@@ -193,24 +176,6 @@ public abstract class Method
 	 * Create an HTTP DELETE {@link Request} with payload {@link Data} and {@link Event} callbacks.
 	 *
 	 * @param parser The {@link Class} of a {@link Parser} used to evaluate the server's response.
-	 * @param url    The resource's {@link URL}.
-	 * @param data   The payload Data that will be added to the Request body. May be <code>null</code>.
-	 * @param event  The Event callbacks that will be executed during the request. May be <code>null</code>.
-	 * @param <T>    The resource's type after successful parsing.
-	 * @return An instance of {@link Delete}.
-	 */
-	public static <T> Delete<Response.Payload<T>, Event.Payload<T>, T> DELETE( Class<? extends Parser<T>> parser, URL url, Data data, Event.Payload<T> event )
-	{
-		return DELETE( createParser( parser ), url, data, event );
-	}
-
-	/**
-	 * Create an HTTP DELETE {@link Request} with payload {@link Data} and {@link Event} callbacks.
-	 * <p/>
-	 * This method accepts an actual {@link Parser} object (instead of a Parser {@link Class}) for complex use cases
-	 * when a simple Parser with default constructor is not sufficient.
-	 *
-	 * @param parser The Parser used to evaluate the server's response.
 	 * @param url    The resource's {@link URL}.
 	 * @param data   The payload Data that will be added to the Request body. May be <code>null</code>.
 	 * @param event  The Event callbacks that will be executed during the request. May be <code>null</code>.
@@ -261,31 +226,13 @@ public abstract class Method
 	 * @param <T>    The resource's type after successful parsing.
 	 * @return An instance of {@link Post}.
 	 */
-	public static <T> Post<Response.Payload<T>, Event.Payload<T>, T> POST( Class<? extends Parser<T>> parser, URL url, Data data )
+	public static <T> Post<Response.Payload<T>, Event.Payload<T>, T> POST( Parser<T> parser, URL url, Data data )
 	{
 		return POST( parser, url, data, null );
 	}
 
 	/**
 	 * Create an HTTP POST {@link Request} with {@link Event} callbacks.
-	 *
-	 * @param parser The {@link Class} of a {@link Parser} used to evaluate the server's response.
-	 * @param url    The resource's {@link URL}.
-	 * @param data   The payload Data that will be added to the Request body. May be <code>null</code>.
-	 * @param event  The Event callbacks that will be executed during the request. May be <code>null</code>.
-	 * @param <T>    The resource's type after successful parsing.
-	 * @return An instance of {@link Post}.
-	 */
-	public static <T> Post<Response.Payload<T>, Event.Payload<T>, T> POST( Class<? extends Parser<T>> parser, URL url, Data data, Event.Payload<T> event )
-	{
-		return POST( createParser( parser ), url, data, event );
-	}
-
-	/**
-	 * Create an HTTP POST {@link Request} with {@link Event} callbacks.
-	 * <p/>
-	 * This method accepts an actual {@link Parser} object (instead of a Parser {@link Class}) for complex use cases
-	 * when a simple Parser with default constructor is not sufficient.
 	 *
 	 * @param parser The {@link Class} of a {@link Parser} used to evaluate the server's response.
 	 * @param url    The resource's {@link URL}.
@@ -347,31 +294,13 @@ public abstract class Method
 	 * @param <T>    The resource's type after successful parsing.
 	 * @return An instance of {@link Put}.
 	 */
-	public static <T> Put<Response.Payload<T>, Event.Payload<T>, T> PUT( Class<? extends Parser<T>> parser, URL url, Data data )
+	public static <T> Put<Response.Payload<T>, Event.Payload<T>, T> PUT( Parser<T> parser, URL url, Data data )
 	{
 		return PUT( parser, url, data, null );
 	}
 
 	/**
 	 * Create an HTTP PUT {@link Request} with {@link Event} callbacks.
-	 *
-	 * @param parser The {@link Class} of a {@link Parser} used to evaluate the server's response.
-	 * @param url    The resource's {@link URL}.
-	 * @param data   The payload Data that will be added to the Request body. May be <code>null</code>.
-	 * @param event  The Event callbacks that will be executed during the request. May be <code>null</code>.
-	 * @param <T>    The resource's type after successful parsing.
-	 * @return An instance of {@link Put}.
-	 */
-	public static <T> Put<Response.Payload<T>, Event.Payload<T>, T> PUT( Class<? extends Parser<T>> parser, URL url, Data data, Event.Payload<T> event )
-	{
-		return PUT( createParser( parser ), url, data, event );
-	}
-
-	/**
-	 * Create an HTTP PUT {@link Request} with {@link Event} callbacks.
-	 * <p/>
-	 * This method accepts an actual {@link Parser} object (instead of a Parser {@link Class}) for complex use cases
-	 * when a simple Parser with default constructor is not sufficient.
 	 *
 	 * @param parser The {@link Class} of a {@link Parser} used to evaluate the server's response.
 	 * @param url    The resource's {@link URL}.
@@ -390,40 +319,5 @@ public abstract class Method
 				return new Response.Payload<T>( url, code, message, headers, body );
 			}
 		};
-	}
-
-	/**
-	 * Create an instance of a {@link Parser} via reflection.
-	 *
-	 * @param type The class of the Parser to instantiate.
-	 * @return The instantiated Parser.
-	 * @throws RuntimeException If the given Parser class does not have a default constructor.
-	 */
-	@SuppressWarnings( "unchecked" )
-	protected static <T> Parser<T> createParser( Class<? extends Parser<T>> type )
-	{
-		try
-		{
-			if( Text.class.isAssignableFrom( type ) )
-			{
-				return (Parser<T>) Parser.TEXT;
-			}
-			else if( Image.class.isAssignableFrom( type ) )
-			{
-				return (Parser<T>) Parser.IMAGE;
-			}
-			else if( Ignore.class.isAssignableFrom( type ) )
-			{
-				return (Parser<T>) Parser.IGNORE;
-			}
-			else
-			{
-				return type.getConstructor().newInstance();
-			}
-		}
-		catch( Exception exception )
-		{
-			throw new RuntimeException( "Could not instantiate default constructor of type '" + type.getName() + "'" );
-		}
 	}
 }

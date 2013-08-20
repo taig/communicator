@@ -5,6 +5,7 @@ import android.text.Html;
 import com.taig.communicator.event.Event;
 import com.taig.communicator.data.Data;
 import com.taig.communicator.data.Parameter;
+import com.taig.communicator.result.Parser;
 import com.taig.communicator.result.Text;
 
 import java.net.URL;
@@ -26,7 +27,7 @@ public class Upload extends Interaction
 			.addParameter( new Parameter( "note", "This is a test upload from Communicator/Android" ) )
 			.build();
 
-		POST( Text.class, new URL( "http://cgi-lib.berkeley.edu/ex/fup.cgi" ), data, new Event.Payload<String>()
+		POST( Parser.TEXT, new URL( "http://cgi-lib.berkeley.edu/ex/fup.cgi" ), data, new Event.Payload<String>()
 		{
 			@Override
 			protected void onSuccess( String payload )

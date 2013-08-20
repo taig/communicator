@@ -3,6 +3,7 @@ package com.taig.communicator.sample.io;
 import android.content.Context;
 import com.taig.communicator.event.Event;
 import com.taig.communicator.request.Response;
+import com.taig.communicator.result.Parser;
 import com.taig.communicator.result.Text;
 
 import java.net.URL;
@@ -19,7 +20,7 @@ public class SimpleRequest extends Interaction
 	@Override
 	public void interact() throws Exception
 	{
-		GET( Text.class, new URL( "http://www.gutenberg.org/files/43206/43206-0.txt" ), new Event.Payload<String>()
+		GET( Parser.TEXT, new URL( "http://www.gutenberg.org/files/43206/43206-0.txt" ), new Event.Payload<String>()
 		{
 			@Override
 			protected void onSuccess( Response.Payload<String> response )

@@ -37,7 +37,7 @@ public class Events extends Interaction
 	@Override
 	public void interact() throws Exception
 	{
-		final Get request = GET( ReadAndIgnore.class, new URL( "http://vhost2.hansenet.de/1_mb_file.bin" ), new Event.Payload<Void>()
+		final Get request = GET( new ReadAndIgnore(), new URL( "http://vhost2.hansenet.de/1_mb_file.bin" ), new Event.Payload<Void>()
 		{
 			@Override
 			protected void onEvent( State state )
