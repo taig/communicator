@@ -28,8 +28,8 @@ trouble building it then there's an `*.apk` in the download section waiting for 
 import static com.taig.communicator.method.Method.*;
 import com.taig.communicator.result.Parser;
 
-Response.Payload<String> source = GET( Parser.TEXT, "http://www.android.com/" ).followRedirects( true ).request();
-Response.Payload<Bitmap> logo = GET( Parser.IMAGE, "http://www.android.com/images/logo.png" ).request();
+Response.Payload<String> source = GET( Parser.TEXT, new URL( "http://www.android.com/" ) ).followRedirects( true ).request();
+Response.Payload<Bitmap> logo = GET( Parser.IMAGE, new URL( "http://www.android.com/images/logo.png" ) ).request();
 ````
 
 The first argument, `Parser.TEXT`, is a Parser that will be executed in order to process the connection's `InputStream`.
@@ -64,7 +64,7 @@ Events provide a very simple way of interacting with your application during req
 `com.taig.communicator.Method` takes an additional parameter `Event<T>`.
 
 ````java
-GET<String>( Parser.TEXT, "http://www.android.com/", new Event<String>()
+GET<String>( Parser.TEXT, new URL( "http://www.android.com/" ), new Event<String>()
 {
 	@Override
 	protected void onReceive( int progress )
@@ -96,7 +96,7 @@ Parameter params = new Parameter();
 params.put( "email", "my.taig@gmail.com" );
 params.put( "pass", "As if!" );
 
-POST( Parser.TEXT, "https://facebook.com/login.php", params ).run();
+POST( Parser.TEXT, new URL( "https://facebook.com/login.php" ), params ).run();
 ````
 
 The supplied data will then be properly encoded for transmission and the request headers `Content-Length` and
@@ -113,7 +113,7 @@ Data data = new Data.Multipart.Builder()
 	.addTextFile( "cv", new File( "/my_cv.txt" ), "utf-8" )
 	.build();
 
-POST( Parser.TEXT, "http://some.webservice.com", data ).run();
+POST( Parser.TEXT, new URL( "http://some.webservice.com" ), data ).run();
 ````
 
 #### Cookies
@@ -122,9 +122,9 @@ Last but not least you can also add cookies to a request header. The common user
 `Set-Cookie` directive in a server's response header.
 
 ````java
-Response<Void> response = HEAD( "https://www.google.com" ).request();
+Response<Void> response = HEAD( new URL( "https://www.google.com" ) ).request();
 
-GET( Parser.TEXT, "https://www.google.com" )
+GET( Parser.TEXT, new URL( "https://www.google.com" ) )
     .addCookie( new HttpCookie( "remember_me", "true" )
     .addHeader(
         COOKIE,
@@ -138,14 +138,14 @@ Furthermore *Communicator* comes with a `CookieStore` implementation that persis
 
 ````java
 CookieStore store = new PersistedCookieStore( MyActivity.this );
-Response response = HEAD( "https://www.google.com" ).request();
+Response response = HEAD( new URL( "https://www.google.com" ) ).request();
 
 for( HttpCookie cookie : response.getCookies() )                // Persist retrieved cookies.
 {
 	store.add( reponse.getURL().toURI(), cookie );
 }
 
-GET( Parser.TEXT, "https://www.google.com" )                    // Send persisted cookies that are associated with
+GET( Parser.TEXT, new URL( "https://www.google.com" ) )         // Send persisted cookies that are associated with
     .putCookie( store )                                         // "google.com" along with the request.
     .run();
 ````
@@ -159,9 +159,9 @@ connections. It will then go ahead and spawn the same amount of Threads in order
 
 ````java
 Communicator communicator = new Communicator( 2 );
-communicator.execute( GET<String>( Text.class, "http://www.example.org" ) );
-communicator.execute( GET<String>( Text.class, "http://www.example.com" ) );
-communicator.execute( GET<String>( Text.class, "http://www.example.net" ) );
+communicator.execute( GET<String>( Text.class, new URL( "http://www.example.org" ) ) );
+communicator.execute( GET<String>( Text.class, new URL( "http://www.example.com" ) ) );
+communicator.execute( GET<String>( Text.class, new URL( "http://www.example.net" ) ) );
 ````
 
 > **Please Note**  
@@ -172,7 +172,7 @@ communicator.execute( GET<String>( Text.class, "http://www.example.net" ) );
 to declare it's priority via the `execute( Runnable runnable, boolean skipQueue )` method.
 
 ````java
-communicator.execute( GET<String>( Parser.TEXT, "http://www.example.xxx" ), true );
+communicator.execute( GET<String>( Parser.TEXT, new URL( "http://www.example.xxx" ) ), true );
 ````
 
 By default `Communicator` drops all cookies as its policy says `CookiePolicy.ACCEPT_NONE`. You can changes this behavior
