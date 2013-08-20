@@ -3,6 +3,8 @@ package com.taig.communicator.data;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
+import org.json.JSONArray;
+import org.json.JSONException;
 
 import java.net.CookieStore;
 import java.net.HttpCookie;
@@ -58,56 +60,45 @@ public class PersistedCookieStore implements CookieStore
 	public void add( URI uri, HttpCookie cookie )
 	{
 		String host = uri == null ? WILDCARD : uri.getHost();
-		Set<String> cookies = preferences.getStringSet( host, new HashSet<String>() );
-		cookies.add( cookie.toString() );
-		preferences.edit().putStringSet( host, cookies ).commit();
+		Collection<HttpCookie> cookies = retrieve( host );
+
+		if( cookies.add( cookie ) )
+		{
+			persist( host, cookies );
+		}
 	}
 
 	@Override
 	public List<HttpCookie> get( URI uri )
 	{
-		Set<String> store = preferences.getStringSet( uri.getHost(), new HashSet<String>() );
-		store.addAll( preferences.getStringSet( WILDCARD, new HashSet<String>() ) );
-		List<HttpCookie> cookies = new ArrayList<HttpCookie>();
+		Set<HttpCookie> cookies = new HashSet<HttpCookie>();
 
-		for( String cookie : store )
+		if( uri != null )
 		{
-			cookies.addAll( HttpCookie.parse( cookie ) );
+			cookies.addAll( retrieve( uri.getHost() ) );
 		}
 
-		return Collections.unmodifiableList( cookies );
+		cookies.addAll( retrieve( WILDCARD ) );
+
+		return Collections.unmodifiableList( new ArrayList<HttpCookie>( cookies ) );
 	}
 
 	@Override
 	@SuppressWarnings( "unchecked" )
 	public List<HttpCookie> getCookies()
 	{
-		List<HttpCookie> cookies = new ArrayList<HttpCookie>();
+		Set<HttpCookie> cookies = new HashSet<HttpCookie>();
 		Map<String, ?> store = preferences.getAll();
 
 		if( store != null )
 		{
 			for( Map.Entry<String, ?> entry : store.entrySet() )
 			{
-				if( entry.getValue() instanceof Collection )
-				{
-					for( String cookie : (Set<String>) entry.getValue() )
-					{
-						try
-						{
-							cookies.addAll( HttpCookie.parse( cookie ) );
-						}
-						catch( IllegalArgumentException exception )
-						{
-							preferences.edit().remove( entry.getKey() ).commit();
-							Log.w( TAG, "Found and removed illegal entry in CookieStore's SharedPreferences", exception );
-						}
-					}
-				}
+				cookies.addAll( retrieve( entry.getKey() ) );
 			}
 		}
 
-		return Collections.unmodifiableList( cookies );
+		return Collections.unmodifiableList( new ArrayList<HttpCookie>( cookies ) );
 	}
 
 	@Override
@@ -142,17 +133,8 @@ public class PersistedCookieStore implements CookieStore
 	public boolean remove( URI uri, HttpCookie cookie )
 	{
 		String host = uri == null ? WILDCARD : uri.getHost();
-		Set<String> cookies = preferences.getStringSet( host, null );
-
-		if( cookies != null )
-		{
-			if( cookies.remove( cookie.toString() ) )
-			{
-				return preferences.edit().putStringSet( host, cookies ).commit();
-			}
-		}
-
-		return false;
+		Collection<HttpCookie> cookies = retrieve( host );
+		return cookies.remove( cookie ) && persist( host, cookies );
 	}
 
 	@Override
@@ -160,5 +142,32 @@ public class PersistedCookieStore implements CookieStore
 	{
 		Map<String, ?> store = preferences.getAll();
 		return store != null && !store.isEmpty() && preferences.edit().clear().commit();
+	}
+
+	private boolean persist( String key, Collection<HttpCookie> cookies )
+	{
+		return preferences.edit().putString( key, new JSONArray( cookies ).toString() ).commit();
+	}
+
+	private Collection<HttpCookie> retrieve( String key )
+	{
+		Set<HttpCookie> cookies = new HashSet<HttpCookie>();
+
+		try
+		{
+			JSONArray json = new JSONArray( preferences.getString( key, "[]" ) );
+
+			for( int i = 0; i < json.length(); i++ )
+			{
+				cookies.addAll( HttpCookie.parse( json.getString( i ) ) );
+			}
+		}
+		catch( JSONException exception )
+		{
+			Log.w( TAG, "Found and removed illegal entry in CookieStore's SharedPreferences", exception );
+			preferences.edit().remove( key ).commit();
+		}
+
+		return cookies;
 	}
 }
