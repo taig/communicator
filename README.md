@@ -4,15 +4,14 @@ A simple Java networking library for the Android platform. It's based on `HttpUR
 Google. *Communicator* aims to provide maximum flexibility with minimal verbosity and helps to accomplish common use
 cases.
 
-> **Please Note**  
-> Communicator is currently in a very early development state. Therefore please excuse the lack of documentation and
-> frequent API changes.
+This library requires at least API level 10 (Android 2.3.3), that is [more than 96%] [2] of the currently active
+devices.
 
 ## Installation
 
-[Download] [2] the latest release as a `*.jar` file and add it to your Android app's `libs/` folder. Android will
+[Download] [3] the latest release as a `*.jar` file and add it to your Android app's `libs/` folder. Android will
 take care of adding the dependency to your classpath. You're already good to go now. If you want more from life than
-simplicity: read [this] [3].
+simplicity: read [this] [4].
 
 ## Usage
 
@@ -201,5 +200,6 @@ the requested content any more. Also don't forget to shut down the executor when
 > simultaneous connections or to improve your Parser (e.g. forward the data immediately to the cache directory).
 
 [1]: http://android-developers.blogspot.de/2011/09/androids-http-clients.html
-[2]: https://github.com/Taig/Communicator/releases
-[3]: http://tools.android.com/recent/dealingwithdependenciesinandroidprojects
+[2]: http://developer.android.com/about/dashboards/index.html#Platform
+[3]: https://github.com/Taig/Communicator/releases
+[4]: http://tools.android.com/recent/dealingwithdependenciesinandroidprojects
