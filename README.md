@@ -27,14 +27,13 @@ trouble building it then there's an `*.apk` in the download section waiting for 
 
 ````java
 import static com.taig.communicator.method.Method.*;
-import com.taig.communicator.result.Text;
-import com.taig.communicator.result.Image;
+import com.taig.communicator.result.Parser;
 
-Response.Payload<String> source = GET( Text.class, "http://www.android.com/" ).followRedirects( true ).request();
-Response.Payload<Bitmap> logo = GET( Image.class, "http://www.android.com/images/logo.png" ).request();
+Response.Payload<String> source = GET( Parser.TEXT, "http://www.android.com/" ).followRedirects( true ).request();
+Response.Payload<Bitmap> logo = GET( Parser.IMAGE, "http://www.android.com/images/logo.png" ).request();
 ````
 
-The first argument, `Text.class`, is a Parser that will be executed in order to process the connection's `InputStream`.
+The first argument, `Parser.TEXT`, is a Parser that will be executed in order to process the connection's `InputStream`.
 After successful request execution you will retrieve a `Response<T>` object that wraps the parsed payload as well as
 the source's URL and the server's response headers.
 
@@ -66,7 +65,7 @@ Events provide a very simple way of interacting with your application during req
 `com.taig.communicator.Method` takes an additional parameter `Event<T>`.
 
 ````java
-GET<String>( Text.class, "http://www.android.com/", new Event<String>()
+GET<String>( Parser.TEXT, "http://www.android.com/", new Event<String>()
 {
 	@Override
 	protected void onReceive( int progress )
@@ -98,7 +97,7 @@ Parameter params = new Parameter();
 params.put( "email", "my.taig@gmail.com" );
 params.put( "pass", "As if!" );
 
-POST( Text.class, "https://facebook.com/login.php", params ).run();
+POST( Parser.TEXT, "https://facebook.com/login.php", params ).run();
 ````
 
 The supplied data will then be properly encoded for transmission and the request headers `Content-Length` and
@@ -115,7 +114,7 @@ Data data = new Data.Multipart.Builder()
 	.addTextFile( "cv", new File( "/my_cv.txt" ), "utf-8" )
 	.build();
 
-POST( Text.class, "http://some.webservice.com", data ).run();
+POST( Parser.TEXT, "http://some.webservice.com", data ).run();
 ````
 
 #### Cookies
@@ -126,7 +125,7 @@ Last but not least you can also add cookies to a request header. The common user
 ````java
 Response<Void> response = HEAD( "https://www.google.com" ).request();
 
-GET( Text.class, "https://www.google.com" )
+GET( Parser.TEXT, "https://www.google.com" )
     .addCookie( new HttpCookie( "remember_me", "true" )
     .addHeader(
         COOKIE,
@@ -147,7 +146,7 @@ for( HttpCookie cookie : response.getCookies() )                // Persist retri
 	store.add( reponse.getURL().toURI(), cookie );
 }
 
-GET( Text.class, "https://www.google.com" )                     // Send persisted cookies that are associated with
+GET( Parser.TEXT, "https://www.google.com" )                    // Send persisted cookies that are associated with
     .putCookie( store )                                         // "google.com" along with the request.
     .run();
 ````
@@ -174,7 +173,7 @@ communicator.execute( GET<String>( Text.class, "http://www.example.net" ) );
 to declare it's priority via the `execute( Runnable runnable, boolean skipQueue )` method.
 
 ````java
-communicator.execute( GET<String>( Text.class, "http://www.example.xxx" ), true );
+communicator.execute( GET<String>( Parser.TEXT, "http://www.example.xxx" ), true );
 ````
 
 By default `Communicator` drops all cookies as its policy says `CookiePolicy.ACCEPT_NONE`. You can changes this behavior
