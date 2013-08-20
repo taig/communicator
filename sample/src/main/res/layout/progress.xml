@@ -10,7 +10,7 @@
 			  android:layout_height="wrap_content"
 			  android:id="@+id/text" />
 
-	<ProgressBar style="@android:style/Widget.Holo.ProgressBar.Horizontal"
+	<ProgressBar style="@android:style/Widget.ProgressBar.Horizontal"
 				 android:layout_width="match_parent"
 				 android:layout_height="wrap_content"
 				 android:id="@+id/progress_bar_events"

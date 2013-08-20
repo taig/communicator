@@ -3,15 +3,25 @@ package com.taig.communicator.concurrent;
 import java.util.*;
 import java.util.concurrent.Semaphore;
 
+/**
+ * A threadsafe {@link Collection} implementation that is designed for concurrent executions featuring a limited size
+ * pool and a preceding {@link Queue}.
+ * <p/>
+ * If an element is added to the QueuedPool it will first be placed in the pool's queue. The queue's head can be moved
+ * into the pool by calling {@link #promote()} (blocks until there is room available in the pool). An element can be
+ * removed from the pool by calling {@link #demote(Object)}.
+ *
+ * @param <T> The Collection's type.
+ */
 public class QueuedPool<T> implements Collection<T>
 {
-	protected int size;
+	private int size;
 
-	protected Deque<T> queue = new LinkedList<T>();
+	private Deque<T> queue = new LinkedList<T>();
 
-	protected Collection<T> pool = new ArrayList<T>();
+	private Collection<T> pool = new ArrayList<T>();
 
-	protected Semaphore semaphore;
+	private Semaphore semaphore;
 
 	public QueuedPool( int size )
 	{

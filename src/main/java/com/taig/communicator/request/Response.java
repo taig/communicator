@@ -5,6 +5,7 @@ import com.taig.communicator.data.Header;
 import java.net.HttpCookie;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -90,7 +91,8 @@ public class Response
 	 */
 	public String[] getHeader( String key )
 	{
-		return (String[]) headers.get( key );
+		Object[] headers = this.headers.get( key );
+		return Arrays.copyOf( headers, headers.length, String[].class );
 	}
 
 	/**

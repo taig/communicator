@@ -17,31 +17,31 @@
 				  android:id="@+id/text"
 				  android:padding="10dp" />
 
-		<ProgressBar style="@android:style/Widget.Holo.ProgressBar.Horizontal"
+		<ProgressBar style="@android:style/Widget.ProgressBar.Horizontal"
 					 android:layout_width="match_parent"
 					 android:layout_height="wrap_content"
 					 android:id="@+id/progress_bar_multiple_connections_1"
 					 android:padding="15dp" />
 
-		<ProgressBar style="@android:style/Widget.Holo.ProgressBar.Horizontal"
+		<ProgressBar style="@android:style/Widget.ProgressBar.Horizontal"
 					 android:layout_width="match_parent"
 					 android:layout_height="wrap_content"
 					 android:id="@+id/progress_bar_multiple_connections_2"
 					 android:padding="15dp" />
 
-		<ProgressBar style="@android:style/Widget.Holo.ProgressBar.Horizontal"
+		<ProgressBar style="@android:style/Widget.ProgressBar.Horizontal"
 					 android:layout_width="match_parent"
 					 android:layout_height="wrap_content"
 					 android:id="@+id/progress_bar_multiple_connections_3"
 					 android:padding="15dp" />
 
-		<ProgressBar style="@android:style/Widget.Holo.ProgressBar.Horizontal"
+		<ProgressBar style="@android:style/Widget.ProgressBar.Horizontal"
 					 android:layout_width="match_parent"
 					 android:layout_height="wrap_content"
 					 android:id="@+id/progress_bar_multiple_connections_4"
 					 android:padding="15dp" />
 
-		<ProgressBar style="@android:style/Widget.Holo.ProgressBar.Horizontal"
+		<ProgressBar style="@android:style/Widget.ProgressBar.Horizontal"
 					 android:layout_width="match_parent"
 					 android:layout_height="wrap_content"
 					 android:id="@+id/progress_bar_multiple_connections_5"
