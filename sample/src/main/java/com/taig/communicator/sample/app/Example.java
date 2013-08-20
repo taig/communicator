@@ -37,7 +37,7 @@ public class Example extends Activity
 			setContentView( interaction.getMainView() );
 			interaction.getTextView().setText( interaction.getIdleText() );
 
-			AsyncTask.execute( new Runnable()
+			new Thread( new Runnable()
 			{
 				@Override
 				public void run()
@@ -60,7 +60,7 @@ public class Example extends Activity
 						} );
 					}
 				}
-			} );
+			} ).start();
 		}
 		catch( Exception exception )
 		{
