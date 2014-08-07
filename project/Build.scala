@@ -5,6 +5,7 @@ object Build extends sbt.Build
 {
 	val main = Project( "communicator", file( "." ) ).settings(
 		autoScalaLibrary := false,
+		exportJars := true,
 		libraryDependencies += "com.google.android" % "android" % "4.4" % "provided" from ( "file://" + System.getenv( "ANDROID_HOME" ) + "/platforms/android-19/android.jar" ),
 		name := "android-communicator",
 		organization := "com.taig",
