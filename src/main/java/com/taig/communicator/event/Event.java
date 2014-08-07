@@ -78,6 +78,16 @@ public abstract class Event<R extends Response>
 	}
 
 	/**
+	 * Triggers only once, right before the actual sending process starts.
+	 * 
+	 * @param total The total amount of bytes to send or <code>-1</code> if unknown.
+	 */
+	protected void onSend( long total )
+	{
+		//
+	}
+
+	/**
 	 * Triggers every time the {@link Request Request's} {@link OutputStream} sends an {@link Stream.Output#update()}.
 	 *
 	 * @param current The already received amount of bytes.
@@ -99,6 +109,16 @@ public abstract class Event<R extends Response>
 	 * @see State#SEND
 	 */
 	protected void onSend( int progress )
+	{
+		//
+	}
+
+	/**
+	 * Triggers only once, right before the actual sending process starts.
+	 *
+	 * @param total The total amount of bytes to receive or <code>-1</code> if unknown.
+	 */
+	protected void onReceive( long total )
 	{
 		//
 	}
@@ -286,6 +306,7 @@ public abstract class Event<R extends Response>
 					if( current == 0 )
 					{
 						onEvent( State.SEND );
+						onSend( total );
 					}
 
 					onSend( current, total );
@@ -308,6 +329,7 @@ public abstract class Event<R extends Response>
 					if( current == 0 )
 					{
 						onEvent( State.RECEIVE );
+						onReceive( total );
 					}
 
 					onReceive( current, total );
