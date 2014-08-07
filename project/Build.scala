@@ -8,6 +8,7 @@ object Build extends sbt.Build
 		libraryDependencies += "com.google.android" % "android" % "4.4" % "provided" from ( "file://" + System.getenv( "ANDROID_HOME" ) + "/platforms/android-19/android.jar" ),
 		name := "android-communicator",
 		organization := "com.taig",
+		scalaVersion := "2.11.2",
 		version := "1.0.2"
 	)
 }
