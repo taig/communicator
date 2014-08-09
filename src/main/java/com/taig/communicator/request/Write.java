@@ -21,6 +21,8 @@ import java.net.URL;
  */
 public abstract class Write<R extends Response, E extends Event<R>, T> extends Read<R, E, T>
 {
+	protected Progress progress = null;
+
 	private Data data;
 
 	/**
@@ -35,6 +37,22 @@ public abstract class Write<R extends Response, E extends Event<R>, T> extends R
 	{
 		super( method, url, event );
 		this.data = data;
+	}
+
+	@Override
+	protected LoadingState getLoadingState()
+	{
+		return new LoadingState();
+	}
+
+	/**
+	 * Retrieve the {@link Request Request's} writing {@link Progress}.
+	 *
+	 * @return The Request's writing Progress or <code>null</code> if no writing was done yet.
+	 */
+	public Progress getWriteProgress()
+	{
+		return progress;
 	}
 
 	/**
@@ -118,6 +136,26 @@ public abstract class Write<R extends Response, E extends Event<R>, T> extends R
 		for( int read = 0; read != -1; read = data.read( buffer ) )
 		{
 			output.write( buffer, 0, read );
+		}
+	}
+
+	protected class LoadingState extends Read<R, E, T>.LoadingState
+	{
+		@Override
+		public void send()
+		{
+			super.send();
+
+			progress = new Progress( 0, -1 );
+		}
+
+		@Override
+		public void sending( int current, long total )
+		{
+			progress.setCurrent( current );
+			progress.setTotal( total );
+
+			super.sending( current, total );
 		}
 	}
 
