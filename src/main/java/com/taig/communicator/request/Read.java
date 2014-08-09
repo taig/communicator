@@ -22,6 +22,8 @@ import java.util.Map;
  */
 public abstract class Read<R extends Response, E extends Event<R>, T> extends Request<R, E>
 {
+	protected Progress progress = null;
+
 	/**
 	 * Create a {@link Read} object.
 	 *
@@ -32,6 +34,22 @@ public abstract class Read<R extends Response, E extends Event<R>, T> extends Re
 	public Read( Method.Type method, URL url, E event )
 	{
 		super( method, url, event );
+	}
+
+	@Override
+	protected LoadingState getLoadingState()
+	{
+		return new LoadingState();
+	}
+
+	/**
+	 * Retrieve the {@link Request Request's} reading {@link Progress}.
+	 * 
+	 * @return The Request's reading Progress or <code>null</code> if no reading was done yet.
+	 */
+	public Progress getReadProgress()
+	{
+		return progress;
 	}
 
 	@Override
@@ -97,6 +115,26 @@ public abstract class Read<R extends Response, E extends Event<R>, T> extends Re
 	 * @return A Response that represents that received data.
 	 */
 	protected abstract R summarize( URL url, int code, String message, Map<String, List<String>> headers, T body );
+
+	protected class LoadingState extends Request<R, E>.LoadingState
+	{
+		@Override
+		public void receive()
+		{
+			super.receive();
+
+			progress = new Progress( 0, -1 );
+		}
+
+		@Override
+		public void receiving( int current, long total )
+		{
+			progress.setCurrent( current );
+			progress.setTotal( total );
+
+			super.receiving( current, total );
+		}
+	}
 
 	/**
 	 * An internal {@link Updateable.Stream.Input} class used to trigger the {@link Event#onReceive(long, long)}

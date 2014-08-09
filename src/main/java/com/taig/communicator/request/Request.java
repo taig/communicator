@@ -33,7 +33,7 @@ public abstract class Request<R extends Response, E extends Event<R>> implements
 
 	protected Event<R>.Proxy event;
 
-	protected LoadingState state = new LoadingState();
+	protected LoadingState state = getLoadingState();
 
 	protected boolean cancelled = false;
 
@@ -122,6 +122,16 @@ public abstract class Request<R extends Response, E extends Event<R>> implements
 	{
 		this.event = event == null ? null : event.getProxy();
 		return this;
+	}
+
+	/**
+	 * Retrieve the {@link Request Request's} {@link LoadingState} implementation.
+	 * 
+	 * @return The Request's LoadingState implementation.
+	 */
+	protected LoadingState getLoadingState()
+	{
+		return new LoadingState();
 	}
 
 	/**
@@ -602,6 +612,59 @@ public abstract class Request<R extends Response, E extends Event<R>> implements
 			{
 				event.failure( error );
 			}
+		}
+	}
+
+	/**
+	 * Holds information of a communication process providing the currently transferred amount of bytes and the total
+	 * amount of bytes that will be sent.
+	 */
+	public static class Progress
+	{
+		private long current;
+
+		private long total;
+
+		protected Progress( long current, long total )
+		{
+			this.current = current;
+			this.total = total;
+		}
+
+		/**
+		 * Retrieve the amount of transferred bytes.
+		 *
+		 * @return The amount of transferred bytes.
+		 */
+		public long getCurrent()
+		{
+			return current;
+		}
+
+		protected void setCurrent( long current )
+		{
+			this.current = current;
+		}
+
+		/**
+		 * Retrieve the amount of bytes that will be sent in total.
+		 * 
+		 * @return The amount of bytes that will be sent in total or <code>-1</code> if not available.
+		 */
+		public long getTotal()
+		{
+			return total;
+		}
+
+		protected void setTotal( long total )
+		{
+			this.total = total;
+		}
+
+		@Override
+		public String toString()
+		{
+			return String.format( "%d / %d Bytes", current, total );
 		}
 	}
 }
