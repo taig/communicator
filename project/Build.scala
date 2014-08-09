@@ -10,6 +10,6 @@ object Build extends sbt.Build
 		name := "android-communicator",
 		organization := "com.taig",
 		scalaVersion := "2.11.2",
-		version := "1.0.2"
+		version := "1.0.3"
 	)
 }
