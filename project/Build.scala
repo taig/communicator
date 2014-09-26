@@ -4,7 +4,7 @@ import android.Keys._
 
 object Build extends android.AutoBuild
 {
-	val main = Project( "communicator", file( "." ) )
+	lazy val main = Project( "communicator", file( "." ) )
 		.settings(
 			autoScalaLibrary := false,
 			exportJars := true,
@@ -12,6 +12,6 @@ object Build extends android.AutoBuild
 			name := "communicator",
 			organization := "com.taig.android",
 			scalaVersion := "2.11.2",
-			version := "1.0.5"
+			version := "1.0.6"
 	)
 }
