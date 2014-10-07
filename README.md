@@ -13,13 +13,6 @@ Download the [latest release] [2] as a `*.jar` file and add it to your app's `li
 adding the dependency to your classpath. You're already good to go now. If you want more from life than simplicity: read
 [this] [3].
 
-## Usage
-
-There is a sample application available that covers the library's basic use cases. You can find the source code in the
-`sample/` folder. In case you're wondering about the unusual project structure: the app is built with `sbt`. Just head
-to the source folder and everything is back to normal. If you feel like running the sample app on your device but having
-trouble building it then there's an `*.apk` in the download section waiting for you to give it a try.
-
 ### Request
 
 `GET`, `POST`, `PUT`, `DELETE` or `HEAD` requests are called via `com.taig.communicator.method.Method`.
