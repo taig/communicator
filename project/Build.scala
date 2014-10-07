@@ -12,7 +12,9 @@ object Build extends android.AutoBuild
 			organization := "com.taig.android",
 			scalaVersion := "2.11.2",
 			version := "1.0.7",
+			libraryProject in Android := true,
 			minSdkVersion in Android := "10",
-			targetSdkVersion in Android := "19"
+			targetSdkVersion in Android := "19",
+			typedResources in Android := false
 		)
 }

@@ -55,5 +55,3 @@
 # Don't warn about those in case this app is linking against an older
 # platform version. We know about them, and they are safe.
 -dontwarn android.support.**
-# view AndroidManifest.xml #generated:7
--keep class android.test.InstrumentationTestRunner { <init>(...); }
