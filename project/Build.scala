@@ -8,7 +8,7 @@ object Build extends android.AutoBuild
 		.settings(
 			autoScalaLibrary := false,
 			exportJars := true,
-			name := "communicator",
+			name := "Communicator",
 			organization := "com.taig.android",
 			scalaVersion := "2.11.2",
 			version := "1.0.6"
