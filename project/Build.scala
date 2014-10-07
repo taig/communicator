@@ -11,6 +11,8 @@ object Build extends android.AutoBuild
 			name := "Communicator",
 			organization := "com.taig.android",
 			scalaVersion := "2.11.2",
-			version := "1.0.6"
-	)
+			version := "1.0.6",
+			minSdkVersion in Android := "10",
+			targetSdkVersion in Android := "19"
+		)
 }
