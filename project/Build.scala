@@ -8,7 +8,6 @@ object Build extends android.AutoBuild
 		.settings(
 			autoScalaLibrary := false,
 			exportJars := true,
-			libraryDependencies += "com.google.android" % "android" % "4.4" % "provided" from ( "file://" + System.getenv( "ANDROID_HOME" ) + "/platforms/android-19/android.jar" ),
 			name := "communicator",
 			organization := "com.taig.android",
 			scalaVersion := "2.11.2",
