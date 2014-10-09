@@ -1,8 +1,7 @@
 import sbt._
 import sbt.Keys._
-import android.Keys._
 
-object Build extends android.AutoBuild
+object Build extends sbt.Build
 {
 	lazy val main = Project( "communicator", file( "." ) )
 		.settings(
