@@ -7,7 +7,6 @@ object Build extends android.AutoBuild
 	lazy val main = Project( "communicator", file( "." ) )
 		.settings(
 			autoScalaLibrary := false,
-			exportJars := true,
 			name := "Communicator",
 			organization := "com.taig.android",
 			scalaVersion := "2.11.2",
