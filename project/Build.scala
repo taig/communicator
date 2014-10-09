@@ -1,18 +1,15 @@
 import sbt._
 import sbt.Keys._
-import android.Keys._
 
-object Build extends android.AutoBuild
+object Build extends sbt.Build
 {
 	lazy val main = Project( "communicator", file( "." ) )
 		.settings(
 			autoScalaLibrary := false,
-			exportJars := true,
+			libraryDependencies += "com.google.android" % "android" % "4.4" % "provided" from ( "file://" + System.getenv( "ANDROID_HOME" ) + "/platforms/android-19/android.jar" ),
 			name := "Communicator",
 			organization := "com.taig.android",
 			scalaVersion := "2.11.2",
-			version := "1.0.7",
-			minSdkVersion in Android := "10",
-			targetSdkVersion in Android := "19"
-		)
+			version := "1.0.8"
+	)
 }
