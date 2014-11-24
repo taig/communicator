@@ -9,9 +9,19 @@ devices.
 
 ## Installation
 
-Download the [latest release] [2] as a `*.jar` file and add it to your app's `libs/` folder. Android will take care of
-adding the dependency to your classpath. You're already good to go now. If you want more from life than simplicity: read
-[this] [3].
+Add `http://taig.github.io/Toolbelt/release` to your content resolvers, and add the dependency:
+
+> Package: com.taig.android
+
+> Name: communicator
+
+> Version: 1.0.8
+
+In sbt, for instance:
+```
+resolvers += Resolver.url( "Communicator", url( "http://taig.github.io/Communicator/release" ) )( ivyStylePatterns )
+libraryDependencies += "com.taig.android" %% "communicator" % "1.0.8"
+```
 
 ### Request
 
