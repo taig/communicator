@@ -81,7 +81,23 @@ public abstract class Read<R extends Response, E extends Event<R>, T> extends Re
 	 */
 	protected T receive( HttpURLConnection connection ) throws IOException
 	{
-		Updateable.Stream.Input input = new Receive( connection.getInputStream(), connection.getContentLength() );
+		InputStream stream;
+
+		try
+		{
+			stream = connection.getInputStream();
+		}
+		catch( IOException exception )
+		{
+			stream = connection.getErrorStream();
+		}
+
+		if( stream == null )
+		{
+			throw new IOException( "Could not obtain an InputStream from the connection" );
+		}
+
+		Updateable.Stream.Input input = new Receive( stream, connection.getContentLength() );
 
 		try
 		{
