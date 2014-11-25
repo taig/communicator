@@ -1,7 +1,9 @@
 package com.taig.communicator.data;
 
 import java.net.HttpURLConnection;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.taig.communicator.data.Header.Request.COOKIE;
 
@@ -391,6 +393,8 @@ public class Header extends HashMap<String, Object[]> implements Appliable
 		{
 			public static final Form FORM = new Form();
 
+			public static final Json JSON = new Json();
+
 			public static final Multipart MULTIPART = new Multipart();
 
 			private String type;
@@ -466,6 +470,14 @@ public class Header extends HashMap<String, Object[]> implements Appliable
 				public String toString()
 				{
 					return super.toString() + "; boundary=" + boundary;
+				}
+			}
+
+			public static class Json extends ContentType
+			{
+				public Json()
+				{
+					super( "application/json" );
 				}
 			}
 		}

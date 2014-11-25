@@ -11,8 +11,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 
-import static com.taig.communicator.data.Header.Request.ContentType;
 import static com.taig.communicator.data.Header.CONTENT_ENCODING;
+import static com.taig.communicator.data.Header.Request.ContentType;
 
 /**
  * An {@link Countable.Stream.Input InputStream} that servers as an HTTP-request-body.
@@ -149,6 +149,36 @@ public abstract class Data<C extends Header.Request.ContentType> extends Countab
 			{
 				connection.setRequestProperty( CONTENT_ENCODING, charset );
 			}
+		}
+	}
+
+	/**
+	 * A {@link Data} representation that serves as <code>application/json</code> formatted transmission.
+	 */
+	public static class Json extends Data<ContentType.Json>
+	{
+		/**
+		 * Construct a {@link Json} object based on an {@link InputStream}.
+		 * <p/>
+		 * When using this constructor you are responsible to provide an adequately formatted data source via the
+		 * InputStream by yourself.
+		 *
+		 * @param stream  The underlying InputStream.
+		 * @param length  The InputStream's content length in bytes or <code>-1</code> if unknown.
+		 */
+		public Json( InputStream stream, long length )
+		{
+			super( stream, length, ContentType.JSON );
+		}
+
+		/**
+		 * Construct a {@link Json} object based on a serialized string.
+		 *
+		 * @param json The json string to transmit.
+		 */
+		public Json( String json )
+		{
+			super( new ByteArrayInputStream( json.getBytes() ), ContentType.JSON );
 		}
 	}
 
