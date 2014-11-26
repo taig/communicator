@@ -40,6 +40,11 @@ public abstract class Method
 		HEAD,
 
 		/**
+		 * @see Patch
+		 */
+		PATCH,
+
+		/**
 		 * @see Post
 		 */
 		POST,
@@ -215,6 +220,74 @@ public abstract class Method
 	public static Head HEAD( URL url, Event<Response> event )
 	{
 		return new Head( url, event );
+	}
+
+	/**
+	 * Create an HTTP PATCH {@link Request}, but ignore the server's response payload.
+	 *
+	 * @param url  The resource's {@link URL}.
+	 * @param data The payload Data that will be added to the Request body. May be <code>null</code>.
+	 * @return An instance of {@link Patch}.
+	 */
+	public static Patch<Response, Event<Response>, Void> PATCH( URL url, Data data )
+	{
+		return PATCH( url, data, null );
+	}
+
+	/**
+	 * Create an HTTP PATCH {@link Request} with {@link Event} callbacks, but ignore the server's response payload.
+	 *
+	 * @param url   The resource's {@link URL}.
+	 * @param data  The payload Data that will be added to the Request body. May be <code>null</code>.
+	 * @param event The Event callbacks that will be executed during the request. May be <code>null</code>.
+	 * @return An instance of {@link Patch}.
+	 */
+	public static Patch<Response, Event<Response>, Void> PATCH( URL url, Data data, Event<Response> event )
+	{
+		return new Patch<Response, Event<Response>, Void>( Parser.IGNORE, url, data, event )
+		{
+			@Override
+			protected Response summarize( URL url, int code, String message, Map<String, List<String>> headers, Void body )
+			{
+				return new Response( url, code, message, headers );
+			}
+		};
+	}
+
+	/**
+	 * Create an HTTP PATCH {@link Request}.
+	 *
+	 * @param parser The {@link Class} of a {@link Parser} used to evaluate the server's response.
+	 * @param url    The resource's {@link URL}.
+	 * @param data   The payload Data that will be added to the Request body. May be <code>null</code>.
+	 * @param <T>    The resource's type after successful parsing.
+	 * @return An instance of {@link Patch}.
+	 */
+	public static <T> Patch<Response.Payload<T>, Event.Payload<T>, T> PATCH( Parser<T> parser, URL url, Data data )
+	{
+		return PATCH( parser, url, data, null );
+	}
+
+	/**
+	 * Create an HTTP PATCH {@link Request} with {@link Event} callbacks.
+	 *
+	 * @param parser The {@link Class} of a {@link Parser} used to evaluate the server's response.
+	 * @param url    The resource's {@link URL}.
+	 * @param data   The payload Data that will be added to the Request body. May be <code>null</code>.
+	 * @param event  The Event callbacks that will be executed during the request. May be <code>null</code>.
+	 * @param <T>    The resource's type after successful parsing.
+	 * @return An instance of {@link Patch}.
+	 */
+	public static <T> Patch<Response.Payload<T>, Event.Payload<T>, T> PATCH( Parser<T> parser, URL url, Data data, Event.Payload<T> event )
+	{
+		return new Patch<Response.Payload<T>, Event.Payload<T>, T>( parser, url, data, event )
+		{
+			@Override
+			protected Response.Payload<T> summarize( URL url, int code, String message, Map<String, List<String>> headers, T body )
+			{
+				return new Response.Payload<T>( url, code, message, headers, body );
+			}
+		};
 	}
 
 	/**
