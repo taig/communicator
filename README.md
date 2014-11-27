@@ -15,12 +15,12 @@ Add `http://taig.github.io/Toolbelt/release` to your content resolvers, and add 
 
 > Name: communicator
 
-> Version: 1.1.0
+> Version: 1.1.1
 
 In sbt, for instance:
 ```
 resolvers += Resolver.url( "Communicator", url( "http://taig.github.io/Communicator/release" ) )( ivyStylePatterns )
-libraryDependencies += "com.taig.android" % "communicator" % "1.1.0"
+libraryDependencies += "com.taig.android" % "communicator" % "1.1.1"
 ```
 
 ### Request
