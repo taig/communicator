@@ -1,5 +1,7 @@
 package com.taig.communicator.request;
 
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.OkUrlFactory;
 import com.taig.communicator.data.Header;
 import com.taig.communicator.event.Event;
 import com.taig.communicator.event.State;
@@ -26,6 +28,8 @@ import static com.taig.communicator.data.Header.Request.COOKIE;
 public abstract class Request<R extends Response, E extends Event<R>> implements Cancelable, Runnable
 {
 	public static final String CHARSET = "UTF-8";
+
+	private static final OkUrlFactory URL_FACTORY = new OkUrlFactory( new OkHttpClient() );
 
 	protected Method.Type method;
 
@@ -422,7 +426,7 @@ public abstract class Request<R extends Response, E extends Event<R>> implements
 	 */
 	public HttpURLConnection connect() throws IOException
 	{
-		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+		HttpURLConnection connection = URL_FACTORY.open( url );
 		connection.setAllowUserInteraction( userInteraction );
 		connection.setConnectTimeout( connectTimeout );
 		connection.setIfModifiedSince( modifiedSince );

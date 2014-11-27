@@ -10,6 +10,7 @@ object Build extends android.AutoBuild
 		.settings(
 			autoScalaLibrary := false,
 			name := "Communicator",
+			libraryDependencies ++= Seq( "com.squareup.okhttp" % "okhttp-urlconnection" % "2.1.0" ),
 			organization := "com.taig.android",
 			publishArtifact in packageDoc := false,
 			scalaVersion := "2.11.4",
