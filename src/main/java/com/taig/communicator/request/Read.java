@@ -1,13 +1,13 @@
 package com.taig.communicator.request;
 
 import com.taig.communicator.event.Event;
+import com.taig.communicator.io.CancelledIOException;
 import com.taig.communicator.io.Updateable;
 import com.taig.communicator.method.Method;
 import com.taig.communicator.result.Parser;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InterruptedIOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.List;
@@ -40,19 +40,6 @@ public abstract class Read<R extends Response, E extends Event<R>, T> extends Re
 	protected LoadingState getLoadingState()
 	{
 		return new LoadingState();
-	}
-
-	@Override
-	protected int getTransferredBytes()
-	{
-		if( progress == null )
-		{
-			return 0;
-		}
-		else
-		{
-			return (int) progress.getCurrent();
-		}
 	}
 
 	/**
@@ -181,7 +168,7 @@ public abstract class Read<R extends Response, E extends Event<R>, T> extends Re
 		{
 			if( cancelled )
 			{
-				throw new InterruptedIOException( "Connection cancelled" );
+				throw new CancelledIOException( (int) getLength() );
 			}
 
 			state.receiving( read, getLength() );

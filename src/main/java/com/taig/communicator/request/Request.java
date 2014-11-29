@@ -10,7 +10,6 @@ import com.taig.communicator.io.CancelledIOException;
 import com.taig.communicator.method.Method;
 
 import java.io.IOException;
-import java.io.InterruptedIOException;
 import java.net.*;
 import java.util.List;
 
@@ -174,16 +173,6 @@ public abstract class Request<R extends Response, E extends Event<R>> implements
 		State state = getState();
 		return state == State.START || state == State.CONNECT || state == State.SEND || state == State.RECEIVE;
 	}
-
-	/**
-	 * Retrieve the amount of transferred bytes
-	 * 
-	 * This value serves the {@link com.taig.communicator.io.CancelledIOException#bytesTransferred} property and
-	 * should therefore reflect the current emphasis on whether this Request is mainly sending or receiving.
-	 * 
-	 * @return The amount of transferred bytes at this point of time
-	 */
-	abstract protected int getTransferredBytes();
 
 	/**
 	 * Specify whether to allow user interaction.
@@ -484,7 +473,7 @@ public abstract class Request<R extends Response, E extends Event<R>> implements
 
 			if( cancelled )
 			{
-				throw new CancelledIOException( getTransferredBytes() );
+				throw new CancelledIOException();
 			}
 
 			R response = talk( connection );
@@ -521,7 +510,7 @@ public abstract class Request<R extends Response, E extends Event<R>> implements
 		{
 			state.success( request() );
 		}
-		catch( InterruptedIOException exception )
+		catch( CancelledIOException exception )
 		{
 			// Don't fail/finish cancelled requests.
 		}
@@ -567,7 +556,7 @@ public abstract class Request<R extends Response, E extends Event<R>> implements
 			}
 		}
 
-		public void cancel( InterruptedIOException exception )
+		public void cancel( CancelledIOException exception )
 		{
 			current = State.CANCEL;
 

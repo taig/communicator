@@ -1,15 +1,15 @@
 package com.taig.communicator.event;
 
+import com.taig.communicator.io.CancelledIOException;
 import com.taig.communicator.request.Request;
 import com.taig.communicator.request.Response;
 import com.taig.communicator.result.Parser;
 
 import java.io.InputStream;
-import java.io.InterruptedIOException;
 import java.io.OutputStream;
 
 import static com.taig.communicator.concurrent.MainThreadExecutor.EXECUTOR;
-import static com.taig.communicator.io.Updateable.*;
+import static com.taig.communicator.io.Updateable.Stream;
 
 /**
  * A collection of callback methods that shall be implemented by subclassing the Event class, overriding the desired
@@ -69,10 +69,10 @@ public abstract class Event<R extends Response>
 	 * When a Request is cancelled the {@link Event Events} {@link #onFailure(Throwable)} and {@link #onFinish()} will
 	 * not be fired.
 	 *
-	 * @param exception The {@link InterruptedIOException} thrown by cancelling the Request.
+	 * @param exception The {@link CancelledIOException} thrown by cancelling the Request.
 	 * @see State#CANCEL
 	 */
-	protected void onCancel( InterruptedIOException exception )
+	protected void onCancel( CancelledIOException exception )
 	{
 		//
 	}
@@ -174,7 +174,7 @@ public abstract class Event<R extends Response>
 	 * This callback does not trigger when the Request has been cancelled.
 	 *
 	 * @param error The {@link Throwable} that caused the Request to fail.
-	 * @see #onCancel(InterruptedIOException)
+	 * @see #onCancel(CancelledIOException)
 	 * @see State#FAILURE
 	 */
 	protected void onFailure( Throwable error )
@@ -283,7 +283,7 @@ public abstract class Event<R extends Response>
 			} );
 		}
 
-		public void cancel( final InterruptedIOException exception )
+		public void cancel( final CancelledIOException exception )
 		{
 			EXECUTOR.execute( new Runnable()
 			{
