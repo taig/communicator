@@ -42,6 +42,19 @@ public abstract class Read<R extends Response, E extends Event<R>, T> extends Re
 		return new LoadingState();
 	}
 
+	@Override
+	protected int getTransferredBytes()
+	{
+		if( progress == null )
+		{
+			return 0;
+		}
+		else
+		{
+			return (int) progress.getCurrent();
+		}
+	}
+
 	/**
 	 * Retrieve the {@link Request Request's} reading {@link Progress}.
 	 * 
