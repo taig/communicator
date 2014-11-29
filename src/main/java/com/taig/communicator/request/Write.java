@@ -2,12 +2,12 @@ package com.taig.communicator.request;
 
 import com.taig.communicator.data.Data;
 import com.taig.communicator.event.Event;
+import com.taig.communicator.io.CancelledIOException;
 import com.taig.communicator.io.Updateable;
 import com.taig.communicator.method.Method;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -43,19 +43,6 @@ public abstract class Write<R extends Response, E extends Event<R>, T> extends R
 	protected LoadingState getLoadingState()
 	{
 		return new LoadingState();
-	}
-
-	@Override
-	protected int getTransferredBytes()
-	{
-		if( progress == null )
-		{
-			return 0;
-		}
-		else
-		{
-			return (int) progress.getCurrent();
-		}
 	}
 
 	/**
@@ -188,7 +175,7 @@ public abstract class Write<R extends Response, E extends Event<R>, T> extends R
 		{
 			if( cancelled )
 			{
-				throw new InterruptedIOException( "Connection cancelled" );
+				throw new CancelledIOException( (int) getLength() );
 			}
 
 			state.sending( written, getLength() );

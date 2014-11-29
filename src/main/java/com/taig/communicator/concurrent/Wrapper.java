@@ -3,11 +3,10 @@ package com.taig.communicator.concurrent;
 import android.util.Log;
 import com.taig.communicator.event.Event;
 import com.taig.communicator.io.Cancelable;
-import com.taig.communicator.request.Request;
+import com.taig.communicator.io.CancelledIOException;
 import com.taig.communicator.request.Response;
 
 import java.io.IOException;
-import java.io.InterruptedIOException;
 import java.net.*;
 import java.util.List;
 
@@ -194,7 +193,7 @@ public abstract class Wrapper<R extends java.lang.Runnable> implements java.lang
 				Log.w( TAG, "The cookies of a Response were dropped because the associated URL could not be " +
 					"converted to an URI", exception );
 			}
-			catch( InterruptedIOException exception )
+			catch( CancelledIOException exception )
 			{
 				// Don't fail/finish cancelled requests.
 			}
