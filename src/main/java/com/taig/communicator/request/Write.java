@@ -45,6 +45,19 @@ public abstract class Write<R extends Response, E extends Event<R>, T> extends R
 		return new LoadingState();
 	}
 
+	@Override
+	protected int getTransferredBytes()
+	{
+		if( progress == null )
+		{
+			return 0;
+		}
+		else
+		{
+			return (int) progress.getCurrent();
+		}
+	}
+
 	/**
 	 * Retrieve the {@link Request Request's} writing {@link Progress}.
 	 *
