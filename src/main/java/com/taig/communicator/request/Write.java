@@ -139,6 +139,12 @@ public abstract class Write<R extends Response, E extends Event<R>, T> extends R
 		}
 	}
 
+	@Override
+	public String toString()
+	{
+		return super.toString() + "\n\n[data]";
+	}
+
 	protected class LoadingState extends Read<R, E, T>.LoadingState
 	{
 		@Override

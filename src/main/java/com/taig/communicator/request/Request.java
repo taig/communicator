@@ -529,6 +529,14 @@ public abstract class Request<R extends Response, E extends Event<R>> implements
 	 */
 	protected abstract R talk( HttpURLConnection connection ) throws IOException;
 
+	@Override
+	public String toString()
+	{
+		return
+			getMethod().toString() + ' ' + getUrl().getPath() + ' ' + "HTTP/1.1\n" +
+			getHeader().mkString( "\n" );
+	}
+
 	/**
 	 * Internal helper class to manage the current {@link State} and triggering of the {@link Event.Proxy}.
 	 */
