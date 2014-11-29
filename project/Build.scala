@@ -14,7 +14,7 @@ object Build extends android.AutoBuild
 			organization := "com.taig.android",
 			publishArtifact in packageDoc := false,
 			scalaVersion := "2.11.4",
-			version := "1.1.2",
+			version := "1.1.3",
 			platformTarget in Android := "android-21"
 	)
 }
