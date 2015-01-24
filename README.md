@@ -9,7 +9,7 @@ devices.
 
 ## Installation
 
-Add `http://taig.github.io/Toolbelt/release` to your content resolvers, and add the dependency:
+Add `http://taig.github.io/repository` to your content resolvers, and add the dependency:
 
 > Package: com.taig.android
 
@@ -19,7 +19,7 @@ Add `http://taig.github.io/Toolbelt/release` to your content resolvers, and add 
 
 In sbt, for instance:
 ```
-resolvers += Resolver.url( "Communicator", url( "http://taig.github.io/Communicator/release" ) )( ivyStylePatterns )
+resolvers += Resolver.url( "Taig", url( "http://taig.github.io/repository" ) )( ivyStylePatterns )
 libraryDependencies += "com.taig.android" % "communicator" % "1.1.4"
 ```
 
