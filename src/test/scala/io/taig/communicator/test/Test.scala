@@ -1,7 +1,7 @@
 package io.taig.communicator.test
 
 import com.squareup.okhttp.Request.Builder
-import com.squareup.okhttp.{MediaType, RequestBody}
+import com.squareup.okhttp.{MediaType, OkHttpClient, RequestBody}
 import io.taig.communicator._
 import org.mockserver.client.server.MockServerClient
 import org.mockserver.integration.ClientAndServer.startClientAndServer
@@ -18,6 +18,8 @@ extends	FlatSpec
 with	Matchers
 with	BeforeAndAfterAll
 {
+	implicit val okhttp = new OkHttpClient()
+
 	val fixture = new
 	{
 		val server = startClientAndServer( 8888 )
