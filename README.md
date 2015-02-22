@@ -4,14 +4,14 @@
 
 ## Index
 
-1. Installation
-2. Getting Started
-3. Usage
- 1. Basics
- 2. Requests and Responses
- 3. Parser
-4. Android
-5. License
+1. [Installation](#installation)
+2. [Getting Started](#getting-started)
+3. [Usage](#usage)
+ 1. [Basics](#basics)
+ 2. [Requests and Responses](#requests-and-responses)
+ 3. [Parser](#parser)
+4. [Android](#android)
+5. [License](#license)
 
 ## Installation
 
