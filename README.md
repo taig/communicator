@@ -17,7 +17,9 @@ Communicator provides a simple `scala.concurrent.Future` implementation that han
 
 ## Installation
 
-TODO
+*Communicator* is available via Maven Central
+
+`libraryDependencies += "io.taig" % "communicator" % "1.0.0"`
 
 ## Getting Started
 
