@@ -1,6 +1,6 @@
 package io.taig.communicator
 
-import _root_.io.taig.communicator.response.{Handler, Parser}
+import _root_.io.taig.communicator.result.{Handler, Parser}
 import io.taig.communicator.body.Receive
 import com.squareup.okhttp
 import com.squareup.okhttp.internal.Util.closeQuietly

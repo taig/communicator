@@ -2,7 +2,7 @@ package io.taig.communicator
 
 import java.util.concurrent.Executors
 
-import _root_.io.taig.communicator.response.Parser
+import _root_.io.taig.communicator.result.Parser
 import com.squareup.okhttp
 import com.squareup.okhttp.OkHttpClient
 
@@ -22,7 +22,7 @@ object Main extends App
 		.get()
 		.build()
 
-	Request( req )( client, Parser.String, ctx )
+	Request.parse[String]( client, req, Parser.String )
 		.onSend( println )( single )
 		.onReceive( println )( single )
 		.onSuccess( reponse => println( "Yeah" ) )( single )

@@ -2,16 +2,16 @@ package io.taig.communicator
 
 import java.io.IOException
 
-import _root_.io.taig.communicator.request.Content
-import _root_.io.taig.communicator.response.Parser
+import _root_.io.taig.communicator.body.Send
+import _root_.io.taig.communicator.request.{Content, Payload, Plain}
+import _root_.io.taig.communicator.result.{Handler, Parser}
 import com.squareup.okhttp
 import com.squareup.okhttp.OkHttpClient
-import _root_.io.taig.communicator.body.{Receive, Send}
 
+import scala.collection.mutable
 import scala.concurrent.duration.Duration
 import scala.concurrent.{CanAwait, ExecutionContext => Context, Future, TimeoutException}
-import scala.util.{Success, Failure, Try}
-import scala.collection.mutable
+import scala.util.{Failure, Success, Try}
 
 trait	Request[+R <: Response]
 extends	Future[R]
@@ -160,13 +160,53 @@ with	Cancelable
 
 object Request
 {
-	def apply[T]( request: okhttp.Request )( implicit client: OkHttpClient, parser: Parser[T], executor: Context ): Content[T] =
+	def apply( client: OkHttpClient, request: okhttp.Request )( implicit executor: Context ): Plain =
+	{
+		new Plain( client, request, executor )
+	}
+
+	def apply( request: okhttp.Request )( implicit client: OkHttpClient, executor: Context ): Plain =
+	{
+		apply( client, request )
+	}
+
+	def handle( client: OkHttpClient, request: okhttp.Request, handler: Handler )( implicit executor: Context ): Payload =
+	{
+		new Payload( client, request, handler, executor )
+	}
+
+	def handle( client: OkHttpClient, request: okhttp.Request )( implicit executor: Context, handler: Handler ): Payload =
+	{
+		handle( client, request, handler )
+	}
+
+	def handle( request: okhttp.Request, handler: Handler )( implicit client: OkHttpClient, executor: Context ): Payload =
+	{
+		handle( client, request, handler )
+	}
+
+	def handle( request: okhttp.Request )( implicit client: OkHttpClient, handler: Handler, executor: Context ): Payload =
+	{
+		handle( client, request, handler )
+	}
+
+	def parse[T]( client: OkHttpClient, request: okhttp.Request, parser: Parser[T] )( implicit executor: Context ): Content[T] =
 	{
 		new Content[T]( client, request, parser, executor )
 	}
 
-	def apply[T]( client: OkHttpClient, request: okhttp.Request )( implicit parser: Parser[T], executor: Context ): Content[T] =
+	def parse[T]( client: OkHttpClient, request: okhttp.Request )( implicit executor: Context, parser: Parser[T] ): Content[T] =
 	{
-		new Content[T]( client, request, parser, executor )
+		parse( client, request, parser )
+	}
+
+	def parse[T]( request: okhttp.Request, parser: Parser[T] )( implicit client: OkHttpClient, executor: Context ): Content[T] =
+	{
+		parse( client, request, parser )
+	}
+
+	def parse[T]( request: okhttp.Request )( implicit client: OkHttpClient, parser: Parser[T], executor: Context ): Content[T] =
+	{
+		parse( client, request, parser )
 	}
 }

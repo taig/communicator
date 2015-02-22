@@ -3,7 +3,7 @@ package io.taig.communicator.request
 import com.squareup.okhttp
 import com.squareup.okhttp.OkHttpClient
 import io.taig.communicator.body.Receive
-import io.taig.communicator.response.Parser
+import io.taig.communicator.result.Parser
 import io.taig.communicator.{Request, Response}
 
 import scala.concurrent.{ExecutionContext => Context}

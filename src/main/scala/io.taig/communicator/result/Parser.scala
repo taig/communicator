@@ -1,4 +1,4 @@
-package io.taig.communicator.response
+package io.taig.communicator.result
 
 import java.io.InputStream
 import java.util.zip.GZIPInputStream

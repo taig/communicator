@@ -1,10 +1,10 @@
 package io.taig.communicator.request
 
-import _root_.io.taig.communicator.body.Receive
-import _root_.io.taig.communicator.response.Handler
 import com.squareup.okhttp
 import com.squareup.okhttp.OkHttpClient
 import io.taig.communicator._
+import io.taig.communicator.body.Receive
+import io.taig.communicator.result.Handler
 
 import scala.concurrent.{ExecutionContext => Context}
 
