@@ -47,7 +47,7 @@ TODO
 
 ## License
 
-The MIT License (MIT)
+The MIT License (MIT)  
 Copyright (c) 2015 Niklas Klein <my.taig@gmail.com>
 
 [1]: http://square.github.io/okhttp/
