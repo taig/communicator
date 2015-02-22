@@ -165,8 +165,8 @@ object Request
 		new Content[T]( client, request, parser, executor )
 	}
 
-//	def apply[T]( client: OkHttpClient, request: okhttp.Request )( implicit parser: Parser[T], executor: Context ): Content[T] =
-//	{
-//		new Content[T]( client, request, parser, executor )
-//	}
+	def apply[T]( client: OkHttpClient, request: okhttp.Request )( implicit parser: Parser[T], executor: Context ): Content[T] =
+	{
+		new Content[T]( client, request, parser, executor )
+	}
 }
