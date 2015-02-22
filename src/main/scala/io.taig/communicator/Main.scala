@@ -2,6 +2,7 @@ package io.taig.communicator
 
 import java.util.concurrent.Executors
 
+import _root_.io.taig.communicator.response.Parser
 import com.squareup.okhttp
 import com.squareup.okhttp.OkHttpClient
 

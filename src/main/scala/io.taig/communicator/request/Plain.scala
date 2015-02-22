@@ -6,7 +6,19 @@ import io.taig.communicator.{Request, Response}
 
 import scala.concurrent.{ExecutionContext => Context}
 
-class	Plain( val client: OkHttpClient, val wrapped: okhttp.Request, val executor: Context )
+/**
+ * A simple request that only handles the response's meta data
+ * 
+ * This request does not process any payload of the response. It is intended for HTTP calls that do not provide a body
+ * (e.g. HEAD) or in cases where potential body data is of no interest (e.g. a ping service)
+ * 
+ * @param client [[com.squareup.okhttp.OkHttpClient OkHttpClient]]
+ * @param request [[com.squareup.okhttp.Request okhttp.Request]]
+ * @param executor Execution context on which the request is executed
+ * @see [[io.taig.communicator.request.Content]]
+ * @see [[io.taig.communicator.request.Payload]]
+ */
+class	Plain( val client: OkHttpClient, val request: okhttp.Request, val executor: Context )
 extends	Request[Response]
 {
 	override def response( wrapped: okhttp.Response ) = new Response( wrapped )

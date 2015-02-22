@@ -1,11 +1,16 @@
 package io.taig.communicator
 
+import _root_.io.taig.communicator.response.{Handler, Parser}
 import io.taig.communicator.body.Receive
 import com.squareup.okhttp
 import com.squareup.okhttp.internal.Util.closeQuietly
 
 class Response( wrapped: okhttp.Response )
 {
+	initialize()
+
+	protected def initialize() = {}
+
 	def code = wrapped.code
 
 	def message = wrapped.message
@@ -42,17 +47,25 @@ object Response
 {
 	def unapply( response: Response ) = Some( response.code )
 
-	class	Payload( val body: Receive, wrapped: okhttp.Response )
+	class	Handleable( wrapped: okhttp.Response, body: Receive, handler: Handler )
 	extends	Response( wrapped )
-
-	object Payload
 	{
-		def unapply( response: Payload ) = Response.unapply( response )
+		override protected def initialize() = handler.handle( this, body.source().inputStream() )
 	}
 
-	class	Parsable[T]( body: Receive, wrapped: okhttp.Response, parser: Parser[T] )
-	extends	Payload( body, wrapped )
+	object Handleable
 	{
+		def unapply( response: Handleable ) = Response.unapply( response )
+	}
+
+	class	Parsable[T]( wrapped: okhttp.Response, body: Receive, parser: Parser[T] )
+	extends	Handleable( wrapped, body, parser )
+	{
+		override protected def initialize() =
+		{
+			// Don't execute the handler, populate payload field instead
+		}
+
 		val payload: T =
 		{
 			try

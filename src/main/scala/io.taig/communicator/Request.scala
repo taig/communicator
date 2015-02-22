@@ -3,6 +3,7 @@ package io.taig.communicator
 import java.io.IOException
 
 import _root_.io.taig.communicator.request.Content
+import _root_.io.taig.communicator.response.Parser
 import com.squareup.okhttp
 import com.squareup.okhttp.OkHttpClient
 import _root_.io.taig.communicator.body.{Receive, Send}
@@ -20,7 +21,7 @@ with	Cancelable
 
 	def client: OkHttpClient
 
-	def wrapped: okhttp.Request
+	def request: okhttp.Request
 
 	def executor: Context
 
@@ -28,19 +29,19 @@ with	Cancelable
 
 	protected val listener = new Listener
 
-	protected lazy val send = new Send( wrapped.body(), listener.send )
+	protected lazy val send = new Send( request.body(), listener.send )
 
 	protected lazy val call = client.newCall
 	{
-		if( wrapped.body() == null )
+		if( request.body() == null )
 		{
-			wrapped
+			request
 		}
 		else
 		{
-			wrapped
+			request
 				.newBuilder()
-				.method( wrapped.method(), send )
+				.method( request.method(), send )
 				.build()
 		}
 	}
@@ -94,7 +95,7 @@ with	Cancelable
 	{
 		call.cancel()
 
-		if( wrapped.body() != null )
+		if( request.body() != null )
 		{
 			send.cancel()
 		}

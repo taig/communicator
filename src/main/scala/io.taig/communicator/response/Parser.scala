@@ -1,7 +1,9 @@
-package io.taig.communicator
+package io.taig.communicator.response
 
 import java.io.InputStream
 import java.util.zip.GZIPInputStream
+
+import _root_.io.taig.communicator.Response
 
 import scala.io.Source
 
