@@ -1,6 +1,6 @@
 package io.taig.communicator.event
 
-class Request
+trait Event
 {
 	var send: Option[Progress.Send => Unit] = None
 }

@@ -4,7 +4,6 @@ import com.squareup.okhttp
 import com.squareup.okhttp.OkHttpClient
 import io.taig.communicator
 import io.taig.communicator._
-import io.taig.communicator.result.Handler
 
 import scala.concurrent.{ExecutionContext => Context}
 
@@ -18,14 +17,14 @@ import scala.concurrent.{ExecutionContext => Context}
  * @param request [[com.squareup.okhttp.Request okhttp.Request]]
  * @param handler [[io.taig.communicator.response.Handler]] object to process the response body
  * @param executor Execution context on which the request is executed
- * @see [[io.taig.communicator.request.Content]]
+ * @see [[io.taig.communicator.request.Parser]]
  * @see [[io.taig.communicator.request.Plain]]
  */
-class	Payload( val client: OkHttpClient, val request: okhttp.Request, val handler: Handler, val executor: Context )
+class Handler( val client: OkHttpClient, val request: okhttp.Request, val handler: communicator.result.Handler, val executor: Context )
 extends
 {
-	val interceptor = new communicator.interceptor.Payload( request, handler )
+	val interceptor = new communicator.interceptor.Handler( request, handler )
 }
-with	Request[Response.Handleable, communicator.event.Response, communicator.interceptor.Payload]
+with	Request[Response.Handleable, event.Send with event.Receive, communicator.interceptor.Handler]
 with	Receivable
 

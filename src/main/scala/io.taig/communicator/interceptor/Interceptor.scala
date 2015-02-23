@@ -1,10 +1,11 @@
 package io.taig.communicator.interceptor
 
+import _root_.io.taig.communicator.event.Event
 import io.taig.communicator._
 import com.squareup.okhttp
 import com.squareup.okhttp.Interceptor.Chain
 
-trait	Interceptor[+R <: Response, +E <: event.Request]
+trait	Interceptor[+R <: Response, +E <: Event]
 extends	okhttp.Interceptor
 with	Cancelable
 {
@@ -17,15 +18,12 @@ with	Cancelable
 	override def intercept( chain: Chain ) =
 	{
 		val request = send( chain.request() )
-		println( "Sending request %s on %s%n%s".format( request.url(), chain.connection(), request.headers() ) )
-		val response = receive( original, chain.proceed( request ) )
-		println( "Received response for %s on %n%s".format( response.request().url(), response.headers() ) )
-		response
+		receive( chain.proceed( request ) )
 	}
 
 	protected def send( request: okhttp.Request ): okhttp.Request
 
-	protected def receive( original: okhttp.Request, response: okhttp.Response ): okhttp.Response
+	protected def receive( response: okhttp.Response ): okhttp.Response
 
 	def wrap( wrapped: okhttp.Response ): R
 }

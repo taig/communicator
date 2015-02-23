@@ -1,7 +1,7 @@
 package io.taig.communicator.event
 
-class	Response
-extends	Request
+trait	Receive
+extends	Event
 {
 	var receive: Option[Progress.Receive => Unit] = None
 }

@@ -5,10 +5,11 @@ import io.taig.communicator
 import io.taig.communicator._
 
 class	Plain( val original: okhttp.Request )
-extends	Interceptor[Response, event.Request]
+extends	Interceptor[Response, event.Send]
 with	Write
 {
-	override val event = new communicator.event.Request
+	object	event
+	extends	communicator.event.Send
 
 	override def wrap( wrapped: okhttp.Response ) = new Response( wrapped )
 }

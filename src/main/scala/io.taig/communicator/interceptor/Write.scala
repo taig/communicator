@@ -1,12 +1,11 @@
 package io.taig.communicator.interceptor
 
 import com.squareup.okhttp
-import com.squareup.okhttp.Request
 import io.taig.communicator
 import io.taig.communicator.{Response, body}
 
 trait	Write
-extends	Interceptor[Response, communicator.event.Request]
+extends	Interceptor[Response, communicator.event.Send]
 {
 	protected var request: Option[body.Request] = None
 
@@ -33,5 +32,5 @@ extends	Interceptor[Response, communicator.event.Request]
 		}
 	}
 
-	override protected def receive( original: Request, response: okhttp.Response ) = response
+	override protected def receive( response: okhttp.Response ) = response
 }

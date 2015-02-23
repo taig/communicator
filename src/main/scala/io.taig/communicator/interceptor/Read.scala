@@ -1,13 +1,11 @@
 package io.taig.communicator.interceptor
 
 import com.squareup.okhttp
-import com.squareup.okhttp.Request
-import io.taig.communicator
-import io.taig.communicator.{Response, body}
+import io.taig.communicator._
 
 trait	Read
 extends	Write
-with	Interceptor[Response, communicator.event.Response]
+with	Interceptor[Response, event.Send with event.Receive]
 {
 	protected var response: Option[body.Response] = None
 
@@ -19,28 +17,24 @@ with	Interceptor[Response, communicator.event.Response]
 
 	override def isCanceled = super.isCanceled && response.exists( _.isCanceled )
 
-	override protected def receive( original: Request, response: okhttp.Response ) =
+	override protected def receive( response: okhttp.Response ) =
 	{
+		val builder = response.newBuilder()
+
 		// Take over OkHttp's "transparent GZIP"
 		if( original.header( "Accept-Encoding" ) == null && response.header( "Content-Encoding" ) == "gzip" )
 		{
 			this.response = Some( new body.Response( response.body(), event.receive, true ) )
 
-			response
-				.newBuilder()
+			builder
 				.removeHeader( "Content-Encoding" )
 				.removeHeader( "Content-Length" )
-				.body( this.response.get )
-				.build()
 		}
 		else
 		{
 			this.response = Some( new body.Response( response.body(), event.receive, false ) )
-
-			response
-				.newBuilder()
-				.body( this.response.get )
-				.build()
 		}
+
+		builder.body( this.response.get ).build()
 	}
 }
