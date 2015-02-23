@@ -1,10 +1,8 @@
 package io.taig.communicator
 
-import java.io.IOException
-
-import _root_.io.taig.communicator.event.{Event, Progress}
 import com.squareup.okhttp
-import com.squareup.okhttp.OkHttpClient
+import com.squareup.okhttp.{Call, OkHttpClient}
+import io.taig.communicator.event.{Event, Progress}
 import io.taig.communicator.interceptor.Interceptor
 import io.taig.communicator.request.{Handler, Parser, Plain}
 
@@ -15,7 +13,6 @@ import scala.util.{Failure, Success, Try}
 
 trait	Request[+R <: Response, +E <: Event, +I <: Interceptor[R, E]]
 extends	Future[R]
-with	Cancelable
 {
 	def client: OkHttpClient
 
@@ -25,21 +22,28 @@ with	Cancelable
 
 	def interceptor: I
 
+	protected var call: Call = null
+
 	protected val events = mutable.ListBuffer.empty[( Try[Response] => Any, Context )]
 
-	protected val future = Future
+	protected val future =
 	{
-		try
+		val client = this.client.clone()
+		client.networkInterceptors().add( interceptor )
+		call = client.newCall( request )
+
+		Future
 		{
-			val client = this.client.clone()
-			client.networkInterceptors().add( interceptor )
-			interceptor.wrap( client.newCall( request ).execute() )
-		}
-		catch
-		{
-			case error: IOException if error.getMessage == "Canceled" => cancel( -1 )
-		}
-	}( executor )
+			try
+			{
+				interceptor.wrap( call.execute() )
+			}
+			catch
+			{
+				case error: Throwable if call.isCanceled => throw new exception.io.Canceled( error )
+			}
+		}( executor )
+	}
 
 	// Execute stored events on underlying future complete
 	future.onComplete( _ =>
@@ -71,9 +75,9 @@ with	Cancelable
 		}
 	}
 
-	override def isCanceled = interceptor.isCanceled
+	def isCanceled = call.isCanceled
 
-	override def cancel() = interceptor.cancel()
+	def cancel() = call.cancel()
 
 	def onSend( f: Progress.Send => Unit )( implicit executor: Context ): this.type =
 	{

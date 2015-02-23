@@ -1,3 +1,2 @@
-mockserver.log
-mockserver_request.log
+*.log
 proguard-sbt.txt

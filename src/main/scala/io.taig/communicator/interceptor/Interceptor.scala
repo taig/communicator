@@ -1,13 +1,12 @@
 package io.taig.communicator.interceptor
 
-import _root_.io.taig.communicator.event.Event
-import io.taig.communicator._
 import com.squareup.okhttp
 import com.squareup.okhttp.Interceptor.Chain
+import io.taig.communicator._
+import io.taig.communicator.event.Event
 
 trait	Interceptor[+R <: Response, +E <: Event]
 extends	okhttp.Interceptor
-with	Cancelable
 {
 	def original: okhttp.Request
 

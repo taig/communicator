@@ -1,10 +1,12 @@
 package io.taig
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 import scala.language.implicitConversions
 
 package object communicator
 {
+	type CanceledIOException = exception.io.Canceled
+
 	private[communicator] implicit def `Function0 -> Runnable`( f: => Unit ): Runnable = new Runnable
 	{
 		override def run() = f

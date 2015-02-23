@@ -2,9 +2,8 @@ package io.taig.communicator.body
 
 import java.io.InterruptedIOException
 
-import io.taig.communicator.event.Progress
 import com.squareup.okhttp.ResponseBody
-import io.taig.communicator.Cancelable
+import io.taig.communicator.event.Progress
 import okio._
 
 /**
@@ -16,7 +15,6 @@ import okio._
  */
 class	Response( wrapped: ResponseBody, event: Option[Progress.Receive => Unit], zipped: Boolean )
 extends	ResponseBody
-with	Cancelable.Simple
 {
 	/**
 	 * Prevent recreating the length object on every listener call
@@ -28,15 +26,7 @@ with	Cancelable.Simple
 	}
 
 	@throws[InterruptedIOException]( "If the request was canceled" )
-	private def update( current: Long ) =
-	{
-		event.foreach( _( Progress.Receive( current, length ) ) )
-
-		if( isCanceled )
-		{
-			cancel( current, "Request canceled on receive" )
-		}
-	}
+	private def update( current: Long ) = event.foreach( _( Progress.Receive( current, length ) ) )
 
 	override def source() =
 	{

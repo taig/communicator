@@ -9,10 +9,6 @@ extends	Interceptor[Response, communicator.event.Send]
 {
 	protected var request: Option[body.Request] = None
 
-	override def cancel() = request.foreach( _.cancel() )
-
-	override def isCanceled = request.exists( _.isCanceled )
-
 	override protected def send( request: okhttp.Request ): okhttp.Request =
 	{
 		if( request.body() != null )

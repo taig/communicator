@@ -9,14 +9,6 @@ with	Interceptor[Response, event.Send with event.Receive]
 {
 	protected var response: Option[body.Response] = None
 
-	override def cancel() =
-	{
-		super.cancel()
-		response.foreach( _.cancel() )
-	}
-
-	override def isCanceled = super.isCanceled && response.exists( _.isCanceled )
-
 	override protected def receive( response: okhttp.Response ) =
 	{
 		val builder = response.newBuilder()

@@ -1,7 +1,7 @@
 package io.taig.communicator.request
 
-import io.taig.communicator.event.Progress
 import io.taig.communicator._
+import io.taig.communicator.event.Progress
 
 import scala.concurrent.{ExecutionContext => Context}
 

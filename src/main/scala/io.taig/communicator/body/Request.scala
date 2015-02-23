@@ -1,11 +1,8 @@
 package io.taig.communicator.body
 
-import java.io.{IOException, InterruptedIOException}
-
-import io.taig.communicator.event.Progress
 import com.squareup.okhttp.RequestBody
 import com.squareup.okhttp.internal.Util.closeQuietly
-import io.taig.communicator.Cancelable
+import io.taig.communicator.event.Progress
 import okio.{Buffer, BufferedSink}
 
 /**
@@ -17,7 +14,6 @@ import okio.{Buffer, BufferedSink}
  */
 class	Request( wrapped: RequestBody, event: Option[Progress.Send => Unit] )
 extends	RequestBody
-with	Cancelable.Simple
 {
 	require(
 		wrapped.contentLength() > -1 || wrapped.contentLength() == -1 && event == null,
@@ -26,22 +22,12 @@ with	Cancelable.Simple
 
 	private lazy val length = contentLength()
 
-	@throws[InterruptedIOException]( "If the request was canceled" )
-	private def update( current: Long ) =
-	{
-		event.foreach( _( Progress.Send( current, length ) ) )
-
-		if( isCanceled )
-		{
-			cancel( current, "Request canceled on send" )
-		}
-	}
+	private def update( current: Long ) = event.foreach( _( Progress.Send( current, length ) ) )
 
 	override def contentLength() = wrapped.contentLength()
 
 	override def contentType() = wrapped.contentType()
 
-	@throws[InterruptedIOException]( "If the request was canceled" )
 	override def writeTo( sink: BufferedSink ) =
 	{
 		var size = 0
@@ -69,10 +55,6 @@ with	Cancelable.Simple
 					sink.write( buffer, 0, length )
 					update( size )
 				} )
-		}
-		catch
-		{
-			case error: IOException if error.getMessage == "Canceled" => cancel( size )
 		}
 		finally
 		{
