@@ -5,7 +5,7 @@ import com.squareup.okhttp.internal.Util.closeQuietly
 import io.taig.communicator
 import io.taig.communicator.result.{Handler, Parser}
 
-class Response( wrapped: okhttp.Response )
+class Response private[communicator]( wrapped: okhttp.Response )
 {
 	def code = wrapped.code
 
@@ -43,7 +43,7 @@ object Response
 {
 	def unapply( response: Response ) = Some( response.code )
 
-	class	Handleable( wrapped: okhttp.Response, body: communicator.body.Response, handler: Handler )
+	class	Handleable private[communicator]( wrapped: okhttp.Response, body: communicator.body.Response, handler: Handler )
 	extends	Response( wrapped )
 	{
 		handler.handle( this, body.source().inputStream() )
@@ -54,7 +54,7 @@ object Response
 		def unapply( response: Handleable ) = Response.unapply( response )
 	}
 
-	class	Parsable[T]( wrapped: okhttp.Response, body: communicator.body.Response, parser: Parser[T] )
+	class	Parsable[T] private[communicator]( wrapped: okhttp.Response, body: communicator.body.Response, parser: Parser[T] )
 	extends	Response( wrapped )
 	{
 		val payload: T =
