@@ -2,9 +2,10 @@ package io.taig.communicator.body
 
 import java.io.{IOException, InterruptedIOException}
 
+import io.taig.communicator.event.Progress
 import com.squareup.okhttp.RequestBody
 import com.squareup.okhttp.internal.Util.closeQuietly
-import io.taig.communicator.{Cancelable, Progress}
+import io.taig.communicator.Cancelable
 import okio.{Buffer, BufferedSink}
 
 /**
@@ -12,14 +13,14 @@ import okio.{Buffer, BufferedSink}
  * flag
  *
  * @param wrapped The wrapped RequestBody, may be <code>null</code>
- * @param listener Event listener to update on progress, may be <code>null</code>
+ * @param event Event listener to update on progress, may be <code>null</code>
  */
-class	Send( wrapped: RequestBody, listener: Progress.Send => Unit )
+class	Request( wrapped: RequestBody, event: Option[Progress.Send => Unit] )
 extends	RequestBody
 with	Cancelable.Simple
 {
 	require(
-		wrapped.contentLength() > -1 || wrapped.contentLength() == -1 && listener == null,
+		wrapped.contentLength() > -1 || wrapped.contentLength() == -1 && event == null,
 		"The provided RequestBody must specify a proper content length if you want to use an onSend listener"
 	)
 
@@ -28,10 +29,7 @@ with	Cancelable.Simple
 	@throws[InterruptedIOException]( "If the request was canceled" )
 	private def update( current: Long ) =
 	{
-		if( listener != null )
-		{
-			listener( Progress.Send( current, length ) )
-		}
+		event.foreach( _( Progress.Send( current, length ) ) )
 
 		if( isCanceled )
 		{

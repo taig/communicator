@@ -1,6 +1,6 @@
-package io.taig.communicator
+package io.taig.communicator.event
 
-import scala.math.{pow, log}
+import scala.math.{log, pow}
 
 trait Progress
 {

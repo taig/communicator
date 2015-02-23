@@ -1,10 +1,10 @@
 package io.taig.communicator.request
 
+import io.taig.communicator
 import com.squareup.okhttp
 import com.squareup.okhttp.OkHttpClient
-import io.taig.communicator.body.Receive
+import io.taig.communicator._
 import io.taig.communicator.result.Parser
-import io.taig.communicator.{Request, Response}
 
 import scala.concurrent.{ExecutionContext => Context}
 
@@ -22,13 +22,10 @@ import scala.concurrent.{ExecutionContext => Context}
  * @see [[io.taig.communicator.request.Payload]]
  * @see [[io.taig.communicator.request.Plain]]
  */
-class	Content[T]( client: OkHttpClient, request: okhttp.Request, parser: Parser[T], executor: Context )
-extends	Payload( client, request, parser, executor )
-with	Request[Response.Parsable[T]]
+class	Content[T]( val client: OkHttpClient, val request: okhttp.Request, val parser: Parser[T], val executor: Context )
+extends
 {
-	override def response( wrapped: okhttp.Response ) =
-	{
-		receive = new Receive( wrapped.body(), listener.receive )
-		new Response.Parsable[T]( wrapped, receive, parser )
-	}
+	val interceptor = new communicator.interceptor.Content( request, parser )
 }
+with	Request[Response.Parsable[T], communicator.event.Response, communicator.interceptor.Content[T]]
+with	Receivable

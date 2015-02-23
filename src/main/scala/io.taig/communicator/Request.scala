@@ -2,55 +2,39 @@ package io.taig.communicator
 
 import java.io.IOException
 
-import _root_.io.taig.communicator.body.Send
-import _root_.io.taig.communicator.request.{Content, Payload, Plain}
-import _root_.io.taig.communicator.result.{Handler, Parser}
+import io.taig.communicator.event.Progress
+import io.taig.communicator.interceptor.Interceptor
 import com.squareup.okhttp
 import com.squareup.okhttp.OkHttpClient
+import io.taig.communicator.request.{Content, Payload, Plain}
+import io.taig.communicator.result.{Handler, Parser}
 
 import scala.collection.mutable
 import scala.concurrent.duration.Duration
 import scala.concurrent.{CanAwait, ExecutionContext => Context, Future, TimeoutException}
 import scala.util.{Failure, Success, Try}
 
-trait	Request[+R <: Response]
+trait	Request[+R <: Response, +E <: event.Request, +I <: Interceptor[R, E]]
 extends	Future[R]
 with	Cancelable
 {
-	def response( wrapped: okhttp.Response ): R
-
 	def client: OkHttpClient
 
 	def request: okhttp.Request
 
 	def executor: Context
 
-	protected val events = mutable.Queue.empty[( Try[Response] => Any, Context )]
+	def interceptor: I
 
-	protected val listener = new Listener
-
-	protected lazy val send = new Send( request.body(), listener.send )
-
-	protected lazy val call = client.newCall
-	{
-		if( request.body() == null )
-		{
-			request
-		}
-		else
-		{
-			request
-				.newBuilder()
-				.method( request.method(), send )
-				.build()
-		}
-	}
+	protected val events = mutable.ListBuffer.empty[( Try[Response] => Any, Context )]
 
 	protected val future = Future
 	{
 		try
 		{
-			response( call.execute() )
+			val client = this.client.clone()
+			client.networkInterceptors().add( interceptor )
+			interceptor.wrap( client.newCall( request ).execute() )
 		}
 		catch
 		{
@@ -58,12 +42,11 @@ with	Cancelable
 		}
 	}( executor )
 
+	// Execute stored events on underlying future complete
 	future.onComplete( _ =>
 	{
-		events.dequeueAll( _ => true ).foreach
-		{
-			case ( event, executor ) => future.onComplete( event )( executor )
-		}
+		events.foreach{ case ( event, executor ) => future.onComplete( event )( executor ) }
+		events.clear()
 	} )( executor )
 
 	/**
@@ -84,26 +67,18 @@ with	Cancelable
 		{
 			events.synchronized
 			{
-				events.enqueue( ( event.asInstanceOf[Try[Response] => Any], executor ) )
+				events.append( ( event.asInstanceOf[Try[Response] => Any], executor ) )
 			}
 		}
 	}
 
-	override def isCanceled = call.isCanceled
+	override def isCanceled = interceptor.isCanceled
 
-	override def cancel() =
-	{
-		call.cancel()
-
-		if( request.body() != null )
-		{
-			send.cancel()
-		}
-	}
+	override def cancel() = interceptor.cancel()
 
 	def onSend( f: Progress.Send => Unit )( implicit executor: Context ): this.type =
 	{
-		listener.send = ( progress: Progress.Send ) => executor.execute( f( progress ) )
+		interceptor.event.send = Option( ( progress: Progress.Send ) => executor.execute( f( progress ) ) )
 		this
 	}
 
@@ -150,11 +125,6 @@ with	Cancelable
 	{
 		future.ready( atMost )
 		this
-	}
-
-	protected class Listener
-	{
-		var send: Progress.Send => Unit = null
 	}
 }
 

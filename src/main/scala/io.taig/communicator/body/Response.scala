@@ -2,18 +2,19 @@ package io.taig.communicator.body
 
 import java.io.InterruptedIOException
 
+import io.taig.communicator.event.Progress
 import com.squareup.okhttp.ResponseBody
-import io.taig.communicator.{Cancelable, Progress}
+import io.taig.communicator.Cancelable
 import okio._
 
 /**
  * A ResponseBody wrapper that takes care of notifying the event listener and checks regularly checks on the canceled
  * flag
  *
- * @param wrapped The wrapped ResponseBody
- * @param listener Event listener to update on progress, may be <code>null</code>
+ * @param wrapped Wrapped ResponseBody
+ * @param event Event listener to update on progress, may be <code>null</code>
  */
-class	Receive( wrapped: ResponseBody, listener: Progress.Receive => Unit )
+class	Response( wrapped: ResponseBody, event: Option[Progress.Receive => Unit], zipped: Boolean )
 extends	ResponseBody
 with	Cancelable.Simple
 {
@@ -29,10 +30,7 @@ with	Cancelable.Simple
 	@throws[InterruptedIOException]( "If the request was canceled" )
 	private def update( current: Long ) =
 	{
-		if( listener != null )
-		{
-			listener( Progress.Receive( current, length ) )
-		}
+		event.foreach( _( Progress.Receive( current, length ) ) )
 
 		if( isCanceled )
 		{
@@ -40,7 +38,17 @@ with	Cancelable.Simple
 		}
 	}
 
-	override def source() = Okio.buffer( new Source( wrapped.source() ) )
+	override def source() =
+	{
+		if( zipped )
+		{
+			Okio.buffer( new GzipSource( new Source( wrapped.source() ) ) )
+		}
+		else
+		{
+			Okio.buffer( new Source( wrapped.source() ) )
+		}
+	}
 
 	override def contentLength() = wrapped.contentLength()
 
@@ -51,15 +59,23 @@ with	Cancelable.Simple
 	{
 		private var current = 0L
 
-		override def read( sink: Buffer, count: Long ) = super.read( sink, count ) match
+		override def read( sink: Buffer, count: Long ) =
 		{
-			case count if count != -1 =>
+			if( current == 0 )
 			{
-				current += count
-				update( current )
-				count
+				update( 0 )
 			}
-			case _ => -1
+
+			super.read( sink, count ) match
+			{
+				case count if count != -1 =>
+				{
+					current += count
+					update( current )
+					count
+				}
+				case _ => -1
+			}
 		}
 	}
 }

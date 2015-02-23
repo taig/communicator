@@ -12,9 +12,9 @@ package object communicator
 
 	implicit class RichFuture[T]( future: Future[T] )
 	{
-		def flatRequest[R <: Response]( f: T => Request[R] )( implicit executor: ExecutionContext ): Request[R] =
-		{
-			future.flatMap( f ).asInstanceOf[Request[R]]
-		}
+//		def flatRequest[R <: Response, I <: interceptor.Plain]( f: T => Request[R, I] )( implicit executor: ExecutionContext ): Request[R, I] =
+//		{
+//			future.flatMap( f ).asInstanceOf[Request[R, I]]
+//		}
 	}
 }

@@ -2,7 +2,8 @@ package io.taig.communicator.request
 
 import com.squareup.okhttp
 import com.squareup.okhttp.OkHttpClient
-import io.taig.communicator.{Request, Response}
+import io.taig.communicator._
+import io.taig.communicator
 
 import scala.concurrent.{ExecutionContext => Context}
 
@@ -19,7 +20,8 @@ import scala.concurrent.{ExecutionContext => Context}
  * @see [[io.taig.communicator.request.Payload]]
  */
 class	Plain( val client: OkHttpClient, val request: okhttp.Request, val executor: Context )
-extends	Request[Response]
+extends
 {
-	override def response( wrapped: okhttp.Response ) = new Response( wrapped )
+	val interceptor = new communicator.interceptor.Plain( request )
 }
+with	Request[Response, communicator.event.Request, communicator.interceptor.Plain]

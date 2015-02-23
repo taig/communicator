@@ -2,7 +2,7 @@ package io.taig.communicator.result
 
 import java.io.InputStream
 
-import _root_.io.taig.communicator.Response
+import io.taig.communicator.Response
 
 trait Handler
 {
