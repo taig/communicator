@@ -11,6 +11,7 @@ Communicator was built for Android, but has no dependencies to the framework and
 - Request class implements `scala.concurrent.Future`
 - Improved cancel mechanism that aborts running request with minimum delay
 - Easy progress updates with `onSend()` and `onReceive()` callbacks
+- Progress updates support OkHttp's "transparent GZIP"
 - Lovely Android integration due to callback `ExecutionContext` parameter
 
 ## Index
@@ -43,9 +44,6 @@ TODO
 ### Requests and Responses
 
 TODO
-
-> **Please Note**  
-The underlying OkHttp library comes with a so called *transparent GZIP* feature. This means that to all of your requests, OkHttp will add an `Accept-Encoding: gzip` header and then decompress the response body and remove the correspnding response header before it is handed over to you. As a result of this behaviour, OkHttp has to remove the `Content-Length` header as well. If you are facing any issues with your `onReceive()` listener not providing a total response size you should therefore disable GZIP by adding `Accept-Encoding: identity` to your request or add `Accept-Encoding: gzip` manually and handle the decompression in your parser by yourself with `java.util.zip.GZIPInputStream`.
 
 ### Parser
 
