@@ -1,6 +1,8 @@
 package io.taig
 
-import scala.concurrent.Future
+import _root_.io.taig.communicator.request.{Handler, Parser, Plain}
+
+import scala.concurrent.{ExecutionContext => Context, Future}
 import scala.language.implicitConversions
 
 package object communicator
@@ -12,11 +14,12 @@ package object communicator
 		override def run() = f
 	}
 
-	implicit class RichFuture[T]( future: Future[T] )
+	implicit class RichFuture[S]( future: Future[S] )
 	{
-//		def flatRequest[R <: Response, I <: interceptor.Plain]( f: T => Request[R, I] )( implicit executor: ExecutionContext ): Request[R, I] =
-//		{
-//			future.flatMap( f ).asInstanceOf[Request[R, I]]
-//		}
+		def handle( f: S => Handler )( implicit executor: Context ) = future.flatMap( f ).asInstanceOf[Handler]
+
+		def parse[T]( f: S => Parser[T] )( implicit executor: Context ) = future.flatMap( f ).asInstanceOf[Parser[T]]
+
+		def request( f: S => Plain )( implicit executor: Context ) = future.flatMap( f ).asInstanceOf[Plain]
 	}
 }

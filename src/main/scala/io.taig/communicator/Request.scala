@@ -1,5 +1,7 @@
 package io.taig.communicator
 
+import java.io.IOException
+
 import com.squareup.okhttp
 import com.squareup.okhttp.{Call, OkHttpClient}
 import io.taig.communicator.event.{Event, Progress}
@@ -40,7 +42,7 @@ extends	Future[R]
 			}
 			catch
 			{
-				case error: Throwable if call.isCanceled => throw new exception.io.Canceled( error )
+				case error: IOException if call.isCanceled => throw new exception.io.Canceled( error )
 			}
 		}( executor )
 	}
