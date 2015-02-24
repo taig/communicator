@@ -106,14 +106,14 @@ Each *Communicator* request is based on an `okhttp.Request` that you need to pre
 import com.squareup.okhttp
 
 new okhttp.Request.Builder()
-  .url( "http://www.scala-lang.org/" )
-  .build()
+	.url( "http://www.scala-lang.org/" )
+	.build()
 ````
 
 ````scala
 Request()
-  .url( "http://www.scala-lang.org/" )
-  .build()
+	.url( "http://www.scala-lang.org/" )
+ 	.build()
 ````
 
 ````scala
@@ -141,7 +141,7 @@ To create a custom parser you have to implement `io.taig.communicator.Parser`:
 ````scala
 trait Parser[T]
 {
-  def parse( response: Response, stream: InputStream ): T
+	def parse( response: Response, stream: InputStream ): T
 }
 ````
 
@@ -152,18 +152,18 @@ import play.api.libs.json.Json
 
 object Json extends Parser[JsValue]
 {
-  def parse( response: Response, stream: InputStream ): JsValue =
-  {
-    Json.parse( stream )
-  }
+	def parse( response: Response, stream: InputStream ): JsValue =
+	{
+		Json.parse( stream )
+	}
 }
 ````
 
 ````scala
 implicit def parser = Json
 
-Request.parse[Json]( request )  // Implicit parser
-Request.parse( request, Json )  // Explicit parser
+Request.parse[Json]( request )	// Implicit parser
+Request.parse( request, Json )	// Explicit parser
 ````
 
 #### `Request.Handler`
@@ -175,7 +175,7 @@ To create a custom handler you have to implement `io.taig.communicator.Handler`:
 ````scala
 trait Handler
 {
-  def handle( response: Response, stream: InputStream ): Unit
+	def handle( response: Response, stream: InputStream ): Unit
 }
 ````
 
