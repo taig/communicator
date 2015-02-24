@@ -20,7 +20,7 @@ Communicator was built for Android, but has no dependencies to the framework and
 3. [Usage](#usage)
  1. [Prerequisites](#prerequisites)
  2. [Metadata](#metadata)
- 3. [Request: Plain, Parse and Handle](#parser)
+ 3. [Request: Plain, Parse and Handle](#request-plain-parse-and-handle)
  4. [Event Callbacks](#event-callbacks)
  5. [Response](#response)
 4. [Android](#android)
