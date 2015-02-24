@@ -1,6 +1,5 @@
 package io.taig.communicator.test
 
-import com.squareup.okhttp.Request.Builder
 import com.squareup.okhttp.{MediaType, OkHttpClient, RequestBody}
 import io.taig.communicator._
 import org.mockserver.client.server.MockServerClient
@@ -26,7 +25,7 @@ with	BeforeAndAfterAll
 
 		def client = new MockServerClient( "127.0.0.1", 8888 )
 
-		def request = new Builder().url( "http://127.0.0.1:8888" )
+		def request = Request( "http://127.0.0.1:8888" )
 	}
 
 	override protected def afterAll() = fixture.server.stop()
