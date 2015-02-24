@@ -18,7 +18,7 @@ extends	FlatSpec
 with	Matchers
 with	BeforeAndAfterAll
 {
-	implicit val okhttp = new OkHttpClient()
+	implicit val client = new OkHttpClient()
 
 	val fixture = new
 	{
@@ -37,7 +37,7 @@ with	BeforeAndAfterAll
 			.when( request().withMethod( "GET" ) )
 			.respond( response().withStatusCode( 200 ) )
 
-		whenReady( Request( fixture.request.get().build() ) )( _.code shouldBe 200 )
+		whenReady( fixture.request.get().plain() )( _.code shouldBe 200 )
 	}
 
 	it should "support POST requests" in
@@ -46,8 +46,8 @@ with	BeforeAndAfterAll
 			.when( request().withMethod( "POST" ) )
 			.respond( response().withStatusCode( 200 ) )
 
-		val body = Request( fixture.request.post( RequestBody.create( MediaType.parse( "text/plain" ), "taig" ) ).build() )
-		val empty = Request( fixture.request.post( null ).build() )
+		val body = fixture.request.post( RequestBody.create( MediaType.parse( "text/plain" ), "taig" ) ).plain()
+		val empty = fixture.request.post( null ).plain()
 
 		whenReady( body )( _.code shouldBe 200 )
 		whenReady( empty )( _.code shouldBe 200 )
