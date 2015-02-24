@@ -6,7 +6,7 @@ Communicator provides a simple `scala.concurrent.Future` implementation that han
 
 Communicator was built for Android, but has no dependencies to the framework and works fine with any Scala project.
 
-**Highlights**
+**Feature Highlights**
 
 - Request class implements `scala.concurrent.Future`
 - Easy progress updates with `onSend()` and `onReceive()` callbacks
@@ -30,7 +30,7 @@ Communicator was built for Android, but has no dependencies to the framework and
 
 *Communicator* is available via Maven Central
 
-`libraryDependencies += "io.taig" %% "communicator" % "1.0.0"`
+`libraryDependencies += "io.taig" %% "communicator" % "2.0.0"`
 
 ## Getting Started
 
@@ -187,17 +187,80 @@ Request.handle( request )                    // Implicit parser
 Request.handle( request, MyLogFileHandler )  // Explicit parser
 ````
 
+#### Shortcut
+
+When creating an `okhttp.Request` in preperation you can take an implicit shortcut to the `communicator.Request`:
+
+````scala
+Request( "http://www.scala-lang.org/" ).get().build().parse[String]()
+Request( "http://www.scala-lang.org/" ).get().parse[String]()
+````
+
 ### Event Callbacks
 
-TODO
+Since the *Communicator* `Request` inherits from `scala.concurrent.Future`, you can rely on the default callbacks like `onComplete()` or `onSuccess()`. Futhermore *Communicator* allows you to chain event callbacks to keep your code clean. But please keep in mind that this does not neccessarily insure a corresponding execution order.
+
+> The `onComplete`, `onSuccess`, and `onFailure` methods have result type `Unit`, which means invocations of these methods cannot be chained. Note that this design is intentional, to avoid suggesting that chained invocations may imply an ordering on the execution of the registered callbacks (callbacks registered on the same future are unordered).  
+— http://docs.scala-lang.org/overviews/core/futures.html
+
+The most prominent addition to the Future API are the progress tracking callbacks `onSend()` and `onReceive()` to handle upload and download progress.
+
+> **Please Note**  
+Bear in mind that the `onSend()` callback requires you to specify an explicit content length in your request body and that `onReceive()` is only aware of the total response size if the server includes this information in its response headers!
 
 ### Response
 
-TODO
+Similar to the request types `Request.Plain`, `Request.Handler` and `Request.Parser`, there are corresponding response types `Response.Plain`, `Response.Handled` and `Response.Parsed[T]`. They basically wrap the `okhttp.Response` and provide the same information except for the body which is only available in a `Response.Parsed[T]` as `payload`.
 
 ## Android
 
-TODO
+Using *Communicator* on Android does not differ from the explanations in the [Usage](#usage) section. But you can make your life a lot easier with a properly defined `ExecutionContext`.
+
+````scala
+package com.example.app
+
+import android.os.{AsyncTask, Handler, Looper}
+import java.util.concurrent.Executor
+import scala.concurrent.ExecutionContext
+
+package object app
+{
+	val Executor = new
+	{
+		// ExecutionContext for asynchronous processing, relying on Android's idea of threading
+		implicit lazy val Pool = ExecutionContext.fromExecutor( AsyncTask.THREAD_POOL_EXECUTOR )
+
+		// UI thread executor
+		lazy val Ui = ExecutionContext.fromExecutor( new Executor
+		{
+			private val handler = new Handler( Looper.getMainLooper )
+
+			override def execute( command: Runnable ) = handler.post( command )
+		} )
+	}
+}
+````
+
+With this definition around you can now go ahead, run asnychronous HTTP requests and update your UI without cluttering your code.
+
+````scala
+import io.taig.communicator._
+import com.example.app.Executor._
+
+val dialog: android.app.ProgressDialog = ???
+
+Request( "http://www.scala-lang.org/" )
+	.parse[String]()
+	.onReceive
+	{
+		case progress @ Progress.Receive( _, Some( _ ) ) =>
+			dialog.setProgress( progress.percentage.get.toInt )
+		case Progress.Receive( _, None ) => dialog.setIndeterminate( true )
+	}( Ui )
+	.onFinish( _ => dialog.dismiss() )( Ui )
+	.onSuccess( response => showConfirmationDialog( response.payload ) )( Ui )
+	.onFailure( exception => showErrorDialog( exception ) )( Ui )
+````
 
 ## License
 
