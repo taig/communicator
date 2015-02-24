@@ -2,18 +2,15 @@ package io.taig.communicator.interceptor
 
 import com.squareup.okhttp
 import com.squareup.okhttp.Interceptor.Chain
-import io.taig.communicator._
-import io.taig.communicator.event.Event
+import io.taig.communicator
 
-trait	Interceptor[+R <: Response, +E <: Event]
+trait	Interceptor[+R <: communicator.response.Plain, +E <: communicator.event.Event]
 extends	okhttp.Interceptor
 {
 	def original: okhttp.Request
 
 	def event: E
 
-	// TODO improve cancel handling, if necessary at all: validate okhttp cancel & if it sucks check for cancel in
-	// TODO beginning of intercept and support concurrency
 	override def intercept( chain: Chain ) =
 	{
 		val request = send( chain.request() )

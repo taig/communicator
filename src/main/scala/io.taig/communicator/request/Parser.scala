@@ -3,7 +3,6 @@ package io.taig.communicator.request
 import com.squareup.okhttp
 import com.squareup.okhttp.OkHttpClient
 import io.taig.communicator
-import io.taig.communicator._
 
 import scala.concurrent.{ExecutionContext => Context}
 
@@ -26,5 +25,5 @@ extends
 {
 	val interceptor = new communicator.interceptor.Parser( request, parser )
 }
-with	Request[Response.Parsable[T], event.Send with event.Receive, communicator.interceptor.Parser[T]]
+with	Request[communicator.response.Parsed[T], communicator.event.Send with communicator.event.Receive, communicator.interceptor.Parser[T]]
 with	Receivable

@@ -3,7 +3,7 @@ package io.taig.communicator.body
 import java.io.InterruptedIOException
 
 import com.squareup.okhttp.ResponseBody
-import io.taig.communicator.event.Progress
+import io.taig.communicator
 import okio._
 
 /**
@@ -13,7 +13,7 @@ import okio._
  * @param wrapped Wrapped ResponseBody
  * @param event Event listener to update on progress, may be <code>null</code>
  */
-class	Response( wrapped: ResponseBody, event: Option[Progress.Receive => Unit], zipped: Boolean )
+class	Response( wrapped: ResponseBody, event: Option[communicator.event.Progress.Receive => Unit], zipped: Boolean )
 extends	ResponseBody
 {
 	/**
@@ -26,7 +26,7 @@ extends	ResponseBody
 	}
 
 	@throws[InterruptedIOException]( "If the request was canceled" )
-	private def update( current: Long ) = event.foreach( _( Progress.Receive( current, length ) ) )
+	private def update( current: Long ) = event.foreach( _( communicator.event.Progress.Receive( current, length ) ) )
 
 	override def source() =
 	{

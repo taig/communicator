@@ -2,26 +2,16 @@ package io.taig.communicator.result
 
 import java.io.InputStream
 
-import io.taig.communicator.Response
-
-import scala.io.Source
+import io.taig.communicator
 
 trait Parser[T]
 {
-	def parse( response: Response, stream: InputStream ): T
+	def parse( response: communicator.response.Plain, stream: InputStream ): T
 }
 
 object Parser
 {
-	object	String
-	extends	Parser[String]
-	{
-		override def parse( response: Response, stream: InputStream ) =
-		{
-			Source
-				.fromInputStream( stream )
-				.getLines()
-				.mkString
-		}
-	}
+	implicit def iteratorString: Parser[Iterator[String]] = parser.IteratorString
+
+	implicit def string: Parser[String] = parser.String
 }

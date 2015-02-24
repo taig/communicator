@@ -1,20 +1,18 @@
-package io.taig.communicator
+package io.taig.communicator.request
 
 import java.io.IOException
 import java.net.URL
 
 import com.squareup.okhttp
 import com.squareup.okhttp.{Call, OkHttpClient}
-import io.taig.communicator.event.{Event, Progress}
-import io.taig.communicator.interceptor.Interceptor
-import io.taig.communicator.request.{Handler, Parser, Plain}
+import io.taig.communicator
 
 import scala.collection.mutable
 import scala.concurrent.duration.Duration
 import scala.concurrent.{CanAwait, ExecutionContext => Context, Future, TimeoutException}
 import scala.util.{Failure, Success, Try}
 
-trait	Request[+R <: Response, +E <: Event, +I <: Interceptor[R, E]]
+trait	Request[+R <: communicator.response.Plain, +E <: communicator.event.Event, +I <: communicator.interceptor.Interceptor[R, E]]
 extends	Future[R]
 {
 	def client: OkHttpClient
@@ -27,7 +25,7 @@ extends	Future[R]
 
 	protected var call: Call = null
 
-	protected val events = mutable.ListBuffer.empty[( Try[Response] => Any, Context )]
+	protected val events = mutable.ListBuffer.empty[( Try[communicator.response.Plain] => Any, Context )]
 
 	protected val future =
 	{
@@ -43,7 +41,7 @@ extends	Future[R]
 			}
 			catch
 			{
-				case error: IOException if call.isCanceled => throw new exception.io.Canceled( error )
+				case error: IOException if call.isCanceled => throw new communicator.exception.io.Canceled( error )
 			}
 		}( executor )
 	}
@@ -73,7 +71,7 @@ extends	Future[R]
 		{
 			events.synchronized
 			{
-				events.append( ( event.asInstanceOf[Try[Response] => Any], executor ) )
+				events.append( ( event.asInstanceOf[Try[communicator.response.Plain] => Any], executor ) )
 			}
 		}
 	}
@@ -82,9 +80,16 @@ extends	Future[R]
 
 	def cancel() = call.cancel()
 
-	def onSend( f: Progress.Send => Unit )( implicit executor: Context ): this.type =
+	def onSend( f: communicator.event.Progress.Send => Unit )( implicit executor: Context ): this.type =
 	{
-		interceptor.event.send = Option( ( progress: Progress.Send ) => executor.execute( f( progress ) ) )
+		interceptor.event.send = Some( ( progress: communicator.event.Progress.Send ) =>
+		{
+			executor.execute( new Runnable
+			{
+				override def run() = f( progress )
+			} )
+		} )
+
 		this
 	}
 
@@ -161,7 +166,7 @@ object Request
 	/**
 	 * @see [[io.taig.communicator.request.Handler]]
 	 */
-	def handle( client: OkHttpClient, request: okhttp.Request, handler: result.Handler )( implicit executor: Context ): Handler =
+	def handle( client: OkHttpClient, request: okhttp.Request, handler: communicator.result.Handler )( implicit executor: Context ): Handler =
 	{
 		new Handler( client, request, handler, executor )
 	}
@@ -169,7 +174,7 @@ object Request
 	/**
 	 * @see [[io.taig.communicator.request.Handler]]
 	 */
-	def handle( client: OkHttpClient, request: okhttp.Request )( implicit executor: Context, handler: result.Handler ): Handler =
+	def handle( client: OkHttpClient, request: okhttp.Request )( implicit executor: Context, handler: communicator.result.Handler ): Handler =
 	{
 		handle( client, request, handler )
 	}
@@ -177,7 +182,7 @@ object Request
 	/**
 	 * @see [[io.taig.communicator.request.Handler]]
 	 */
-	def handle( request: okhttp.Request, handler: result.Handler )( implicit client: OkHttpClient, executor: Context ): Handler =
+	def handle( request: okhttp.Request, handler: communicator.result.Handler )( implicit client: OkHttpClient, executor: Context ): Handler =
 	{
 		handle( client, request, handler )
 	}
@@ -185,7 +190,7 @@ object Request
 	/**
 	 * @see [[io.taig.communicator.request.Handler]]
 	 */
-	def handle( request: okhttp.Request )( implicit client: OkHttpClient, handler: result.Handler, executor: Context ): Handler =
+	def handle( request: okhttp.Request )( implicit client: OkHttpClient, handler: communicator.result.Handler, executor: Context ): Handler =
 	{
 		handle( client, request, handler )
 	}
@@ -193,7 +198,7 @@ object Request
 	/**
 	 * @see [[io.taig.communicator.request.Parser]]
 	 */
-	def parse[T]( client: OkHttpClient, request: okhttp.Request, parser: result.Parser[T] )( implicit executor: Context ): Parser[T] =
+	def parse[T]( client: OkHttpClient, request: okhttp.Request, parser: communicator.result.Parser[T] )( implicit executor: Context ): Parser[T] =
 	{
 		new Parser[T]( client, request, parser, executor )
 	}
@@ -201,7 +206,7 @@ object Request
 	/**
 	 * @see [[io.taig.communicator.request.Parser]]
 	 */
-	def parse[T]( client: OkHttpClient, request: okhttp.Request )( implicit executor: Context, parser: result.Parser[T] ): Parser[T] =
+	def parse[T]( client: OkHttpClient, request: okhttp.Request )( implicit executor: Context, parser: communicator.result.Parser[T] ): Parser[T] =
 	{
 		parse( client, request, parser )
 	}
@@ -209,7 +214,7 @@ object Request
 	/**
 	 * @see [[io.taig.communicator.request.Parser]]
 	 */
-	def parse[T]( request: okhttp.Request, parser: result.Parser[T] )( implicit client: OkHttpClient, executor: Context ): Parser[T] =
+	def parse[T]( request: okhttp.Request, parser: communicator.result.Parser[T] )( implicit client: OkHttpClient, executor: Context ): Parser[T] =
 	{
 		parse( client, request, parser )
 	}
@@ -217,7 +222,7 @@ object Request
 	/**
 	 * @see [[io.taig.communicator.request.Parser]]
 	 */
-	def parse[T]( request: okhttp.Request )( implicit client: OkHttpClient, parser: result.Parser[T], executor: Context ): Parser[T] =
+	def parse[T]( request: okhttp.Request )( implicit client: OkHttpClient, parser: communicator.result.Parser[T], executor: Context ): Parser[T] =
 	{
 		parse( client, request, parser )
 	}

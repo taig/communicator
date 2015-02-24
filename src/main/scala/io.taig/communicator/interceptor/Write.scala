@@ -2,19 +2,18 @@ package io.taig.communicator.interceptor
 
 import com.squareup.okhttp
 import io.taig.communicator
-import io.taig.communicator.{Response, body}
 
 trait	Write
-extends	Interceptor[Response, communicator.event.Send]
+extends	Interceptor[communicator.response.Plain, communicator.event.Send]
 {
-	protected var request: Option[body.Request] = None
+	protected var request: Option[communicator.body.Request] = None
 
 	override protected def send( request: okhttp.Request ): okhttp.Request =
 	{
 		if( request.body() != null )
 		{
 			this.request = Some(
-				new body.Request( request.body(), event.send )
+				new communicator.body.Request( request.body(), event.send )
 			)
 	
 			request

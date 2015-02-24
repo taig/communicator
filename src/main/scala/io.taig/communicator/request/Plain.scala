@@ -3,7 +3,6 @@ package io.taig.communicator.request
 import com.squareup.okhttp
 import com.squareup.okhttp.OkHttpClient
 import io.taig.communicator
-import io.taig.communicator._
 
 import scala.concurrent.{ExecutionContext => Context}
 
@@ -24,4 +23,4 @@ extends
 {
 	val interceptor = new communicator.interceptor.Plain( request )
 }
-with	Request[Response, event.Send, communicator.interceptor.Plain]
+with	Request[communicator.response.Plain, communicator.event.Send, communicator.interceptor.Plain]

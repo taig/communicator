@@ -1,13 +1,13 @@
 package io.taig.communicator.interceptor
 
 import com.squareup.okhttp
-import io.taig.communicator._
+import io.taig.communicator
 
 trait	Read
 extends	Write
-with	Interceptor[Response, event.Send with event.Receive]
+with	Interceptor[communicator.response.Plain, communicator.event.Send with communicator.event.Receive]
 {
-	protected var response: Option[body.Response] = None
+	protected var response: Option[communicator.body.Response] = None
 
 	override protected def receive( response: okhttp.Response ) =
 	{
@@ -16,7 +16,7 @@ with	Interceptor[Response, event.Send with event.Receive]
 		// Take over OkHttp's "transparent GZIP"
 		if( original.header( "Accept-Encoding" ) == null && response.header( "Content-Encoding" ) == "gzip" )
 		{
-			this.response = Some( new body.Response( response.body(), event.receive, true ) )
+			this.response = Some( new communicator.body.Response( response.body(), event.receive, true ) )
 
 			builder
 				.removeHeader( "Content-Encoding" )
@@ -24,7 +24,7 @@ with	Interceptor[Response, event.Send with event.Receive]
 		}
 		else
 		{
-			this.response = Some( new body.Response( response.body(), event.receive, false ) )
+			this.response = Some( new communicator.body.Response( response.body(), event.receive, false ) )
 		}
 
 		builder.body( this.response.get ).build()
