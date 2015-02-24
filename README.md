@@ -2,7 +2,7 @@
 
 > An [OkHttp][1] wrapper for Scala built with Android in mind
 
-Communicator provides a simple `scala.concurrent.Future` implementation that handles your requests based on plain OkHttp request and client objects. Additional callbacks (e.g. to track upload and dowload progress) simplify your codebase tremendously.
+Communicator provides a simple `scala.concurrent.Future` implementation that handles your requests based on plain OkHttp request and client objects. Additional callbacks (e.g. to track upload and download progress) simplify your codebase tremendously.
 
 Communicator was built for Android, but has no dependencies to the framework and works fine with any Scala project.
 
