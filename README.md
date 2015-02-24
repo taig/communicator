@@ -257,9 +257,9 @@ Request( "http://www.scala-lang.org/" )
 			dialog.setProgress( progress.percentage.get.toInt )
 		case Progress.Receive( _, None ) => dialog.setIndeterminate( true )
 	}( Ui )
-	.onFinish( _ => dialog.dismiss() )
-	.onSuccess( response => showConfirmationDialog( response.payload ) )
-	.onFailure( exception => showErrorDialog( exception ) )
+	.onFinish( _ => dialog.dismiss() )( Ui )
+	.onSuccess( response => showConfirmationDialog( response.payload ) )( Ui )
+	.onFailure( exception => showErrorDialog( exception ) )( Ui )
 ````
 
 ## License
