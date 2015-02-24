@@ -135,14 +135,14 @@ extends	Future[R]
 
 object Request
 {
-	def apply( client: OkHttpClient, request: okhttp.Request )( implicit executor: Context ): Plain =
+	def plain( client: OkHttpClient, request: okhttp.Request )( implicit executor: Context ): Plain =
 	{
 		new Plain( client, request, executor )
 	}
 
-	def apply( request: okhttp.Request )( implicit client: OkHttpClient, executor: Context ): Plain =
+	def plain( request: okhttp.Request )( implicit client: OkHttpClient, executor: Context ): Plain =
 	{
-		apply( client, request )
+		plain( client, request )
 	}
 
 	def handle( client: OkHttpClient, request: okhttp.Request, handler: result.Handler )( implicit executor: Context ): Handler =

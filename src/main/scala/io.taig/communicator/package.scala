@@ -20,6 +20,6 @@ package object communicator
 
 		def parse[T]( f: S => Parser[T] )( implicit executor: Context ) = future.flatMap( f ).asInstanceOf[Parser[T]]
 
-		def request( f: S => Plain )( implicit executor: Context ) = future.flatMap( f ).asInstanceOf[Plain]
+		def plain( f: S => Plain )( implicit executor: Context ) = future.flatMap( f ).asInstanceOf[Plain]
 	}
 }
