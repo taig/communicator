@@ -1,6 +1,7 @@
 package io.taig.communicator
 
 import java.io.IOException
+import java.net.URL
 
 import com.squareup.okhttp
 import com.squareup.okhttp.{Call, OkHttpClient}
@@ -135,51 +136,87 @@ extends	Future[R]
 
 object Request
 {
+	def apply(): okhttp.Request.Builder = new okhttp.Request.Builder()
+
+	def apply( url: String ): okhttp.Request.Builder = apply().url( url )
+
+	def apply( url: URL ): okhttp.Request.Builder = apply().url( url )
+
+	/**
+	 * @see [[io.taig.communicator.request.Plain]]
+	 */
 	def plain( client: OkHttpClient, request: okhttp.Request )( implicit executor: Context ): Plain =
 	{
 		new Plain( client, request, executor )
 	}
 
+	/**
+	 * @see [[io.taig.communicator.request.Plain]]
+	 */
 	def plain( request: okhttp.Request )( implicit client: OkHttpClient, executor: Context ): Plain =
 	{
 		plain( client, request )
 	}
 
+	/**
+	 * @see [[io.taig.communicator.request.Handler]]
+	 */
 	def handle( client: OkHttpClient, request: okhttp.Request, handler: result.Handler )( implicit executor: Context ): Handler =
 	{
 		new Handler( client, request, handler, executor )
 	}
 
+	/**
+	 * @see [[io.taig.communicator.request.Handler]]
+	 */
 	def handle( client: OkHttpClient, request: okhttp.Request )( implicit executor: Context, handler: result.Handler ): Handler =
 	{
 		handle( client, request, handler )
 	}
 
+	/**
+	 * @see [[io.taig.communicator.request.Handler]]
+	 */
 	def handle( request: okhttp.Request, handler: result.Handler )( implicit client: OkHttpClient, executor: Context ): Handler =
 	{
 		handle( client, request, handler )
 	}
 
+	/**
+	 * @see [[io.taig.communicator.request.Handler]]
+	 */
 	def handle( request: okhttp.Request )( implicit client: OkHttpClient, handler: result.Handler, executor: Context ): Handler =
 	{
 		handle( client, request, handler )
 	}
 
+	/**
+	 * @see [[io.taig.communicator.request.Parser]]
+	 */
 	def parse[T]( client: OkHttpClient, request: okhttp.Request, parser: result.Parser[T] )( implicit executor: Context ): Parser[T] =
 	{
 		new Parser[T]( client, request, parser, executor )
 	}
 
+	/**
+	 * @see [[io.taig.communicator.request.Parser]]
+	 */
 	def parse[T]( client: OkHttpClient, request: okhttp.Request )( implicit executor: Context, parser: result.Parser[T] ): Parser[T] =
 	{
 		parse( client, request, parser )
 	}
 
+	/**
+	 * @see [[io.taig.communicator.request.Parser]]
+	 */
 	def parse[T]( request: okhttp.Request, parser: result.Parser[T] )( implicit client: OkHttpClient, executor: Context ): Parser[T] =
 	{
 		parse( client, request, parser )
 	}
 
+	/**
+	 * @see [[io.taig.communicator.request.Parser]]
+	 */
 	def parse[T]( request: okhttp.Request )( implicit client: OkHttpClient, parser: result.Parser[T], executor: Context ): Parser[T] =
 	{
 		parse( client, request, parser )
