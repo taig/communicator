@@ -189,11 +189,19 @@ Request.handle( request, MyLogFileHandler )  // Explicit parser
 
 ### Event Callbacks
 
-TODO
+Since the *Communicator* `Request` inherits from `scala.concurrent.Future`, you can rely on the default callbacks like `onComplete()` or `onSuccess()`. Futhermore *Communicator* allows you to chain event callbacks to keep your code clean. But please keep in mind that this does not neccessarily insure a corresponding execution order.
+
+> The `onComplete`, `onSuccess`, and `onFailure` methods have result type `Unit`, which means invocations of these methods cannot be chained. Note that this design is intentional, to avoid suggesting that chained invocations may imply an ordering on the execution of the registered callbacks (callbacks registered on the same future are unordered).  
+— http://docs.scala-lang.org/overviews/core/futures.html
+
+The most prominent addition to the Future API are the progress tracking callbacks `onSend()` and `onReceive()` to handle upload and download progress.
+
+> **Please Note**  
+Bear in mind that the `onSend()` callback requires you to specify an explicit content length in your request body and that `onReceive()` is only aware of the total response size if the server includes this information in its response headers!
 
 ### Response
 
-TODO
+Similar to the request types `Request.Plain`, `Request.Handler` and `Request.Parser`, there are corresponding response types `Response.Plain`, `Response.Handled` and `Response.Parsed[T]`. They basically wrap the `okhttp.Response` and provide the same information except for the body which is only available in a `Response.Parsed[T]` as `payload`.
 
 ## Android
 
