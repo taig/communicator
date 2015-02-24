@@ -30,7 +30,7 @@ Communicator was built for Android, but has no dependencies to the framework and
 
 *Communicator* is available via Maven Central
 
-`libraryDependencies += "io.taig" %% "communicator" % "1.0.0"`
+`libraryDependencies += "io.taig" %% "communicator" % "2.0.0"`
 
 ## Getting Started
 
