@@ -13,6 +13,7 @@ extends	sbt.Build
 			),
 			organization := "io.taig",
 			scalacOptions ++= Seq( "-deprecation", "-feature" ),
-			scalaVersion := "2.11.5"
+			scalaVersion := "2.11.5",
+			version := "2.0.0"
 		)
 }
