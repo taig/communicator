@@ -14,7 +14,14 @@ package object communicator
 
 	type Parser[T] = result.Parser[T]
 
-	type Progress = event.Progress
+	val Progress = new
+	{
+		type Send = event.Progress.Send
+		def Send = event.Progress.Send
+
+		type Receive = event.Progress.Receive
+		def Receive = event.Progress.Receive
+	}
 
 	type Request[R <: Response.Plain, E <: event.Event, I <: interceptor.Interceptor[R, E]] = request.Request[R, E, I]
 	def Request = request.Request
