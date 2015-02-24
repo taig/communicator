@@ -24,11 +24,10 @@ Communicator was built for Android, but has no dependencies to the framework and
  4. [Event Callbacks](#event-callbacks)
  5. [Response](#response)
 4. [Android](#android)
+5. [Communicator 1.x](#communicator-1x)
 5. [License](#license)
 
 ## Installation
-
-*Communicator* is available via Maven Central
 
 `libraryDependencies += "io.taig" %% "communicator" % "2.0.0"`
 
@@ -262,9 +261,14 @@ Request( "http://www.scala-lang.org/" )
 	.onFailure( exception => showErrorDialog( exception ) )( Ui )
 ````
 
+## Communicator 1.x
+
+The Java predecessor of this library has been depreceated. You still can [access][2] the source and documentation, though.
+
 ## License
 
 The MIT License (MIT)  
 Copyright (c) 2015 Niklas Klein <my.taig@gmail.com>
 
 [1]: http://square.github.io/okhttp/
+[2]: https://github.com/Taig/Communicator/tree/f820d08b1cc4d77083e384568ce89223e53ab693
