@@ -187,6 +187,15 @@ Request.handle( request )                    // Implicit parser
 Request.handle( request, MyLogFileHandler )  // Explicit parser
 ````
 
+#### Shortcut
+
+When creating an `okhttp.Request` in preperation you can take an implicit shortcut to the `communicator.Request`:
+
+````scala
+Request( "http://www.scala-lang.org/" ).get().build().parse[String]()
+Request( "http://www.scala-lang.org/" ).get().parse[String]()
+````
+
 ### Event Callbacks
 
 Since the *Communicator* `Request` inherits from `scala.concurrent.Future`, you can rely on the default callbacks like `onComplete()` or `onSuccess()`. Futhermore *Communicator* allows you to chain event callbacks to keep your code clean. But please keep in mind that this does not neccessarily insure a corresponding execution order.
