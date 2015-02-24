@@ -214,7 +214,53 @@ Similar to the request types `Request.Plain`, `Request.Handler` and `Request.Par
 
 ## Android
 
-TODO
+Using *Communicator* on Android does not differ from the explanations in the [Usage](#usage) section. But you can make your life a lot easier with a properly defined `ExecutionContext`.
+
+````scala
+package com.example.app
+
+import android.os.{AsyncTask, Handler, Looper}
+import java.util.concurrent.Executor
+import scala.concurrent.ExecutionContext
+
+package object app
+{
+	val Executor = new
+	{
+		// ExecutionContext for asynchronous processing, relying on Android's idea of threading
+		implicit lazy val Pool = ExecutionContext.fromExecutor( AsyncTask.THREAD_POOL_EXECUTOR )
+
+		// UI thread executor
+		lazy val Ui = ExecutionContext.fromExecutor( new Executor
+		{
+			private val handler = new Handler( Looper.getMainLooper )
+
+			override def execute( command: Runnable ) = handler.post( command )
+		} )
+	}
+}
+````
+
+With this definition around you can now go ahead, run asnychronous HTTP requests and update your UI without cluttering your code.
+
+````scala
+import io.taig.communicator._
+import com.example.app.Executor._
+
+val dialog: android.app.ProgressDialog = ???
+
+Request( "http://www.scala-lang.org/" )
+	.parse[String]()
+	.onReceive
+	{
+		case progress @ Progress.Receive( _, Some( _ ) ) =>
+			dialog.setProgress( progress.percentage.get.toInt )
+		case Progress.Receive( _, None ) => dialog.setIndeterminate( true )
+	}( Ui )
+	.onFinish( _ => dialog.dismiss() )
+	.onSuccess( response => showConfirmationDialog( response.payload ) )
+	.onFailure( exception => showErrorDialog( exception ) )
+````
 
 ## License
 
