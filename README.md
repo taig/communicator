@@ -24,7 +24,7 @@ Communicator was built for Android, but has no dependencies to the framework and
  4. [Event Callbacks](#event-callbacks)
  5. [Response](#response)
 4. [Android](#android)
-5. [Communicator 1.x](#communicator-1.x)
+5. [Communicator 1.x](#communicator-1x)
 5. [License](#license)
 
 ## Installation
