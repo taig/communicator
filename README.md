@@ -6,7 +6,7 @@ Communicator provides a simple `scala.concurrent.Future` implementation that han
 
 Communicator was built for Android, but has no dependencies to the framework and works fine with any Scala project.
 
-**Highlights**
+**Feature Highlights**
 
 - Request class implements `scala.concurrent.Future`
 - Easy progress updates with `onSend()` and `onReceive()` callbacks
