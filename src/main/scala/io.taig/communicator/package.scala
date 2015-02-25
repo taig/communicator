@@ -2,13 +2,14 @@ package io.taig
 
 import com.squareup.okhttp
 import com.squareup.okhttp.OkHttpClient
+import io.taig.communicator.internal._
 
 import scala.concurrent.{ExecutionContext => Context, Future}
 import scala.language.implicitConversions
 
 package object communicator
 {
-	type CanceledIOException = exception.io.Canceled
+	type CanceledIOException = internal.exception.io.Canceled
 
 	type Handler = result.Handler
 
@@ -16,14 +17,14 @@ package object communicator
 
 	val Progress = new
 	{
-		type Send = event.Progress.Send
+		type Send = internal.event.Progress.Send
 		def Send = event.Progress.Send
 
-		type Receive = event.Progress.Receive
+		type Receive = internal.event.Progress.Receive
 		def Receive = event.Progress.Receive
 	}
 
-	type Request[R <: Response.Plain, E <: event.Event, I <: interceptor.Interceptor[R, E]] = request.Request[R, E, I]
+	type Request[R <: Response.Plain, E <: internal.event.Event, I <: internal.interceptor.Interceptor[R, E]] = request.Request[R, E, I]
 	def Request = request.Request
 
 	val Response = new
@@ -37,70 +38,70 @@ package object communicator
 
 	implicit class RichFuture[S]( future: Future[S] )
 	{
-		def handle( f: S => communicator.request.Handler )( implicit executor: Context ) =
+		def handle( f: S => request.Handler )( implicit executor: Context ) =
 		{
-			future.flatMap( f ).asInstanceOf[communicator.request.Handler]
+			future.flatMap( f ).asInstanceOf[request.Handler]
 		}
 
-		def parse[T]( f: S => communicator.request.Parser[T] )( implicit executor: Context ) =
+		def parse[T]( f: S => request.Parser[T] )( implicit executor: Context ) =
 		{
-			future.flatMap( f ).asInstanceOf[communicator.request.Parser[T]]
+			future.flatMap( f ).asInstanceOf[request.Parser[T]]
 		}
 
-		def plain( f: S => communicator.request.Plain )( implicit executor: Context ) =
+		def plain( f: S => request.Plain )( implicit executor: Context ) =
 		{
-			future.flatMap( f ).asInstanceOf[communicator.request.Plain]
+			future.flatMap( f ).asInstanceOf[request.Plain]
 		}
 	}
 
-	implicit class RichOkHttpRequest( request: okhttp.Request )
+	implicit class RichOkHttpRequest( wrapped: okhttp.Request )
 	{
-		def plain( client: OkHttpClient )( implicit executor: Context ): communicator.request.Plain =
+		def plain( client: OkHttpClient )( implicit executor: Context ): request.Plain =
 		{
-			new communicator.request.Plain( client, request, executor )
+			new request.Plain( client, wrapped, executor )
 		}
 
-		def plain()( implicit executor: Context, client: OkHttpClient ): communicator.request.Plain =
+		def plain()( implicit executor: Context, client: OkHttpClient ): request.Plain =
 		{
 			plain( client )
 		}
 
-		def handle( client: OkHttpClient, handler: result.Handler )( implicit executor: Context ): communicator.request.Handler =
+		def handle( client: OkHttpClient, handler: result.Handler )( implicit executor: Context ): request.Handler =
 		{
-			new communicator.request.Handler( client, request, handler, executor )
+			new request.Handler( client, wrapped, handler, executor )
 		}
 
-		def handle( client: OkHttpClient )( implicit executor: Context, handler: result.Handler ): communicator.request.Handler =
-		{
-			handle( client, handler )
-		}
-
-		def handle( handler: result.Handler )( implicit client: OkHttpClient, executor: Context ): communicator.request.Handler =
+		def handle( client: OkHttpClient )( implicit executor: Context, handler: result.Handler ): request.Handler =
 		{
 			handle( client, handler )
 		}
 
-		def handle()( implicit handler: result.Handler, executor: Context, client: OkHttpClient ): communicator.request.Handler =
+		def handle( handler: result.Handler )( implicit client: OkHttpClient, executor: Context ): request.Handler =
 		{
 			handle( client, handler )
 		}
 
-		def parse[T]( client: OkHttpClient, parser: result.Parser[T] )( implicit executor: Context ): communicator.request.Parser[T] =
+		def handle()( implicit handler: result.Handler, executor: Context, client: OkHttpClient ): request.Handler =
 		{
-			new communicator.request.Parser[T]( client, request, parser, executor )
+			handle( client, handler )
 		}
 
-		def parse[T]( client: OkHttpClient )( implicit executor: Context, parser: result.Parser[T] ): communicator.request.Parser[T] =
+		def parse[T]( client: OkHttpClient, parser: result.Parser[T] )( implicit executor: Context ): request.Parser[T] =
+		{
+			new request.Parser[T]( client, wrapped, parser, executor )
+		}
+
+		def parse[T]( client: OkHttpClient )( implicit executor: Context, parser: result.Parser[T] ): request.Parser[T] =
 		{
 			parse( client, parser )
 		}
 
-		def parse[T]( parser: result.Parser[T] )( implicit client: OkHttpClient, executor: Context ): communicator.request.Parser[T] =
+		def parse[T]( parser: result.Parser[T] )( implicit client: OkHttpClient, executor: Context ): request.Parser[T] =
 		{
 			parse( client, parser )
 		}
 
-		def parse[T]()( implicit executor: Context, parser: result.Parser[T], client: OkHttpClient ): communicator.request.Parser[T] =
+		def parse[T]()( implicit executor: Context, parser: result.Parser[T], client: OkHttpClient ): request.Parser[T] =
 		{
 			parse( client, parser )
 		}
