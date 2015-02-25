@@ -37,7 +37,7 @@ package object communicator
 		type Plain = response.Plain
 	}
 
-	implicit class RichFuture[S]( future: Future[S] )
+	implicit class RichFuture[S]( val future: Future[S] )
 	{
 		def handle( f: S => request.Handler )( implicit executor: Context ) =
 		{

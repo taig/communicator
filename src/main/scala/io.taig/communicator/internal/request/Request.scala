@@ -47,7 +47,7 @@ extends	Future[R]
 	}
 
 	// Execute stored events on underlying future complete
-	future.onComplete( _ =>
+	future.onComplete( _ => events.synchronized
 	{
 		events.foreach{ case ( event, executor ) => future.onComplete( event )( executor ) }
 		events.clear()
