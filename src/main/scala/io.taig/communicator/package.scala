@@ -9,7 +9,7 @@ import scala.language.implicitConversions
 
 package object communicator
 {
-	type CanceledIOException = internal.exception.io.Canceled
+	type CanceledIOException = exception.io.Canceled
 
 	type Handler = result.Handler
 
@@ -17,14 +17,14 @@ package object communicator
 
 	val Progress = new
 	{
-		type Send = internal.event.Progress.Send
+		type Send = event.Progress.Send
 		def Send = event.Progress.Send
 
-		type Receive = internal.event.Progress.Receive
+		type Receive = event.Progress.Receive
 		def Receive = event.Progress.Receive
 	}
 
-	type Request[R <: Response.Plain, E <: internal.event.Event, I <: internal.interceptor.Interceptor[R, E]] = request.Request[R, E, I]
+	type Request[R <: Response.Plain, E <: event.Event, I <: interceptor.Interceptor[R, E]] = request.Request[R, E, I]
 	def Request = request.Request
 
 	val Response = new
