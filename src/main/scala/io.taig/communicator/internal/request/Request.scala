@@ -6,6 +6,7 @@ import java.net.URL
 import com.squareup.okhttp
 import com.squareup.okhttp.{Call, OkHttpClient}
 import io.taig.communicator.internal
+import io.taig.communicator.internal._
 
 import scala.collection.mutable
 import scala.concurrent.duration.Duration
@@ -82,13 +83,9 @@ extends	Future[R]
 
 	def onSend( f: internal.event.Progress.Send => Unit )( implicit executor: Context ): this.type =
 	{
-		interceptor.event.send = Some( ( progress: internal.event.Progress.Send ) =>
-		{
-			executor.execute( new Runnable
-			{
-				override def run() = f( progress )
-			} )
-		} )
+		interceptor.event.send = Some(
+			( progress: internal.event.Progress.Send ) => executor.execute( f( progress ) )
+		)
 
 		this
 	}

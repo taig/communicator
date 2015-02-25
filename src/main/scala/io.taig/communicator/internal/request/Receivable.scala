@@ -1,23 +1,19 @@
 package io.taig.communicator.internal.request
 
-import io.taig.communicator.internal.event.Progress
-import io.taig.communicator.internal.interceptor.Read
+import io.taig.communicator.internal._
+import io.taig.communicator.internal
 
 import scala.concurrent.{ExecutionContext => Context}
 
 trait Receivable
 {
-	this: Request[_, _ , Read] =>
+	this: Request[_, _ , internal.interceptor.Read] =>
 
-	def onReceive( f: Progress.Receive => Unit )( implicit executor: Context ): this.type =
+	def onReceive( f: internal.event.Progress.Receive => Unit )( implicit executor: Context ): this.type =
 	{
-		interceptor.event.receive = Some( ( progress: Progress.Receive ) =>
-		{
-			executor.execute( new Runnable
-			{
-				override def run() = f( progress )
-			} )
-		} )
+		interceptor.event.receive = Some(
+			( progress: internal.event.Progress.Receive ) => executor.execute( f( progress ) )
+		)
 
 		this
 	}
