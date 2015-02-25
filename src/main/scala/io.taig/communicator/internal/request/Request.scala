@@ -10,7 +10,7 @@ import io.taig.communicator.internal
 import scala.collection.mutable
 import scala.concurrent.duration.Duration
 import scala.concurrent.{CanAwait, ExecutionContext => Context, Future, TimeoutException}
-import scala.util.{Failure, Success, Try}
+import scala.util.Try
 
 trait	Request[+R <: internal.response.Plain, +E <: internal.event.Event, +I <: internal.interceptor.Interceptor[R, E]]
 extends	Future[R]
@@ -93,35 +93,7 @@ extends	Future[R]
 		this
 	}
 
-	override def onFailure[U]( pf: PartialFunction[Throwable, U] )( implicit executor: Context ) =
-	{
-		onFailure( ( error: Throwable ) => pf.apply( error ): Unit )
-	}
-
-	def onFailure( f: Throwable => Unit )( implicit executor: Context ): this.type = onFinish
-	{
-		case Failure( error ) => f( error )
-		case _ =>
-	}
-
-	override def onSuccess[U]( pf: PartialFunction[R, U] )( implicit executor: Context ) =
-	{
-		onSuccess( ( response: R ) => pf.apply( response ): Unit )
-	}
-
-	def onSuccess( f: R => Unit )( implicit executor: Context ): this.type = onFinish
-	{
-		case Success( response ) => f( response )
-		case _ =>
-	}
-
-	def onFinish( f: ( Try[R] ) => Any )( implicit executor: Context ): this.type =
-	{
-		enqueue( f )
-		this
-	}
-
-	override def onComplete[U]( f: ( Try[R] ) => U )( implicit executor: Context ) = onFinish( f )
+	override def onComplete[U]( f: ( Try[R] ) => U )( implicit executor: Context ) = enqueue( f )
 
 	override def isCompleted = future.isCompleted
 

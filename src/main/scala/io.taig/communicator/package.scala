@@ -6,6 +6,7 @@ import io.taig.communicator.internal._
 
 import scala.concurrent.{ExecutionContext => Context, Future}
 import scala.language.implicitConversions
+import scala.util.{Failure, Success, Try}
 
 package object communicator
 {
@@ -51,6 +52,24 @@ package object communicator
 		def plain( f: S => request.Plain )( implicit executor: Context ) =
 		{
 			future.flatMap( f ).asInstanceOf[request.Plain]
+		}
+
+		def onFinish( f: ( Try[S] ) => Any )( implicit executor: Context ): future.type =
+		{
+			future.onComplete( f )
+			future
+		}
+
+		def onSuccess( f: S => Unit )( implicit executor: Context ): future.type = onFinish
+		{
+			case Success( value ) => f( value )
+			case _ =>
+		}
+
+		def onFailure( f: Throwable => Unit )( implicit executor: Context ): future.type = onFinish
+		{
+			case Failure( error ) => f( error )
+			case _ =>
 		}
 	}
 
