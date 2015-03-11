@@ -56,7 +56,6 @@ Request( "http://www.scala-lang.org/" )    // Prepare metadata (okhttp.Request.B
 	.onSuccess( response =>
 	{
 		import response._
-		println( "######################" )
 		println( s"$code $message" )
 		println( s"${payload.take( 30 )}...${payload.takeRight( 30 )}" )
 	} )
@@ -72,7 +71,6 @@ Request( "http://www.scala-lang.org/" )    // Prepare metadata (okhttp.Request.B
 9,00 KiB / 12,05 KiB (74,70%)
 11,00 KiB / 12,05 KiB (91,30%)
 12,05 KiB / 12,05 KiB (100,00%)
-######################
 200 OK
 <!DOCTYPE html><html>  <head> ...ipt"></script>  </body></html>
 ````
@@ -81,7 +79,7 @@ Request( "http://www.scala-lang.org/" )    // Prepare metadata (okhttp.Request.B
 
 ### Prerequisites
 
-As already shown in the [Getting Started][#getting-started] section, you'll need to import the *Communicator* API via:
+As already shown in the [Getting Started](#getting-started) section, you'll need to import the *Communicator* API via:
 
 ````scala
 import io.taig.communicator._
