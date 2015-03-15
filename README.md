@@ -2,7 +2,9 @@
 
 > An [OkHttp][1] wrapper for Scala built with Android in mind
 
-Communicator provides a simple `scala.concurrent.Future` implementation that handles your requests based on plain OkHttp request and client objects. Additional callbacks (e.g. to track upload and download progress) simplify your codebase tremendously.
+Communicator provides a simple `scala.concurrent.Future` implementation that handles your requests based on plain
+OkHttp request and client objects. Additional callbacks (e.g. to track upload and download progress) simplify your
+codebase tremendously.
 
 Communicator was built for Android, but has no dependencies to the framework and works fine with any Scala project.
 
@@ -29,7 +31,7 @@ Communicator was built for Android, but has no dependencies to the framework and
 
 ## Installation
 
-`libraryDependencies += "io.taig" %% "communicator" % "2.0.0"`
+`libraryDependencies += "io.taig" %% "communicator" % "2.0.1"`
 
 ## Getting Started
 
@@ -55,10 +57,8 @@ Request( "http://www.scala-lang.org/" )    // Prepare metadata (okhttp.Request.B
 	.onReceive( println )( single )        // Execute callback on single ExecutionContext
 	.onSuccess( response =>
 	{
-		import response._
-		println( "######################" )
-		println( s"$code $message" )
-		println( s"${payload.take( 30 )}...${payload.takeRight( 30 )}" )
+		println( s"${response.code} ${response.message}" )
+		println( s"${response.payload.take( 30 )}...${response.payload.takeRight( 30 )}" )
 	} )
 ````
 
@@ -72,7 +72,6 @@ Request( "http://www.scala-lang.org/" )    // Prepare metadata (okhttp.Request.B
 9,00 KiB / 12,05 KiB (74,70%)
 11,00 KiB / 12,05 KiB (91,30%)
 12,05 KiB / 12,05 KiB (100,00%)
-######################
 200 OK
 <!DOCTYPE html><html>  <head> ...ipt"></script>  </body></html>
 ````
@@ -81,7 +80,7 @@ Request( "http://www.scala-lang.org/" )    // Prepare metadata (okhttp.Request.B
 
 ### Prerequisites
 
-As already shown in the [Getting Started][#getting-started] section, you'll need to import the *Communicator* API via:
+As already shown in the [Getting Started](#getting-started) section, you'll need to import the *Communicator* API via:
 
 ````scala
 import io.taig.communicator._
@@ -93,14 +92,18 @@ Furthermore Scala Futures require an implicit `ExecutionContext` in scope, the s
 import scala.concurrent.ExecutionContext.Implicits.global
 ````
 
-Each request requires an `OkHttpClient` instance to be passed along. The recommended way is to provide it as an implicit, but there are also factory methods available that allow to specifiy the client explicitly.
+Each request requires an `OkHttpClient` instance to be passed along. The recommended way is to provide it as an
+implicit, but there are also factory methods available that allow to specify the client explicitly.
 
 > **Please Note**  
-This section is very important for Android useres. To learn how to work with the default Android thread pool and the UI thread, please read the [Android](#android) section.
+This section is very important for Android users. To learn how to work with the default Android thread pool and the UI
+thread, please read the [Android](#android) section.
 
 ### Metadata
 
-Each *Communicator* request is based on an `okhttp.Request` that you need to prepare in advance. This library provides helpers to simplify the construction. All of the below yield the same result and should give you a feeling of the available implicit conversions!
+Each *Communicator* request is based on an `okhttp.Request` that you need to prepare in advance. This library provides
+helpers to simplify the construction. All of the below yield the same result and should give you a feeling of the
+available implicit conversions!
 
 ````scala
 import com.squareup.okhttp
@@ -126,7 +129,8 @@ There are three different request types, depending on your use case.
 
 #### `Request.Plain`
 
-This is the simplest type. A plain request does not gather any information about the response body. This may be useful for API write requests where you only care about the response code or an HTTP Head request.
+This is the simplest type. A plain request does not gather any information about the response body. This may be useful
+for API write requests where you only care about the response code or an HTTP Head request.
 
 ````scala
 Request.plain( request )
@@ -134,7 +138,8 @@ Request.plain( request )
 
 #### `Request.Parser[T]`
 
-Processes the response body to yield an object of type `T`. You need to bring an implicit parser in scope. By default *Communicator* is equipped with a `String` parser.
+Processes the response body to yield an object of type `T`. You need to bring an implicit parser in scope. By default
+*Communicator* is equipped with a `String` parser.
 
 To create a custom parser you have to implement `io.taig.communicator.Parser`:
 
@@ -168,7 +173,9 @@ Request.parse( request, Json )  // Explicit parser
 
 #### `Request.Handler`
 
-Is very similar to `Request.Parser[T]`, in fact you can think of it as a special case for `Request.Parser[Unit]`. Handler is for response body processing where you don't care about the result (e.g. forward data to some log file). You need to bring an implicit handler in scope.
+Is very similar to `Request.Parser[T]`, in fact you can think of it as a special case for `Request.Parser[Unit]`.
+Handler is for response body processing where you don't care about the result (e.g. forward data to some log file). You
+need to bring an implicit handler in scope.
 
 To create a custom handler you have to implement `io.taig.communicator.Handler`:
 
@@ -188,7 +195,7 @@ Request.handle( request, MyLogFileHandler )  // Explicit parser
 
 #### Shortcut
 
-When creating an `okhttp.Request` in preperation you can take an implicit shortcut to the `communicator.Request`:
+When creating an `okhttp.Request` in preparation you can take an implicit shortcut to the `communicator.Request`:
 
 ````scala
 Request( "http://www.scala-lang.org/" ).get().build().parse[String]()
@@ -197,23 +204,33 @@ Request( "http://www.scala-lang.org/" ).get().parse[String]()
 
 ### Event Callbacks
 
-Since the *Communicator* `Request` inherits from `scala.concurrent.Future`, you can rely on the default callbacks like `onComplete()` or `onSuccess()`. Futhermore *Communicator* allows you to chain event callbacks to keep your code clean. But please keep in mind that this does not neccessarily insure a corresponding execution order.
+Since the *Communicator* `Request` inherits from `scala.concurrent.Future`, you can rely on the default callbacks like
+`onComplete()` or `onSuccess()`. Furthermore *Communicator* allows you to chain event callbacks to keep your code clean.
+But please keep in mind that this does not necessarily insure a corresponding execution order.
 
-> The `onComplete`, `onSuccess`, and `onFailure` methods have result type `Unit`, which means invocations of these methods cannot be chained. Note that this design is intentional, to avoid suggesting that chained invocations may imply an ordering on the execution of the registered callbacks (callbacks registered on the same future are unordered).  
+> The `onComplete`, `onSuccess`, and `onFailure` methods have result type `Unit`, which means invocations of these
+methods cannot be chained. Note that this design is intentional, to avoid suggesting that chained invocations may imply
+an ordering on the execution of the registered callbacks (callbacks registered on the same future are unordered).  
 — http://docs.scala-lang.org/overviews/core/futures.html
 
-The most prominent addition to the Future API are the progress tracking callbacks `onSend()` and `onReceive()` to handle upload and download progress.
+The most prominent addition to the Future API are the progress tracking callbacks `onSend()` and `onReceive()` to
+handle upload and download progress.
 
 > **Please Note**  
-Bear in mind that the `onSend()` callback requires you to specify an explicit content length in your request body and that `onReceive()` is only aware of the total response size if the server includes this information in its response headers!
+Bear in mind that the `onSend()` callback requires you to specify an explicit content length in your request body and
+that `onReceive()` is only aware of the total response size if the server includes this information in its response
+headers!
 
 ### Response
 
-Similar to the request types `Request.Plain`, `Request.Handler` and `Request.Parser`, there are corresponding response types `Response.Plain`, `Response.Handled` and `Response.Parsed[T]`. They basically wrap the `okhttp.Response` and provide the same information except for the body which is only available in a `Response.Parsed[T]` as `payload`.
+Similar to the request types `Request.Plain`, `Request.Handler` and `Request.Parser`, there are corresponding response
+types `Response.Plain`, `Response.Handled` and `Response.Parsed[T]`. They basically wrap the `okhttp.Response` and
+provide the same information except for the body which is only available in a `Response.Parsed[T]` as `payload`.
 
 ## Android
 
-Using *Communicator* on Android does not differ from the explanations in the [Usage](#usage) section. But you can make your life a lot easier with a properly defined `ExecutionContext`.
+Using *Communicator* on Android does not differ from the explanations in the [Usage](#usage) section. But you can make
+your life a lot easier with a properly defined `ExecutionContext`.
 
 ````scala
 package com.example.app
@@ -240,7 +257,8 @@ package object app
 }
 ````
 
-With this definition around you can now go ahead, run asnychronous HTTP requests and update your UI without cluttering your code.
+With this definition around you can now go ahead, run asynchronous HTTP requests and update your UI without cluttering
+your code.
 
 ````scala
 import io.taig.communicator._
@@ -263,12 +281,13 @@ Request( "http://www.scala-lang.org/" )
 
 ## Communicator 1.x
 
-The Java predecessor of this library has been depreceated. You still can [access][2] the source and documentation, though.
+The Java predecessor of this library has been deprecated. You still can [access][2] the source and documentation,
+though.
 
 ## License
 
 The MIT License (MIT)  
-Copyright (c) 2015 Niklas Klein <my.taig@gmail.com>
+Copyright (c) 2015 Niklas Klein <taig@mail.io>
 
 [1]: http://square.github.io/okhttp/
 [2]: https://github.com/Taig/Communicator/tree/f820d08b1cc4d77083e384568ce89223e53ab693
