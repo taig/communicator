@@ -11,7 +11,7 @@ import io.taig.communicator.internal._
 import scala.collection.mutable
 import scala.concurrent.duration.Duration
 import scala.concurrent.{CanAwait, ExecutionContext => Context, Future, TimeoutException}
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 trait	Request[+R <: internal.response.Plain, +E <: internal.event.Event, +I <: internal.interceptor.Interceptor[R, E]]
 extends	Future[R]
@@ -26,7 +26,7 @@ extends	Future[R]
 
 	protected var call: Call = null
 
-	protected val events = mutable.ListBuffer.empty[( Try[internal.response.Plain] => Any, Context )]
+	private val callbacks = mutable.Map[Context, mutable.Buffer[Try[_] => Any]]()
 
 	protected val future =
 	{
@@ -47,35 +47,20 @@ extends	Future[R]
 		}( executor )
 	}
 
-	// Execute stored events on underlying future complete
-	future.onComplete( _ => events.synchronized
+	future.onComplete( _ => callbacks.synchronized
 	{
-		events.foreach{ case ( event, executor ) => future.onComplete( event )( executor ) }
-		events.clear()
-	} )( executor )
-
-	/**
-	 * Enqueue an onComplete event
-	 * 
-	 * The events cannot be passed to onComplete right away while the Future is still running because this will
-	 * lead to a wrong execution order.
-	 * 
-	 * @param event Event to execute when the Future is complete
-	 */
-	protected def enqueue( event: Try[R] => Any )( implicit executor: Context ): Unit =
-	{
-		if( isCompleted )
+		callbacks.foreach
 		{
-			future.onComplete( event )
-		}
-		else
-		{
-			events.synchronized
+			case ( executor, callbacks ) =>
 			{
-				events.append( ( event.asInstanceOf[Try[internal.response.Plain] => Any], executor ) )
+				val value = this.value.get
+				executor.prepare()
+				callbacks.foreach( callback => executor.execute( callback( value ): Unit ) )
 			}
 		}
-	}
+
+		callbacks.clear()
+	} )( executor )
 
 	def isCanceled = call.isCanceled
 
@@ -90,7 +75,37 @@ extends	Future[R]
 		this
 	}
 
-	override def onComplete[U]( f: ( Try[R] ) => U )( implicit executor: Context ) = enqueue( f )
+	def onFinish( f: ( Try[R] ) => Any )( implicit executor: Context ): this.type =
+	{
+		onComplete( f )
+		this
+	}
+
+	def onSuccess( f: R => Unit )( implicit executor: Context ): this.type = onFinish
+	{
+		case Success( value ) => f( value )
+		case _ =>
+	}
+
+	def onFailure( f: Throwable => Unit )( implicit executor: Context ): this.type = onFinish
+	{
+		case Failure( error ) => f( error )
+		case _ =>
+	}
+
+	override def onComplete[U]( f: Try[R] => U )( implicit executor: Context ): Unit = callbacks.synchronized
+	{
+		if( isCompleted )
+		{
+			executor.prepare().execute( f( value.get ): Unit )
+		}
+		else
+		{
+			callbacks
+				.getOrElseUpdate( executor, mutable.ListBuffer[Try[_] => Any]() )
+				.append( f.asInstanceOf[Try[_] => Any] )
+		}
+	}
 
 	override def isCompleted = future.isCompleted
 
