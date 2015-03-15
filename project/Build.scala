@@ -59,7 +59,7 @@ extends	sbt.Build
 			<developer>
 				<id>Taig</id>
 				<name>Niklas Klein</name>
-				<email>my.taig@gmail.com</email>
+				<email>mail@taig.io</email>
 				<url>http://taig.io/</url>
 			</developer>
 		</developers>
