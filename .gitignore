@@ -1,2 +1,3 @@
 *.log
 proguard-sbt.txt
+target/
