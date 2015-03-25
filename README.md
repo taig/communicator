@@ -167,8 +167,8 @@ object Json extends Parser[JsValue]
 ````scala
 implicit def parser = Json
 
-Request.parse[Json]( request )	// Implicit parser
-Request.parse( request, Json )	// Explicit parser
+Request.parse[JsValue]( request )	// Implicit parser
+Request.parse( request, Json )		// Explicit parser
 ````
 
 #### `Request.Handler`
@@ -287,7 +287,7 @@ though.
 ## License
 
 The MIT License (MIT)  
-Copyright (c) 2015 Niklas Klein <taig@mail.io>
+Copyright (c) 2015 Niklas Klein <mail@taig.io>
 
 [1]: http://square.github.io/okhttp/
 [2]: https://github.com/Taig/Communicator/tree/f820d08b1cc4d77083e384568ce89223e53ab693
