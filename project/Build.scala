@@ -10,8 +10,9 @@ extends	sbt.Build
 		.settings(
 			description := "An OkHttp wrapper for Scala built with Android in mind",
 			homepage := Some( url( "https://github.com/taig/communicator" ) ),
+			javacOptions ++= Seq( "-source", "1.7", "-target", "1.7" ),
 			libraryDependencies ++= Seq(
-				"com.squareup.okhttp" % "okhttp" % "2.2.0",
+				"com.squareup.okhttp" % "okhttp" % "2.4.0",
 				"org.scalatest" %% "scalatest" % "2.2.4" % "test",
 				"org.mock-server" % "mockserver-netty" % "3.9.1" % "test"
 			),
