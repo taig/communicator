@@ -46,7 +46,7 @@ with	BeforeAndAfterAll
 			.respond( response().withStatusCode( 200 ) )
 
 		val body = fixture.request.post( RequestBody.create( MediaType.parse( "text/plain" ), "taig" ) ).plain()
-		val empty = fixture.request.post( null ).plain()
+		val empty = fixture.request.post( RequestBody.create( null, "" ) ).plain()
 
 		whenReady( body )( _.code shouldBe 200 )
 		whenReady( empty )( _.code shouldBe 200 )
