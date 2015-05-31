@@ -12,7 +12,7 @@ extends	sbt.Build
 			libraryDependencies ++= Seq(
 				"com.squareup.okhttp" % "okhttp" % "2.4.0",
 				"org.scalatest" %% "scalatest" % "2.2.4" % "test",
-				"org.mock-server" % "mockserver-netty" % "3.9.1" % "test"
+				"org.mock-server" % "mockserver-netty" % "3.9.15" % "test"
 			),
 			name := "Communicator",
 			organization := "io.taig",
