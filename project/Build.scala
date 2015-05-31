@@ -18,7 +18,7 @@ extends	sbt.Build
 			organization := "io.taig",
 			scalacOptions ++= Seq( "-deprecation", "-feature" ),
 			scalaVersion := "2.11.6",
-			version := "2.0.2-SNAPSHOT"
+			version := "2.0.2"
 		)
 		.settings(
 			description := "An OkHttp wrapper for Scala built with Android in mind",
