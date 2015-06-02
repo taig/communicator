@@ -1,7 +1,7 @@
 package io.taig.communicator.test
 
 import com.squareup.okhttp.{MediaType, OkHttpClient, RequestBody}
-import io.taig.communicator._
+import io.taig.communicator.experimental._
 import org.mockserver.client.server.MockServerClient
 import org.mockserver.integration.ClientAndServer.startClientAndServer
 import org.mockserver.model.HttpRequest.request
@@ -25,7 +25,7 @@ with	BeforeAndAfterAll
 
 		def client = new MockServerClient( "127.0.0.1", 8888 )
 
-		def request = Request( "http://127.0.0.1:8888" )
+		def request = Request.prepare( "http://127.0.0.1:8888" )
 	}
 
 	override protected def afterAll() = fixture.server.stop()
@@ -36,7 +36,7 @@ with	BeforeAndAfterAll
 			.when( request().withMethod( "GET" ) )
 			.respond( response().withStatusCode( 200 ) )
 
-		whenReady( fixture.request.get().plain() )( _.code shouldBe 200 )
+		whenReady( fixture.request.get().start[Nothing]() )( _.code shouldBe 200 )
 	}
 
 	it should "support POST requests" in
@@ -45,8 +45,8 @@ with	BeforeAndAfterAll
 			.when( request().withMethod( "POST" ) )
 			.respond( response().withStatusCode( 200 ) )
 
-		val body = fixture.request.post( RequestBody.create( MediaType.parse( "text/plain" ), "taig" ) ).plain()
-		val empty = fixture.request.post( RequestBody.create( null, "" ) ).plain()
+		val body = fixture.request.post( RequestBody.create( MediaType.parse( "text/plain" ), "taig" ) ).start[Nothing]()
+		val empty = fixture.request.post( RequestBody.create( null, "" ) ).start[Nothing]()
 
 		whenReady( body )( _.code shouldBe 200 )
 		whenReady( empty )( _.code shouldBe 200 )
