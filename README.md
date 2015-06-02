@@ -31,7 +31,7 @@ Communicator was built for Android, but has no dependencies to the framework and
 
 ## Installation
 
-`libraryDependencies += "io.taig" %% "communicator" % "2.0.2"`
+`libraryDependencies += "io.taig" %% "communicator" % "2.1.0-SNAPSHOT"`
 
 ## Getting Started
 
