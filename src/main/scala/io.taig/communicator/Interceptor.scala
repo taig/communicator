@@ -1,4 +1,4 @@
-package io.taig.communicator.experimental
+package io.taig.communicator
 
 import com.squareup.okhttp
 import com.squareup.okhttp.Interceptor.Chain
@@ -17,9 +17,9 @@ extends	okhttp.Interceptor
 
 	private val wrapper = new
 	{
-		var request: body.Request = null
+		var request: io.taig.communicator.body.Request = null
 
-		var response: body.Response = null
+		var response: io.taig.communicator.body.Response = null
 	}
 
 	def onSend( f: Progress.Send => Unit ) =
@@ -52,7 +52,7 @@ extends	okhttp.Interceptor
 	{
 		if( request.body() != null )
 		{
-			wrapper.request = new body.Request( request.body(), event.send )
+			wrapper.request = new io.taig.communicator.body.Request( request.body(), event.send )
 
 			request
 				.newBuilder()
@@ -80,11 +80,11 @@ extends	okhttp.Interceptor
 					.removeHeader( "Content-Encoding" )
 					.removeHeader( "Content-Length" )
 
-				new body.Response( response.body(), event.receive, true )
+				new io.taig.communicator.body.Response( response.body(), event.receive, true )
 			}
 			else
 			{
-				new body.Response( response.body(), event.receive, false )
+				new io.taig.communicator.body.Response( response.body(), event.receive, false )
 			}
 
 			builder.body( wrapper.response ).build()

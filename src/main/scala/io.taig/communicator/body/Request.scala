@@ -1,6 +1,6 @@
-package io.taig.communicator.experimental.body
+package io.taig.communicator.body
 
-import io.taig.communicator.experimental.Progress
+import _root_.io.taig.communicator.Progress
 import com.squareup.okhttp.RequestBody
 import com.squareup.okhttp.internal.Util.closeQuietly
 import okio.{Buffer, BufferedSink}

@@ -1,4 +1,4 @@
-package io.taig.communicator.experimental
+package io.taig.communicator
 
 import com.squareup.okhttp
 

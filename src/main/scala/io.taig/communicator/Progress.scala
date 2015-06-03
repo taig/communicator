@@ -1,4 +1,4 @@
-package io.taig.communicator.internal.event
+package io.taig.communicator
 
 import scala.math.{log, pow}
 

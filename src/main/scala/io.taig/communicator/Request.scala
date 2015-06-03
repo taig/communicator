@@ -1,4 +1,4 @@
-package io.taig.communicator.experimental
+package io.taig.communicator
 
 import java.io.IOException
 import java.net.URL
@@ -44,7 +44,7 @@ extends	Future[Response.Payload[T]]
 			}
 			catch
 			{
-				case error: IOException if call.isCanceled => throw new exception.io.Canceled( error )
+				case error: IOException if call.isCanceled => throw new io.taig.communicator.exception.io.Canceled( error )
 			}
 		}( executor )
 	}

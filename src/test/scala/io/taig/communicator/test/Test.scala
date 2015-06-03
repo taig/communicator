@@ -1,6 +1,7 @@
 package io.taig.communicator.test
 
 import com.squareup.okhttp.{MediaType, OkHttpClient, RequestBody}
+import io.taig.communicator.Request
 import io.taig.communicator.experimental._
 import org.mockserver.client.server.MockServerClient
 import org.mockserver.integration.ClientAndServer.startClientAndServer
