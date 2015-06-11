@@ -1,8 +1,7 @@
 package io.taig.communicator.test
 
 import com.squareup.okhttp.{MediaType, OkHttpClient, RequestBody}
-import io.taig.communicator.Request
-import io.taig.communicator.experimental._
+import io.taig.communicator._
 import org.mockserver.client.server.MockServerClient
 import org.mockserver.integration.ClientAndServer.startClientAndServer
 import org.mockserver.model.HttpRequest.request
@@ -37,7 +36,7 @@ with	BeforeAndAfterAll
 			.when( request().withMethod( "GET" ) )
 			.respond( response().withStatusCode( 200 ) )
 
-		whenReady( fixture.request.get().start[Nothing]() )( _.code shouldBe 200 )
+		whenReady( fixture.request.get().start() )( _.code shouldBe 200 )
 	}
 
 	it should "support POST requests" in
@@ -46,8 +45,8 @@ with	BeforeAndAfterAll
 			.when( request().withMethod( "POST" ) )
 			.respond( response().withStatusCode( 200 ) )
 
-		val body = fixture.request.post( RequestBody.create( MediaType.parse( "text/plain" ), "taig" ) ).start[Nothing]()
-		val empty = fixture.request.post( RequestBody.create( null, "" ) ).start[Nothing]()
+		val body = fixture.request.post( RequestBody.create( MediaType.parse( "text/plain" ), "taig" ) ).start()
+		val empty = fixture.request.post( RequestBody.create( null, "" ) ).start()
 
 		whenReady( body )( _.code shouldBe 200 )
 		whenReady( empty )( _.code shouldBe 200 )

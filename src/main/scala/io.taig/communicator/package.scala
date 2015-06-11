@@ -17,23 +17,7 @@ package object communicator
 	{
 		protected def request: okhttp.Request
 
-		/**
-		 * Run a Request, ignoring the Response
-		 */
-		def run()( implicit client: OkHttpClient, executor: ExecutionContext ): Request[Nothing] = start[Nothing]()
-
-		/**
-		 * Run a Request, parse Response as String
-		 */
-		def start()( implicit client: OkHttpClient, executor: ExecutionContext ): Request[String] = start[String]()
-
-		/**
-		 * Run a Request, use Parser[T] to handle the Response
-		 */
-		def start[T]()( implicit client: OkHttpClient, parser: Parser[T], executor: ExecutionContext ): Request[T] =
-		{
-			Request[T]( request )
-		}
+		def start()( implicit client: OkHttpClient, executor: ExecutionContext ): Request = Request( request )
 	}
 
 	implicit class	RichBuilder( builder: okhttp.Request.Builder )

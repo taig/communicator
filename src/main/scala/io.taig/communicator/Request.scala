@@ -7,49 +7,40 @@ import com.squareup.okhttp
 import com.squareup.okhttp._
 
 import scala.collection.mutable
-import scala.concurrent.duration.Duration
-import scala.concurrent.{CanAwait, ExecutionContext => Context, Future, TimeoutException}
-import scala.util.{Failure, Success, Try}
+import scala.concurrent.{Future, ExecutionContext}
+import scala.util.Try
 
-trait	Request[T]
-extends	Future[Response.Payload[T]]
+trait	Request
+extends	Features[Response]
 {
+	def executor: ExecutionContext
+
 	def client: OkHttpClient
 
 	def request: okhttp.Request
 
-	def parser: Parser[T]
+	override val interceptor = new Interceptor( request )
 
-	def executor: Context
-
-	val interceptor = new Interceptor( request )
-
-	protected var call: Call = null
-
-	private val callbacks = mutable.Map[Context, mutable.Buffer[Try[_] => Any]]()
-
-	protected val future: Future[Response.Payload[T]] =
+	override val call =
 	{
 		val client = this.client.clone()
 		client.networkInterceptors().add( interceptor )
-		call = client.newCall( request )
-
-		Future
-		{
-			try
-			{
-				val response = call.execute()
-				val wrapped = new Response( response )
-				wrapped.withPayload( parser.parse( wrapped, response.body().byteStream() ) )
-			}
-			catch
-			{
-				case error: IOException if call.isCanceled => throw new io.taig.communicator.exception.io.Canceled( error )
-			}
-		}( executor )
+		client.newCall( request )
 	}
 
-	future.onComplete( _ => callbacks.synchronized
+	override val wrapped = Future
+	{
+		try
+		{
+			new Response( call.execute() )
+		}
+		catch
+		{
+			case error: IOException if call.isCanceled => throw new exception.io.Canceled( error )
+		}
+	}( executor )
+
+	wrapped.onComplete( _ => callbacks.synchronized
 	{
 		callbacks.foreach
 		{
@@ -64,86 +55,48 @@ extends	Future[Response.Payload[T]]
 		callbacks.clear()
 	} )( executor )
 
-	def isCanceled = call.isCanceled
-
-	def cancel() = call.cancel()
-
-	def onSend( f: Progress.Send => Unit )( implicit executor: Context ): this.type =
-	{
-		interceptor.onSend( ( progress: Progress.Send ) => executor.execute( f( progress ) ) )
-		this
-	}
-
-	def onReceive( f: Progress.Receive => Unit )( implicit executor: Context ): this.type =
-	{
-		interceptor.onReceive( ( progress: Progress.Receive ) => executor.execute( f( progress ) ) )
-		this
-	}
-
-	def onFinish( f: ( Try[Response.Payload[T]] ) => Any )( implicit executor: Context ): this.type =
-	{
-		onComplete( f )
-		this
-	}
-
-	def onSuccess( f: T => Unit )( implicit executor: Context ): this.type = onFinish
-	{
-		case Success( value ) => f( value.body )
-		case _ =>
-	}
-
-	def onFailure( f: Throwable => Unit )( implicit executor: Context ): this.type = onFinish
-	{
-		case Failure( error ) => f( error )
-		case _ =>
-	}
-
-	override def onComplete[U]( f: Try[Response.Payload[T]] => U )( implicit executor: Context ): Unit = callbacks.synchronized
-	{
-		if( isCompleted )
-		{
-			executor.prepare().execute( f( value.get ): Unit )
-		}
-		else
-		{
-			callbacks
-				.getOrElseUpdate( executor, mutable.ListBuffer[Try[_] => Any]() )
-				.append( f.asInstanceOf[Try[_] => Any] )
-		}
-	}
-
-	override def isCompleted = future.isCompleted
-
-	override def value = future.value
-
-	@throws[Exception]
-	override def result( atMost: Duration )( implicit permit: CanAwait ) = future.result( atMost )
-
-	@throws[InterruptedException]
-	@throws[TimeoutException]
-	override def ready( atMost: Duration )( implicit permit: CanAwait ) =
-	{
-		future.ready( atMost )
-		this
-	}
+	def parse[T: Parser](): Request.Payload[T] = Request.Payload.Impl(
+		map( _.withPayload( implicitly[Parser[T]] ) )( executor ),
+		interceptor,
+		callbacks,
+		call
+	)
 }
 
 object Request
 {
+	trait	Payload[T]
+	extends	Features[Response.Payload[T]]
+
+	private[communicator] case class Impl(
+		request: okhttp.Request,
+		client: OkHttpClient,
+		executor: ExecutionContext
+	)
+	extends Request
+	{
+		override val callbacks = mutable.Map[ExecutionContext, mutable.Buffer[Try[_] => Any]]()
+	}
+
+	object Payload
+	{
+		private[communicator] case class Impl[T: Parser](
+			wrapped: Future[Response.Payload[T]],
+			interceptor: Interceptor,
+			callbacks: mutable.Map[ExecutionContext, mutable.Buffer[Try[_] => Any]],
+			call: Call
+		)
+		extends Payload[T]
+	}
+
 	def prepare(): okhttp.Request.Builder = new okhttp.Request.Builder()
 
 	def prepare( url: String ): okhttp.Request.Builder = prepare().url( url )
 
 	def prepare( url: URL ): okhttp.Request.Builder = prepare().url( url )
 
-	def apply[T: Parser]( request: okhttp.Request )( implicit client: OkHttpClient, executor: Context ): Request[T] =
+	def apply( request: okhttp.Request )( implicit client: OkHttpClient, executor: ExecutionContext ): Request =
 	{
-		new Implementation[T]( request, client, executor )
-	}
-
-	private case class	Implementation[T: Parser]( request: okhttp.Request, client: OkHttpClient, executor: Context )
-	extends				Request[T]
-	{
-		override def parser = implicitly[Parser[T]]
+		new Impl( request, client, executor )
 	}
 }

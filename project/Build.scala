@@ -6,7 +6,7 @@ import xerial.sbt.Sonatype.SonatypeKeys._
 object	Build
 extends	sbt.Build
 {
-	lazy val main = Project( "communicator", file( "." ), settings = sonatypeSettings )
+	val main = Project( "communicator", file( "." ), settings = sonatypeSettings )
 		.settings(
 			javacOptions ++= Seq( "-source", "1.7", "-target", "1.7" ),
 			libraryDependencies ++= Seq(

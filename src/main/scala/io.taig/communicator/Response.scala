@@ -30,7 +30,13 @@ class Response private[communicator]( wrapped: okhttp.Response )
 
 	def priorResponse = wrapped.priorResponse()
 
-	private[communicator] def withPayload[T]( payload: => T ) = new Response.Payload( wrapped, payload )
+	private[communicator] def withPayload[T]( parser: Parser[T] ) =
+	{
+		new Response.Payload(
+			wrapped,
+			parser.parse( this, wrapped.body().byteStream() )
+		)
+	}
 }
 
 object Response
