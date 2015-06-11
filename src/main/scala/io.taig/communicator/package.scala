@@ -13,7 +13,7 @@ package object communicator
 		override def run() = f
 	}
 
-	trait RichStart
+	sealed trait RichStart
 	{
 		protected def request: okhttp.Request
 
