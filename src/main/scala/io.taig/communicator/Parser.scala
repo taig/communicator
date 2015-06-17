@@ -21,13 +21,15 @@ object Parser
 
 	implicit val iteratorString = new Parser[Iterator[String]]
 	{
+		val utf8 = Charset.forName( "UTF-8" )
+
 		override def parse( response: Response, stream: InputStream ) =
 		{
 			val charset = Option( response.headers.get( "Content-Type" ) )
 				.map( MediaType.parse )
 				.map( _.charset() )
 				.flatMap( Option.apply )
-				.getOrElse( Charset.forName( "UTF-8" ) )
+				.getOrElse( utf8 )
 
 			Source.fromInputStream( stream, charset.displayName() ).getLines()
 		}
