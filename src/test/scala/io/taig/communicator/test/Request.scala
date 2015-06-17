@@ -13,7 +13,7 @@ import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.language.reflectiveCalls
 
-class	Test
+class	Request
 extends	FlatSpec
 with	Matchers
 with	BeforeAndAfterAll
