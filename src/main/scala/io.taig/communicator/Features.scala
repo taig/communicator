@@ -18,7 +18,6 @@ extends	Future[R]
 
 	def interceptor: Interceptor
 
-	// TODO call == null race conditions
 	def isCanceled = call.isCanceled
 
 	def cancel() = call.cancel()
