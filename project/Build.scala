@@ -28,7 +28,7 @@ extends	sbt.Build
 				Nil
 			),
 			scalaVersion := "2.11.6",
-			version := "2.1.0-SNAPSHOT"
+			version := "2.1.0"
 		)
 		.settings(
 			description := "An OkHttp wrapper for Scala built with Android in mind",
