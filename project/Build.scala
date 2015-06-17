@@ -6,19 +6,29 @@ import xerial.sbt.Sonatype.SonatypeKeys._
 object	Build
 extends	sbt.Build
 {
-	lazy val main = Project( "communicator", file( "." ), settings = sonatypeSettings )
+	val main = Project( "communicator", file( "." ), settings = sonatypeSettings )
 		.settings(
-			javacOptions ++= Seq( "-source", "1.7", "-target", "1.7" ),
-			libraryDependencies ++= Seq(
-				"com.squareup.okhttp" % "okhttp" % "2.4.0",
-				"org.scalatest" %% "scalatest" % "2.2.4" % "test",
-				"org.mock-server" % "mockserver-netty" % "3.9.15" % "test"
+			javacOptions ++= (
+				"-source" :: "1.7" ::
+				"-target" :: "1.7" ::
+				Nil
+			),
+			libraryDependencies ++= (
+				"com.squareup.okhttp" % "okhttp" % "2.4.0" ::
+				"ch.qos.logback" % "logback-classic" % "1.1.3" % "test" ::
+				"org.scalatest" %% "scalatest" % "2.2.5" % "test" ::
+				"org.mock-server" % "mockserver-netty" % "3.9.15" % "test" ::
+				Nil
 			),
 			name := "Communicator",
 			organization := "io.taig",
-			scalacOptions ++= Seq( "-deprecation", "-feature" ),
+			scalacOptions ++= (
+				"-deprecation" ::
+				"-feature" ::
+				Nil
+			),
 			scalaVersion := "2.11.6",
-			version := "2.0.2"
+			version := "2.1.0"
 		)
 		.settings(
 			description := "An OkHttp wrapper for Scala built with Android in mind",

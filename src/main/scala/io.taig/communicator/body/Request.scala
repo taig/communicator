@@ -1,18 +1,17 @@
-package io.taig.communicator.internal.body
+package io.taig.communicator.body
 
+import _root_.io.taig.communicator.Progress
 import com.squareup.okhttp.RequestBody
 import com.squareup.okhttp.internal.Util.closeQuietly
-import io.taig.communicator.internal.event.Progress
 import okio.{Buffer, BufferedSink}
 
 /**
- * A RequestBody wrapper that takes care of notifying the event listener and checks regularly checks on the canceled
- * flag
+ * A RequestBody wrapper that takes care of notifying the event listener
  *
  * @param wrapped The wrapped RequestBody, may be <code>null</code>
  * @param event Event listener to update on progress, may be <code>null</code>
  */
-class	Request( wrapped: RequestBody, event: Option[Progress.Send => Unit] )
+class	Request( wrapped: RequestBody, var event: Progress.Send => Unit )
 extends	RequestBody
 {
 	require(
@@ -22,7 +21,7 @@ extends	RequestBody
 
 	private lazy val length = contentLength()
 
-	private def update( current: Long ) = event.foreach( _( Progress.Send( current, length ) ) )
+	private def update( current: Long ) = if( event != null ) event( Progress.Send( current, length ) )
 
 	override def contentLength() = wrapped.contentLength()
 

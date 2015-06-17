@@ -1,19 +1,17 @@
-package io.taig.communicator.internal.body
+package io.taig.communicator.body
 
 import java.io.InterruptedIOException
-
+import _root_.io.taig.communicator.Progress
 import com.squareup.okhttp.ResponseBody
-import io.taig.communicator.internal.event.Progress
 import okio._
 
 /**
- * A ResponseBody wrapper that takes care of notifying the event listener and checks regularly checks on the canceled
- * flag
+ * A ResponseBody wrapper that takes care of notifying the event listener
  *
  * @param wrapped Wrapped ResponseBody
  * @param event Event listener to update on progress, may be <code>null</code>
  */
-class	Response( wrapped: ResponseBody, event: Option[Progress.Receive => Unit], zipped: Boolean )
+class	Response( wrapped: ResponseBody, var event: Progress.Receive => Unit, zipped: Boolean )
 extends	ResponseBody
 {
 	/**
@@ -26,7 +24,7 @@ extends	ResponseBody
 	}
 
 	@throws[InterruptedIOException]( "If the request was canceled" )
-	private def update( current: Long ) = event.foreach( _( Progress.Receive( current, length ) ) )
+	private def update( current: Long ) = if( event != null ) event( Progress.Receive( current, length ) )
 
 	override def source() =
 	{

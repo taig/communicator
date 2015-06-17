@@ -1,4 +1,4 @@
-package io.taig.communicator.internal.exception.io
+package io.taig.communicator.exception.io
 
 import java.io.IOException
 
