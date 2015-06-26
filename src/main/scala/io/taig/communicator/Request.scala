@@ -16,7 +16,6 @@ extends	Features[Response]
 	def parse[T: Parser]()( implicit executor: ExecutionContext ): Request.Payload[T] = Request.Payload.Impl(
 		map( _.withPayload( implicitly[Parser[T]] ) ),
 		interceptor,
-		callbacks,
 		call
 	)
 }
@@ -34,8 +33,6 @@ object Request
 	)
 	extends Request
 	{
-		override val callbacks = mutable.Map[ExecutionContext, mutable.Buffer[Try[_] => Any]]()
-
 		override val interceptor = new Interceptor( request )
 
 		override val call =
@@ -56,21 +53,6 @@ object Request
 				case error: IOException if call.isCanceled => throw new exception.io.Canceled( error )
 			}
 		}( executor )
-
-		wrapped.onComplete( _ => callbacks.synchronized
-		{
-			callbacks.foreach
-			{
-				case ( executor, callbacks ) =>
-				{
-					val value = this.value.get
-					executor.prepare()
-					callbacks.foreach( _( value ) )
-				}
-			}
-
-			callbacks.clear()
-		} )( executor )
 	}
 
 	object Payload
@@ -78,7 +60,6 @@ object Request
 		private[communicator] case class Impl[T: Parser](
 			wrapped: Future[Response.Payload[T]],
 			interceptor: Interceptor,
-			callbacks: mutable.Map[ExecutionContext, mutable.Buffer[Try[_] => Any]],
 			call: Call
 		)
 		extends Payload[T]

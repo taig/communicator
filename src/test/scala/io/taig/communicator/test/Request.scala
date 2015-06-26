@@ -1,13 +1,20 @@
 package io.taig.communicator.test
 
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeUnit.SECONDS
+
 import com.squareup.okhttp.{MediaType, OkHttpClient, RequestBody}
 import io.taig.communicator._
 import org.mockserver.client.server.MockServerClient
 import org.mockserver.integration.ClientAndServer.startClientAndServer
 import org.mockserver.matchers.Times
+import org.mockserver.model.Delay
 import org.mockserver.model.HttpRequest.request
 import org.mockserver.model.HttpResponse.response
+import org.scalatest.concurrent.PatienceConfiguration
+import org.scalatest.concurrent.PatienceConfiguration.Timeout
 import org.scalatest.concurrent.ScalaFutures.whenReady
+import org.scalatest.time.{Seconds, Span}
 import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -62,5 +69,17 @@ with	BeforeAndAfterAll
 		val string = fixture.request.start().parse[String]()
 
 		whenReady( string )( _.body shouldBe "test" )
+	}
+
+	it should "indicate cancellation with a proper exception" in
+	{
+		fixture.client
+			.when( request().withMethod( "GET" ), Times.once() )
+			.respond( response().withStatusCode( 200 ).withDelay( new Delay( SECONDS, 1 ) ) )
+
+		val toBeCanceled = fixture.request.start()
+		toBeCanceled.cancel()
+
+		whenReady( toBeCanceled.failed, Timeout( Span( 1, Seconds ) ) )( _ shouldBe an [exception.io.Canceled] )
 	}
 }

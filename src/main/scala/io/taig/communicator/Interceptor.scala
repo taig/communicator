@@ -17,9 +17,9 @@ extends	okhttp.Interceptor
 
 	private val wrapper = new
 	{
-		var request: io.taig.communicator.body.Request = null
+		var request: body.Request = null
 
-		var response: io.taig.communicator.body.Response = null
+		var response: body.Response = null
 	}
 
 	def onSend( f: Progress.Send => Unit ) =
@@ -52,7 +52,7 @@ extends	okhttp.Interceptor
 	{
 		if( request.body() != null )
 		{
-			wrapper.request = new io.taig.communicator.body.Request( request.body(), event.send )
+			wrapper.request = new body.Request( request.body(), event.send )
 
 			request
 				.newBuilder()
@@ -80,11 +80,11 @@ extends	okhttp.Interceptor
 					.removeHeader( "Content-Encoding" )
 					.removeHeader( "Content-Length" )
 
-				new io.taig.communicator.body.Response( response.body(), event.receive, true )
+				new body.Response( response.body(), event.receive, true )
 			}
 			else
 			{
-				new io.taig.communicator.body.Response( response.body(), event.receive, false )
+				new body.Response( response.body(), event.receive, false )
 			}
 
 			builder.body( wrapper.response ).build()
