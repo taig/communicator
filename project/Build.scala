@@ -27,7 +27,7 @@ extends	sbt.Build
 				"-feature" ::
 				Nil
 			),
-			scalaVersion := "2.11.6",
+			scalaVersion := "2.11.7",
 			version := "2.1.0"
 		)
 		.settings(
