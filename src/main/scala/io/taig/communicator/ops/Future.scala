@@ -8,10 +8,10 @@ trait Future[T]
 	val future: scala.concurrent.Future[T]
 
 	/**
-	 * Alternative to [[scala.concurrent.Future.onSuccess()]], allowing for method chaining
+	 * Alternative to Future.onSuccess(), allowing for method chaining
 	 * 
 	 * Please note that the order of your chained callbacks does not guarantee to be triggered in the same order. This
-	 * depends on the [[scala.concurrent.ExecutionContext]].
+	 * depends on the ExecutionContext.
 	 */
 	def done[U]( pf: PartialFunction[T, U] )( implicit context: ExecutionContext ): future.type =
 	{
@@ -20,10 +20,10 @@ trait Future[T]
 	}
 
 	/**
-	 * Alternative to [[scala.concurrent.Future.onFailure()]], allowing for method chaining
+	 * Alternative to Future.onFailure(), allowing for method chaining
 	 *
 	 * Please note that the order of your chained callbacks does not guarantee to be triggered in the same order. This
-	 * depends on the [[scala.concurrent.ExecutionContext]].
+	 * depends on the ExecutionContext.
 	 */
 	def failed[U]( pf: PartialFunction[Throwable, U] )( implicit context: ExecutionContext ): future.type =
 	{
@@ -32,10 +32,10 @@ trait Future[T]
 	}
 
 	/**
-	 * Alternative to [[scala.concurrent.Future.onComplete()]], allowing for method chaining
+	 * Alternative to Future.onComplete(), allowing for method chaining
 	 *
 	 * Please note that the order of your chained callbacks does not guarantee to be triggered in the same order. This
-	 * depends on the [[scala.concurrent.ExecutionContext]].
+	 * depends on the ExecutionContext.
 	 */
 	def always[U]( pf: PartialFunction[Try[T], U] )( implicit context: ExecutionContext ): future.type =
 	{
