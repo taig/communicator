@@ -23,7 +23,8 @@ extends	Features[Response]
 object Request
 {
 	trait	Payload[T]
-	extends	Features[Response.Payload[T]]
+	extends	Request
+	with	Features[Response.Payload[T]]
 
 	private[communicator] case class Impl(
 		request: okhttp.Request,
