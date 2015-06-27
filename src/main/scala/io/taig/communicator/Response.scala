@@ -37,6 +37,8 @@ class Response private[communicator]( wrapped: okhttp.Response )
 			parser.parse( this, wrapped.body().byteStream() )
 		)
 	}
+
+	override def toString = wrapped.toString
 }
 
 object Response
