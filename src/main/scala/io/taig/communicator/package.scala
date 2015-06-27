@@ -3,7 +3,7 @@ package io.taig
 import com.squareup.okhttp
 import com.squareup.okhttp.OkHttpClient
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{Future, ExecutionContext}
 import scala.language.implicitConversions
 
 package object communicator
@@ -13,19 +13,15 @@ package object communicator
 		override def run() = f
 	}
 
-	sealed trait RichStart
-	{
-		protected def request: okhttp.Request
-
-		def start()( implicit client: OkHttpClient, executor: ExecutionContext ): Request = Request( request )
-	}
-
 	implicit class	RichBuilder( builder: okhttp.Request.Builder )
-	extends			RichStart
+	extends			ops.Request
 	{
-		override protected val request = builder.build()
+		override val request = builder.build()
 	}
 
-	implicit class	RichRequest( protected val request: okhttp.Request )
-	extends			RichStart
+	implicit class	RichRequest( val request: okhttp.Request )
+	extends			ops.Request
+
+	implicit class	RichFuture[T]( val future: Future[T] )
+	extends			ops.Future[T]
 }
