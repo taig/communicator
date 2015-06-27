@@ -1,6 +1,5 @@
 package io.taig.communicator.test
 
-import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeUnit.SECONDS
 
 import com.squareup.okhttp.{MediaType, OkHttpClient, RequestBody}
@@ -8,10 +7,8 @@ import io.taig.communicator._
 import org.mockserver.client.server.MockServerClient
 import org.mockserver.integration.ClientAndServer.startClientAndServer
 import org.mockserver.matchers.Times
-import org.mockserver.model.Delay
 import org.mockserver.model.HttpRequest.request
 import org.mockserver.model.HttpResponse.response
-import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.concurrent.PatienceConfiguration.Timeout
 import org.scalatest.concurrent.ScalaFutures.whenReady
 import org.scalatest.time.{Seconds, Span}
@@ -75,7 +72,7 @@ with	BeforeAndAfterAll
 	{
 		fixture.client
 			.when( request().withMethod( "GET" ), Times.once() )
-			.respond( response().withStatusCode( 200 ).withDelay( new Delay( SECONDS, 1 ) ) )
+			.respond( response().withStatusCode( 200 ).withDelay( SECONDS, 1 ) )
 
 		val toBeCanceled = fixture.request.start()
 		toBeCanceled.cancel()

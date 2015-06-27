@@ -37,12 +37,6 @@ extends	Future[R]
 		this
 	}
 
-	def onFailure[U]( f: Throwable => U )( implicit context: ExecutionContext ): this.type =
-	{
-		wrapped.onFailure{ case exception => f( exception ) }
-		this
-	}
-
 	override def onComplete[U]( f: Try[R] => U )( implicit executor: ExecutionContext ): Unit = wrapped.onComplete( f )
 
 	override def isCompleted = wrapped.isCompleted
