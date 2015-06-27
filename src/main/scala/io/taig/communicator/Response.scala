@@ -45,13 +45,8 @@ object Response
 {
 	def unapply( response: Response ) = Some( response.code )
 
-	class	Payload[+T] private[communicator]( wrapped: okhttp.Response, payload: T )
+	class	Payload[+T] private[communicator]( wrapped: okhttp.Response, val body: T )
 	extends	Response( wrapped )
-	{
-		def body = payload
-
-		def map[A]( f: T => A ) = new Response.Payload[A]( wrapped, f( payload ) )
-	}
 
 	object Payload
 	{
