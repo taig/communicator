@@ -1,5 +1,6 @@
 package io.taig.communicator.test
 
+import java.io.{IOException, InputStream}
 import java.util.concurrent.TimeUnit.SECONDS
 
 import com.squareup.okhttp.{MediaType, OkHttpClient, RequestBody}
@@ -14,8 +15,10 @@ import org.scalatest.concurrent.ScalaFutures.whenReady
 import org.scalatest.time.{Seconds, Span}
 import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
 
+import scala.concurrent.ExecutionContext
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.language.reflectiveCalls
+import scala.util.{Failure, Success}
 
 class	Request
 extends	FlatSpec
@@ -78,5 +81,21 @@ with	BeforeAndAfterAll
 		toBeCanceled.cancel()
 
 		whenReady( toBeCanceled.failed, Timeout( Span( 1, Seconds ) ) )( _ shouldBe an [exception.io.Canceled] )
+	}
+
+	it should "fail if the parser throws an Exception" in
+	{
+		fixture.client
+			.when( request().withMethod( "GET" ), Times.once() )
+			.respond( response().withStatusCode( 200 ).withBody( "test" ) )
+
+		val parser = new Parser[String]
+		{
+			override def parse( response: Response, stream: InputStream ) = throw new IOException()
+		}
+
+		val failing = fixture.request.start().parse[String]()( parser, implicitly[ExecutionContext] )
+
+		whenReady( failing.failed, Timeout( Span( 1, Seconds ) ) )( _ shouldBe an [IOException] )
 	}
 }
