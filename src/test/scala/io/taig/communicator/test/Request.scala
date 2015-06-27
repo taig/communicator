@@ -10,15 +10,14 @@ import org.mockserver.integration.ClientAndServer.startClientAndServer
 import org.mockserver.matchers.Times
 import org.mockserver.model.HttpRequest.request
 import org.mockserver.model.HttpResponse.response
-import org.scalatest.concurrent.PatienceConfiguration.Timeout
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.concurrent.ScalaFutures.whenReady
-import org.scalatest.time.{Seconds, Span}
+import org.scalatest.time._
 import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.language.reflectiveCalls
-import scala.util.{Failure, Success}
 
 class	Request
 extends	FlatSpec
@@ -26,6 +25,8 @@ with	Matchers
 with	BeforeAndAfterAll
 {
 	implicit val client = new OkHttpClient()
+
+	implicit val patience = ScalaFutures.PatienceConfig( Span( 3, Seconds ), Span( 250, Milliseconds ) )
 
 	val fixture = new
 	{
@@ -80,7 +81,7 @@ with	BeforeAndAfterAll
 		val toBeCanceled = fixture.request.start()
 		toBeCanceled.cancel()
 
-		whenReady( toBeCanceled.failed, Timeout( Span( 1, Seconds ) ) )( _ shouldBe an [exception.io.Canceled] )
+		whenReady( toBeCanceled.failed )( _ shouldBe an [exception.io.Canceled] )
 	}
 
 	it should "fail if the parser throws an Exception" in
@@ -96,6 +97,6 @@ with	BeforeAndAfterAll
 
 		val failing = fixture.request.start().parse[String]()( parser, implicitly[ExecutionContext] )
 
-		whenReady( failing.failed, Timeout( Span( 1, Seconds ) ) )( _ shouldBe an [IOException] )
+		whenReady( failing.failed )( _ shouldBe an [IOException] )
 	}
 }
