@@ -19,15 +19,27 @@ extends	Future[R]
 
 	def cancel() = call.cancel()
 
-	def onSend( f: Progress.Send => Unit )( implicit executor: ExecutionContext ): this.type =
+	def onSend[U]( f: Progress.Send => U )( implicit executor: ExecutionContext ): this.type =
 	{
-		interceptor.onSend( ( progress: Progress.Send ) => executor.execute( f( progress ) ) )
+		interceptor.onSend( ( progress: Progress.Send ) => executor.execute( f( progress ): Unit ) )
 		this
 	}
 
-	def onReceive( f: Progress.Receive => Unit )( implicit executor: ExecutionContext ): this.type =
+	def onReceive[U]( f: Progress.Receive => U )( implicit executor: ExecutionContext ): this.type =
 	{
-		interceptor.onReceive( ( progress: Progress.Receive ) => executor.execute( f( progress ) ) )
+		interceptor.onReceive( ( progress: Progress.Receive ) => executor.execute( f( progress ): Unit ) )
+		this
+	}
+
+	def onSuccess[U]( f: R => U )( implicit context: ExecutionContext ): this.type =
+	{
+		wrapped.onSuccess{ case value => f( value ) }
+		this
+	}
+
+	def onFailure[U]( f: Throwable => U )( implicit context: ExecutionContext ): this.type =
+	{
+		wrapped.onFailure{ case exception => f( exception ) }
 		this
 	}
 

@@ -1,9 +1,7 @@
 package io.taig
 
 import com.squareup.okhttp
-import com.squareup.okhttp.OkHttpClient
 
-import scala.concurrent.{Future, ExecutionContext}
 import scala.language.implicitConversions
 
 package object communicator
@@ -21,7 +19,4 @@ package object communicator
 
 	implicit class	RichRequest( val request: okhttp.Request )
 	extends			ops.Request
-
-	implicit class	RichFuture[T]( val future: Future[T] )
-	extends			ops.Future[T]
 }
