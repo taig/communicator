@@ -25,7 +25,7 @@ trait Future[T]
 	 * Please note that the order of your chained callbacks does not guarantee to be triggered in the same order. This
 	 * depends on the ExecutionContext.
 	 */
-	def failed[U]( pf: PartialFunction[Throwable, U] )( implicit context: ExecutionContext ): future.type =
+	def fail[U]( pf: PartialFunction[Throwable, U] )( implicit context: ExecutionContext ): future.type =
 	{
 		future.onFailure( pf )
 		future
