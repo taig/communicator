@@ -2,7 +2,7 @@ package io.taig.communicator
 
 import com.squareup.okhttp
 
-class Response private[communicator]( wrapped: okhttp.Response )
+sealed class Response private[communicator]( wrapped: okhttp.Response )
 {
 	def code = wrapped.code()
 
