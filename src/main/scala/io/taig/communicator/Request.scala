@@ -22,7 +22,7 @@ extends	Features[Response]
 
 object Request
 {
-	trait	Payload[T]
+	trait	Payload[+T]
 	extends	Request
 	with	Features[Response.Payload[T]]
 
