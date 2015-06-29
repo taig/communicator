@@ -1,5 +1,8 @@
 package io.taig.communicator.test
 
+import java.io.{IOException, InputStream}
+import java.util.concurrent.TimeUnit.SECONDS
+
 import com.squareup.okhttp.{MediaType, OkHttpClient, RequestBody}
 import io.taig.communicator._
 import org.mockserver.client.server.MockServerClient
@@ -7,9 +10,12 @@ import org.mockserver.integration.ClientAndServer.startClientAndServer
 import org.mockserver.matchers.Times
 import org.mockserver.model.HttpRequest.request
 import org.mockserver.model.HttpResponse.response
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.concurrent.ScalaFutures.whenReady
+import org.scalatest.time._
 import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
 
+import scala.concurrent.ExecutionContext
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.language.reflectiveCalls
 
@@ -19,6 +25,8 @@ with	Matchers
 with	BeforeAndAfterAll
 {
 	implicit val client = new OkHttpClient()
+
+	implicit val patience = ScalaFutures.PatienceConfig( Span( 3, Seconds ), Span( 250, Milliseconds ) )
 
 	val fixture = new
 	{
@@ -62,5 +70,33 @@ with	BeforeAndAfterAll
 		val string = fixture.request.start().parse[String]()
 
 		whenReady( string )( _.body shouldBe "test" )
+	}
+
+	it should "indicate cancellation with a proper exception" in
+	{
+		fixture.client
+			.when( request().withMethod( "GET" ), Times.once() )
+			.respond( response().withStatusCode( 200 ).withDelay( SECONDS, 1 ) )
+
+		val toBeCanceled = fixture.request.start()
+		toBeCanceled.cancel()
+
+		whenReady( toBeCanceled.failed )( _ shouldBe an [exception.io.Canceled] )
+	}
+
+	it should "fail if the parser throws an Exception" in
+	{
+		fixture.client
+			.when( request().withMethod( "GET" ), Times.once() )
+			.respond( response().withStatusCode( 200 ).withBody( "test" ) )
+
+		val parser = new Parser[String]
+		{
+			override def parse( response: Response, stream: InputStream ) = throw new IOException()
+		}
+
+		val failing = fixture.request.start().parse[String]()( parser, implicitly[ExecutionContext] )
+
+		whenReady( failing.failed )( _ shouldBe an [IOException] )
 	}
 }

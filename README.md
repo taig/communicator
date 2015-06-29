@@ -2,6 +2,8 @@
 
 > An [OkHttp][1] wrapper for Scala built with Android in mind
 
+[![Build Status](https://travis-ci.org/Taig/Communicator.svg?branch=develop)](https://travis-ci.org/Taig/Communicator)
+
 Communicator provides a simple `scala.concurrent.Future` implementation that handles your requests based on plain OkHttp request objects. Additional callbacks (e.g. to track upload and download progress) simplify your codebase tremendously.
 
 Communicator was originally built for Android, but has no dependencies to the framework and works fine with any Scala project.
@@ -29,7 +31,7 @@ Communicator was originally built for Android, but has no dependencies to the fr
 
 ## Installation
 
-`libraryDependencies += "io.taig" %% "communicator" % "2.1.0"`
+`libraryDependencies += "io.taig" %% "communicator" % "2.1.1"`
 
 ## Getting Started
 
@@ -63,10 +65,9 @@ Request
     // Execute callback on a single ExecutionContext to guarantee a
     // proper execution order
     .onReceive( println )( single )
-    .onSuccess( response =>
+    .done( response =>
     {
-        println( s"${response.code} ${response.message}" )
-        println( s"${response.payload.take( 30 )}...${response.payload.takeRight( 30 )}" )
+        case Response.Payload( code, body ) => println( s"$code: ${body.take( 30 )}...${body.takeRight( 30 )}" )
     } )
 ````
 
@@ -80,8 +81,7 @@ Request
 9,00 KiB / 12,05 KiB (74,70%)
 11,00 KiB / 12,05 KiB (91,30%)
 12,05 KiB / 12,05 KiB (100,00%)
-200 OK
-<!DOCTYPE html><html>  <head> ...ipt"></script>  </body></html>
+200: <!DOCTYPE html><html>  <head> ...ipt"></script>  </body></html>
 ````
 
 ## Usage
@@ -206,9 +206,9 @@ Request
             dialog.setProgress( progress.percentage.get.toInt )
         case Progress.Receive( _, None ) => dialog.setIndeterminate( true )
     }( Ui )
-    .onFinish( _ => dialog.dismiss() )( Ui )
-    .onSuccess( response => showConfirmationDialog( response.payload ) )( Ui )
-    .onFailure( exception => showErrorDialog( exception ) )( Ui )
+    .done{ case Response.Payload( _, body ) => showConfirmationDialog( body ) }( Ui )
+    .fail{ case exception => showErrorDialog( exception ) }( Ui )
+    .always{ case _ => dialog.dismiss() }( Ui )
 ````
 
 ## *Communicator* 1.x
