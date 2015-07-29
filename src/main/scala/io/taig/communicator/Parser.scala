@@ -19,6 +19,11 @@ object Parser
 		override def parse( response: Response, stream: InputStream ) = null.asInstanceOf[Nothing]
 	}
 
+	implicit val `Parser[Unit]` = new Parser[Unit]
+	{
+		override def parse( response: Response, stream: InputStream ) = null.asInstanceOf[Unit]
+	}
+
 	implicit val string = new Parser[String]
 	{
 		override def parse( response: Response, stream: InputStream ) =
