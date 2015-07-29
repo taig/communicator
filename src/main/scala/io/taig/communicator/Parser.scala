@@ -14,7 +14,7 @@ trait Parser[T]
 
 object Parser
 {
-	implicit val nothing = new Parser[Nothing]
+	implicit val `Parser[Nothing]` = new Parser[Nothing]
 	{
 		override def parse( response: Response, stream: InputStream ) = null.asInstanceOf[Nothing]
 	}
@@ -24,7 +24,7 @@ object Parser
 		override def parse( response: Response, stream: InputStream ) = null.asInstanceOf[Unit]
 	}
 
-	implicit val string = new Parser[String]
+	implicit val `Parser[String]` = new Parser[String]
 	{
 		override def parse( response: Response, stream: InputStream ) =
 		{
