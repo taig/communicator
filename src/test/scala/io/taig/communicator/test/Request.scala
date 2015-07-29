@@ -15,7 +15,6 @@ import org.scalatest.concurrent.ScalaFutures.whenReady
 import org.scalatest.time._
 import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
 
-import scala.concurrent.ExecutionContext
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.language.reflectiveCalls
 
@@ -45,7 +44,7 @@ with	BeforeAndAfterAll
 			.when( request().withMethod( "GET" ), Times.once() )
 			.respond( response().withStatusCode( 200 ) )
 
-		whenReady( fixture.request.get().start() )( _.code shouldBe 200 )
+		whenReady( fixture.request.get().start[Unit]() )( _.code shouldBe 200 )
 	}
 
 	it should "support POST requests" in
@@ -54,8 +53,8 @@ with	BeforeAndAfterAll
 			.when( request().withMethod( "POST" ), Times.exactly( 2 ) )
 			.respond( response().withStatusCode( 200 ) )
 
-		val body = fixture.request.post( RequestBody.create( MediaType.parse( "text/plain" ), "taig" ) ).start()
-		val empty = fixture.request.post( RequestBody.create( null, "" ) ).start()
+		val body = fixture.request.post( RequestBody.create( MediaType.parse( "text/plain" ), "taig" ) ).start[Unit]()
+		val empty = fixture.request.post( RequestBody.create( null, "" ) ).start[Unit]()
 
 		whenReady( body )( _.code shouldBe 200 )
 		whenReady( empty )( _.code shouldBe 200 )
@@ -67,7 +66,7 @@ with	BeforeAndAfterAll
 			.when( request().withMethod( "GET" ), Times.once() )
 			.respond( response().withBody( "test" ) )
 
-		val string = fixture.request.start().parse[String]()
+		val string = fixture.request.start[String]()
 
 		whenReady( string )( _.body shouldBe "test" )
 	}
@@ -78,7 +77,7 @@ with	BeforeAndAfterAll
 			.when( request().withMethod( "GET" ), Times.once() )
 			.respond( response().withStatusCode( 200 ).withDelay( SECONDS, 1 ) )
 
-		val toBeCanceled = fixture.request.start()
+		val toBeCanceled = fixture.request.start[String]()
 		toBeCanceled.cancel()
 
 		whenReady( toBeCanceled.failed )( _ shouldBe an [exception.io.Canceled] )
@@ -90,12 +89,12 @@ with	BeforeAndAfterAll
 			.when( request().withMethod( "GET" ), Times.once() )
 			.respond( response().withStatusCode( 200 ).withBody( "test" ) )
 
-		val parser = new Parser[String]
+		implicit val parser = new Parser[String]
 		{
 			override def parse( response: Response, stream: InputStream ) = throw new IOException()
 		}
 
-		val failing = fixture.request.start().parse[String]()( parser, implicitly[ExecutionContext] )
+		val failing = fixture.request.start[String]()
 
 		whenReady( failing.failed )( _ shouldBe an [IOException] )
 	}

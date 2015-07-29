@@ -2,7 +2,7 @@ package io.taig.communicator
 
 import com.squareup.okhttp
 
-sealed class Response private[communicator]( wrapped: okhttp.Response )
+class Response private[communicator]( wrapped: okhttp.Response )
 {
 	def code = wrapped.code()
 
@@ -30,26 +30,15 @@ sealed class Response private[communicator]( wrapped: okhttp.Response )
 
 	def priorResponse = wrapped.priorResponse()
 
-	private[communicator] def withPayload[T]( parser: Parser[T] ) =
-	{
-		new Response.Payload(
-			wrapped,
-			parser.parse( this, wrapped.body().byteStream() )
-		)
-	}
-
 	override def toString = wrapped.toString
 }
 
 object Response
 {
-	def unapply( response: Response ) = Some( response.code )
+	def unapply[T]( response: Response with Payload[T] ) = Some( response.code, response.body )
 
-	class	Payload[+T] private[communicator]( wrapped: okhttp.Response, val body: T )
-	extends	Response( wrapped )
-
-	object Payload
+	trait Payload[+T]
 	{
-		def unapply[T]( response: Response.Payload[T] ) = Some( response.code, response.body )
+		def body: T
 	}
 }
