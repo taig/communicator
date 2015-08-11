@@ -84,7 +84,7 @@ object Request
 			{
 				val response = call.execute()
 				val content = parser.parse( new Response( response ), response.body().byteStream() )
-				new Response( response ) with Response.Payload[T] { override def body = content }
+				new Response.Payload( response, content )
 			}
 			catch
 			{

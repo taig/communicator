@@ -37,8 +37,6 @@ object Response
 {
 	def unapply[T]( response: Response with Payload[T] ) = Some( response.code, response.body )
 
-	trait Payload[+T]
-	{
-		def body: T
-	}
+	class	Payload[+T] private[communicator]( wrapped: okhttp.Response, val body: T )
+	extends	Response( wrapped )
 }
