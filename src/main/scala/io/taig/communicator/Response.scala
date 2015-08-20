@@ -30,7 +30,9 @@ class Response private[communicator]( wrapped: okhttp.Response )
 
 	def priorResponse = wrapped.priorResponse()
 
-	override def toString = wrapped.toString
+	def withPayload[T]( payload: T ) = new Response.Payload( wrapped, payload )
+
+	override def toString = s"$code $message\n$headers"
 }
 
 object Response
@@ -39,4 +41,7 @@ object Response
 
 	class	Payload[+T] private[communicator]( wrapped: okhttp.Response, val body: T )
 	extends	Response( wrapped )
+	{
+		override def toString = super.toString + "\n\n" + body
+	}
 }
