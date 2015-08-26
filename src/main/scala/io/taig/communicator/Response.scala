@@ -32,7 +32,10 @@ class Response private[communicator]( wrapped: okhttp.Response )
 
 	def withPayload[T]( payload: T ) = new Response.Payload( wrapped, payload )
 
-	override def toString = s"$code $message\n$headers"
+	override def toString = {
+		s">>> ${request.urlString()}\n${request.headers()}\n\n\n" +
+		s"<<< $code $message\n${headers.newBuilder().removeAll( "Status" ).build()}"
+	}
 }
 
 object Response
@@ -42,6 +45,6 @@ object Response
 	class	Payload[+T] private[communicator]( wrapped: okhttp.Response, val body: T )
 	extends	Response( wrapped )
 	{
-		override def toString = super.toString + "\n\n" + body
+		override def toString = super.toString + "\n\n\n" + body
 	}
 }
