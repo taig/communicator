@@ -18,15 +18,13 @@ object Progress {
         }
     }
 
-    case class Send( current: Long, total: Long )
-            extends Progress {
+    case class Send( current: Long, total: Long ) extends Progress {
         def percentage: Float = current / total.toFloat * 100
 
-        override def toString = "%s / %s (%.2f%)".format( super.toString, format( total ), percentage )
+        override def toString = "%s / %s (%.2f%%)".format( super.toString, format( total ), percentage )
     }
 
-    case class Receive( current: Long, total: Option[Long] )
-            extends Progress {
+    case class Receive( current: Long, total: Option[Long] ) extends Progress {
         def percentage: Option[Float] = total.map( current / _.toFloat * 100 )
 
         override def toString = super.toString + ( ( total, percentage ) match {
