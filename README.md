@@ -2,7 +2,7 @@
 
 > An [OkHttp][1] wrapper for Scala built with Android in mind
 
-[![Build Status](https://travis-ci.org/Taig/Communicator.svg?branch=develop)](https://travis-ci.org/Taig/Communicator)
+[![Circle CI](https://circleci.com/gh/Taig/Communicator/tree/develop.svg?style=svg)](https://circleci.com/gh/Taig/Communicator/tree/develop)
 
 Communicator provides a simple `scala.concurrent.Future` implementation that handles your requests based on plain OkHttp request objects. Additional callbacks (e.g. to track upload and download progress) simplify your codebase tremendously.
 
