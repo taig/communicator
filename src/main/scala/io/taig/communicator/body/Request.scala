@@ -11,8 +11,7 @@ import okio.{ Buffer, BufferedSink }
  * @param wrapped The wrapped RequestBody, may be <code>null</code>
  * @param event Event listener to update on progress, may be <code>null</code>
  */
-class Request( wrapped: RequestBody, var event: Progress.Send ⇒ Unit )
-        extends RequestBody {
+class Request( wrapped: RequestBody, var event: Progress.Send ⇒ Unit ) extends RequestBody {
     require(
         wrapped.contentLength() > -1 || wrapped.contentLength() == -1 && event == null,
         "The provided RequestBody must specify a proper content length if you want to use an onSend listener"
@@ -45,14 +44,12 @@ class Request( wrapped: RequestBody, var event: Progress.Send ⇒ Unit )
             Iterator
                 .continually( temporary.read( buffer ) )
                 .takeWhile( _ != -1 )
-                .foreach( length ⇒
-                    {
-                        size += length
-                        sink.write( buffer, 0, length )
-                        update( size )
-                    } )
-        }
-        finally {
+                .foreach( length ⇒ {
+                    size += length
+                    sink.write( buffer, 0, length )
+                    update( size )
+                } )
+        } finally {
             closeQuietly( temporary )
         }
     }

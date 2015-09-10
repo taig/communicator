@@ -5,8 +5,7 @@ import com.squareup.okhttp.Interceptor.Chain
 
 import scala.language.reflectiveCalls
 
-class Interceptor( request: okhttp.Request )
-        extends okhttp.Interceptor {
+class Interceptor( request: okhttp.Request ) extends okhttp.Interceptor {
     private val event = new {
         var send: Progress.Send ⇒ Unit = null
 
@@ -48,8 +47,7 @@ class Interceptor( request: okhttp.Request )
                 .newBuilder()
                 .method( request.method(), wrapper.request )
                 .build()
-        }
-        else {
+        } else {
             request
         }
     }
@@ -66,14 +64,12 @@ class Interceptor( request: okhttp.Request )
                     .removeHeader( "Content-Length" )
 
                 new body.Response( response.body(), event.receive, true )
-            }
-            else {
+            } else {
                 new body.Response( response.body(), event.receive, false )
             }
 
             builder.body( wrapper.response ).build()
-        }
-        else {
+        } else {
             response
         }
 

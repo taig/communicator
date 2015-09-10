@@ -21,15 +21,14 @@ object Parser {
     }
 
     implicit val `Parser[String]` = new Parser[String] {
-        override def parse( response: Response, stream: InputStream ) =
-            {
-                val charset = Option( response.headers.get( "Content-Type" ) )
-                    .map( MediaType.parse )
-                    .map( _.charset() )
-                    .flatMap( Option.apply )
-                    .getOrElse( Charset.forName( "UTF-8" ) )
+        override def parse( response: Response, stream: InputStream ) = {
+            val charset = Option( response.headers.get( "Content-Type" ) )
+                .map( MediaType.parse )
+                .map( _.charset() )
+                .flatMap( Option.apply )
+                .getOrElse( Charset.forName( "UTF-8" ) )
 
-                Source.fromInputStream( stream, charset.displayName() ).mkString
-            }
+            Source.fromInputStream( stream, charset.displayName() ).mkString
+        }
     }
 }

@@ -73,8 +73,7 @@ object Request {
                 val response = call.execute()
                 val content = parser.parse( new Response( response ), response.body().byteStream() )
                 new Response.Payload( response, content )
-            }
-            catch {
+            } catch {
                 case error: IOException if call.isCanceled ⇒ throw new exception.io.Canceled( error )
             }
         }( executor )

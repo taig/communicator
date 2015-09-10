@@ -12,8 +12,7 @@ object Progress {
     private def format( bytes: Long ): String = {
         if ( bytes < 1024 ) {
             bytes + " B"
-        }
-        else {
+        } else {
             val exp = ( log( bytes ) / Math.log( 1024 ) ).toInt
             "%.2f %s".format( bytes / pow( 1024, exp ), "KMGTPE".charAt( exp - 1 ) + "iB" )
         }

@@ -11,8 +11,7 @@ import okio._
  * @param wrapped Wrapped ResponseBody
  * @param event Event listener to update on progress, may be <code>null</code>
  */
-class Response( wrapped: ResponseBody, var event: Progress.Receive ⇒ Unit, zipped: Boolean )
-        extends ResponseBody {
+class Response( wrapped: ResponseBody, var event: Progress.Receive ⇒ Unit, zipped: Boolean ) extends ResponseBody {
     /**
      * Prevent recreating the length object on every listener call
      */
@@ -27,8 +26,7 @@ class Response( wrapped: ResponseBody, var event: Progress.Receive ⇒ Unit, zip
     override def source() = {
         if ( zipped ) {
             Okio.buffer( new GzipSource( new Source( wrapped.source() ) ) )
-        }
-        else {
+        } else {
             Okio.buffer( new Source( wrapped.source() ) )
         }
     }

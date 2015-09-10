@@ -40,8 +40,7 @@ class Response private[communicator] ( wrapped: okhttp.Response ) {
 object Response {
     def unapply[T]( response: Response with Payload[T] ) = Some( response.code, response.body )
 
-    class Payload[+T] private[communicator] ( wrapped: okhttp.Response, val body: T )
-            extends Response( wrapped ) {
+    class Payload[+T] private[communicator] ( wrapped: okhttp.Response, val body: T ) extends Response( wrapped ) {
         override def toString = super.toString + "\n\n\n" + body
     }
 }
