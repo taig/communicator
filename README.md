@@ -2,7 +2,7 @@
 
 > An [OkHttp][1] wrapper for Scala built with Android in mind
 
-[![Circle CI](https://circleci.com/gh/Taig/Communicator/tree/develop.svg?style=svg)](https://circleci.com/gh/Taig/Communicator/tree/develop)
+[![Circle CI](https://circleci.com/gh/Taig/Communicator.svg?style=svg)](https://circleci.com/gh/Taig/Communicator)
 
 Communicator provides a simple `scala.concurrent.Future` implementation that handles your requests based on plain OkHttp request objects. Additional callbacks (e.g. to track upload and download progress) simplify your codebase tremendously.
 
@@ -31,7 +31,7 @@ Communicator was originally built for Android, but has no dependencies to the fr
 
 ## Installation
 
-`libraryDependencies += "io.taig" %% "communicator" % "2.2.2-SNAPSHOT"`
+`libraryDependencies += "io.taig" %% "communicator" % "2.2.0"`
 
 ## Getting Started
 
@@ -58,15 +58,12 @@ Request
     // Access the actual okhttp.Request.Builder API
     .post()
     // Implicitly convert a okhttp.Request.Builder or okhttp.Request to
-    // a communicator.Request and kick it off
-    .start()
-    // Parse the response to a String
-    .parse[String]()
+    // a communicator.Request and kick it off, parsing the response to a String
+    .start[String]()
     // Execute callback on a single ExecutionContext to guarantee a
     // proper execution order
     .onReceive( println )( single )
-    .done( response =>
-    {
+    .done( response => {
         case Response.Payload( code, body ) => println( s"$code: ${body.take( 30 )}...${body.takeRight( 30 )}" )
     } )
 ````
@@ -138,8 +135,7 @@ The parse method expects an implicit `Parser[T]` in scope to process the server 
 ````scala
 import play.api.libs.json.Json
 
-implicit object Json extends Parser[JsValue]
-{
+implicit object Json extends Parser[JsValue] {
     def parse( response: Response, stream: InputStream ): JsValue = Json.parse( stream )
 }
 ````
