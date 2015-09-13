@@ -1,4 +1,4 @@
-package io.taig.communicator.test
+package test.io.taig.communicator
 
 import java.io.{ IOException, InputStream }
 import java.util.concurrent.TimeUnit.SECONDS
@@ -15,7 +15,9 @@ import org.scalatest.concurrent.ScalaFutures.whenReady
 import org.scalatest.time._
 import org.scalatest.{ BeforeAndAfterAll, FlatSpec, Matchers }
 
+import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration.Duration.Inf
 import scala.language.reflectiveCalls
 
 class Request
@@ -36,7 +38,7 @@ class Request
 
     override protected def afterAll() = fixture.server.stop()
 
-    "A Request" should "support GET requests" in {
+    it should "support GET requests" in {
         fixture.client
             .when( request().withMethod( "GET" ), Times.once() )
             .respond( response().withStatusCode( 200 ) )
