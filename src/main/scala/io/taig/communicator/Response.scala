@@ -2,54 +2,45 @@ package io.taig.communicator
 
 import com.squareup.okhttp
 
-sealed class Response private[communicator]( wrapped: okhttp.Response )
-{
-	def code = wrapped.code()
+class Response private[communicator] ( wrapped: okhttp.Response ) {
+    def code = wrapped.code()
 
-	def message = wrapped.message()
+    def message = wrapped.message()
 
-	def headers = wrapped.headers
+    def headers = wrapped.headers
 
-	def request = wrapped.request
+    def request = wrapped.request
 
-	def protocol = wrapped.protocol
+    def protocol = wrapped.protocol
 
-	def handshake = wrapped.handshake
+    def handshake = wrapped.handshake
 
-	def isSuccessful = wrapped.isSuccessful
+    def isSuccessful = wrapped.isSuccessful
 
-	def isRedirect = wrapped.isRedirect
+    def isRedirect = wrapped.isRedirect
 
-	def challenges = wrapped.challenges
+    def challenges = wrapped.challenges
 
-	def cacheControl = wrapped.cacheControl
+    def cacheControl = wrapped.cacheControl
 
-	def cacheResponse = wrapped.cacheResponse()
+    def cacheResponse = wrapped.cacheResponse()
 
-	def networkResponse = wrapped.networkResponse()
+    def networkResponse = wrapped.networkResponse()
 
-	def priorResponse = wrapped.priorResponse()
+    def priorResponse = wrapped.priorResponse()
 
-	private[communicator] def withPayload[T]( parser: Parser[T] ) =
-	{
-		new Response.Payload(
-			wrapped,
-			parser.parse( this, wrapped.body().byteStream() )
-		)
-	}
+    def withPayload[T]( payload: T ) = new Response.Payload( wrapped, payload )
 
-	override def toString = wrapped.toString
+    override def toString = {
+        s">>> ${request.urlString()}\n${request.headers()}\n\n\n" +
+            s"<<< $code $message\n${headers.newBuilder().removeAll( "Status" ).build()}"
+    }
 }
 
-object Response
-{
-	def unapply( response: Response ) = Some( response.code )
+object Response {
+    def unapply[T]( response: Response with Payload[T] ) = Some( response.code, response.body )
 
-	class	Payload[+T] private[communicator]( wrapped: okhttp.Response, val body: T )
-	extends	Response( wrapped )
-
-	object Payload
-	{
-		def unapply[T]( response: Response.Payload[T] ) = Some( response.code, response.body )
-	}
+    class Payload[+T] private[communicator] ( wrapped: okhttp.Response, val body: T ) extends Response( wrapped ) {
+        override def toString = super.toString + "\n\n\n" + body
+    }
 }
