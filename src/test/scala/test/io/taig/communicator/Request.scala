@@ -26,7 +26,7 @@ class Request
         with BeforeAndAfterAll {
     implicit val client = new OkHttpClient()
 
-    implicit val patience = ScalaFutures.PatienceConfig( Span( 3, Seconds ), Span( 250, Milliseconds ) )
+    implicit val patience = ScalaFutures.PatienceConfig( Span( 10, Seconds ), Span( 500, Milliseconds ) )
 
     val fixture = new {
         val server = startClientAndServer( 8888 )

@@ -4,10 +4,10 @@ javacOptions ++=
     Nil
 
 libraryDependencies ++=
-    "com.squareup.okhttp" % "okhttp" % "2.5.0" ::
+    "com.squareup.okhttp" % "okhttp" % "2.6.0" ::
     "ch.qos.logback" % "logback-classic" % "1.1.3" % "test" ::
     "org.scalatest" %% "scalatest" % "2.2.5" % "test" ::
-    "org.mock-server" % "mockserver-netty" % "3.9.17" % "test" ::
+    "org.mock-server" % "mockserver-netty" % "3.10.2" % "test" ::
     Nil
 
 name := "Communicator"
