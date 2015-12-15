@@ -31,7 +31,7 @@ Communicator was originally built for Android, but has no dependencies to the fr
 
 ## Installation
 
-`libraryDependencies += "io.taig" %% "communicator" % "2.2.1"`
+`libraryDependencies += "io.taig" %% "communicator" % "2.2.2"`
 
 ## Getting Started
 
@@ -63,9 +63,9 @@ Request
     // Execute callback on a single ExecutionContext to guarantee a
     // proper execution order
     .onReceive( println )( single )
-    .done( response => {
+    .done { response =>
         case Response.Payload( code, body ) => println( s"$code: ${body.take( 30 )}...${body.takeRight( 30 )}" )
-    } )
+    }
 ````
 
 **Result**
@@ -167,16 +167,13 @@ import android.os.{AsyncTask, Handler, Looper}
 import java.util.concurrent.Executor
 import scala.concurrent.ExecutionContext
 
-package object app
-{
-    val Executor = new
-    {
+package object app {
+    val Executor = new {
         // ExecutionContext for asynchronous processing, relying on Android's idea of threading
         implicit lazy val Pool = ExecutionContext.fromExecutor( AsyncTask.THREAD_POOL_EXECUTOR )
 
         // UI thread executor
-        lazy val Ui = ExecutionContext.fromExecutor( new Executor
-        {
+        lazy val Ui = ExecutionContext.fromExecutor( new Executor {
             private val handler = new Handler( Looper.getMainLooper )
 
             override def execute( command: Runnable ) = handler.post( command )
@@ -196,8 +193,7 @@ val dialog: android.app.ProgressDialog = ???
 Request
     .prepare( "http://www.scala-lang.org/" )
     .parse[String]()
-    .onReceive
-    {
+    .onReceive {
         case progress @ Progress.Receive( _, Some( _ ) ) =>
             dialog.setProgress( progress.percentage.get.toInt )
         case Progress.Receive( _, None ) => dialog.setIndeterminate( true )
