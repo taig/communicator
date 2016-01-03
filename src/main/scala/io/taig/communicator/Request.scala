@@ -71,7 +71,9 @@ object Request {
         override val wrapped = Future {
             try {
                 val response = call.execute()
-                val content = parser.parse( new Response( response ), response.body().byteStream() )
+                val body = response.body()
+                val content = parser.parse( new Response( response ), body.byteStream() )
+                body.close()
                 new Response.Payload( response, content )
             } catch {
                 case error: IOException if call.isCanceled ⇒ throw new exception.io.Canceled( error )
