@@ -4,7 +4,7 @@ javacOptions ++=
     Nil
 
 libraryDependencies ++=
-    "com.squareup.okhttp" % "okhttp" % "2.7.0" ::
+    "com.squareup.okhttp" % "okhttp" % "2.7.1" ::
     "ch.qos.logback" % "logback-classic" % "1.1.3" % "test" ::
     "org.scalatest" %% "scalatest" % "2.2.5" % "test" ::
     "org.mock-server" % "mockserver-netty" % "3.10.2" % "test" ::
@@ -21,4 +21,4 @@ scalacOptions ++=
 
 scalaVersion := "2.11.7"
 
-version := "2.2.2"
+version := "2.2.3-SNAPSHOT"
