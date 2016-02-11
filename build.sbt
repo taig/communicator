@@ -21,4 +21,4 @@ scalacOptions ++=
 
 scalaVersion := "2.11.7"
 
-version := "2.2.3"
+version := "2.2.4"
