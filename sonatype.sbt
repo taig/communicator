@@ -11,14 +11,14 @@ pomExtra := {
         <url>https://github.com/taig/communicator/issues</url>
         <system>GitHub Issues</system>
     </issueManagement>
-        <developers>
-            <developer>
-                <id>Taig</id>
-                <name>Niklas Klein</name>
-                <email>mail@taig.io</email>
-                <url>http://taig.io/</url>
-            </developer>
-        </developers>
+    <developers>
+        <developer>
+            <id>Taig</id>
+            <name>Niklas Klein</name>
+            <email>mail@taig.io</email>
+            <url>http://taig.io/</url>
+        </developer>
+    </developers>
 }
 
 pomIncludeRepository := { _ => false }
