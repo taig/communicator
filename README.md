@@ -196,7 +196,7 @@ Request
             dialog.setProgress( progress.percentage.get.toInt )
         case Progress.Receive( _, None ) => dialog.setIndeterminate( true )
     }( Ui )
-    .done{ case Response.Payload( _, body ) => showConfirmationDialog( body ) }( Ui )
+    .done{ case Response( _, body ) => showConfirmationDialog( body ) }( Ui )
     .fail{ case exception => showErrorDialog( exception ) }( Ui )
     .always{ case _ => dialog.dismiss() }( Ui )
 ````
