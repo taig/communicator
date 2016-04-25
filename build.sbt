@@ -19,6 +19,6 @@ scalacOptions ++=
     "-feature" ::
     Nil
 
-scalaVersion := "2.11.7"
+scalaVersion := "2.11.8"
 
 version := "2.2.4"
