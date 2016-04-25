@@ -1,8 +1,9 @@
 package io.taig.communicator.body
 
 import java.io.InterruptedIOException
-import _root_.io.taig.communicator.Progress
-import com.squareup.okhttp.ResponseBody
+
+import io.taig.communicator.Progress
+import okhttp3.ResponseBody
 import okio._
 
 /**

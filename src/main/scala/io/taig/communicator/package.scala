@@ -1,7 +1,5 @@
 package io.taig
 
-import com.squareup.okhttp
-
 import scala.concurrent.Future
 import scala.language.implicitConversions
 
@@ -10,12 +8,12 @@ package object communicator {
         override def run() = f
     }
 
-    implicit class RichBuilder( builder: okhttp.Request.Builder )
+    implicit class RichBuilder( builder: okhttp3.Request.Builder )
             extends ops.Request {
         override val request = builder.build()
     }
 
-    implicit class RichRequest( val request: okhttp.Request )
+    implicit class RichRequest( val request: okhttp3.Request )
         extends ops.Request
 
     implicit class RichFuture[T]( val future: Future[T] )
