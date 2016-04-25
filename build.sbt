@@ -1,3 +1,7 @@
+description := "An OkHttp wrapper for Scala built with Android in mind"
+
+githubProject := "communicator"
+
 javacOptions ++=
     "-source" :: "1.7" ::
     "-target" :: "1.7" ::
@@ -20,5 +24,7 @@ scalacOptions ++=
     Nil
 
 scalaVersion := "2.11.8"
+
+startYear := Some( 2013 )
 
 version := "2.2.4"
