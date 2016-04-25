@@ -55,16 +55,14 @@ val single = ExecutionContext.fromExecutor( Executors.newSingleThreadExecutor() 
 Request
     // Construct an okhttp.Request.Builder
     .prepare( "http://www.scala-lang.org/" )
-    // Access the actual okhttp.Request.Builder API
-    .post()
     // Implicitly convert a okhttp.Request.Builder or okhttp.Request to
     // a communicator.Request and kick it off, parsing the response to a String
     .start[String]()
     // Execute callback on a single ExecutionContext to guarantee a
     // proper execution order
     .onReceive( println )( single )
-    .done { response =>
-        case Response.Payload( code, body ) => println( s"$code: ${body.take( 30 )}...${body.takeRight( 30 )}" )
+    .done {
+        case Response( code, body ) => println( s"$code: ${body.take( 30 )}...${body.takeRight( 30 )}" )
     }
 ````
 
@@ -198,7 +196,7 @@ Request
             dialog.setProgress( progress.percentage.get.toInt )
         case Progress.Receive( _, None ) => dialog.setIndeterminate( true )
     }( Ui )
-    .done{ case Response.Payload( _, body ) => showConfirmationDialog( body ) }( Ui )
+    .done{ case Response( _, body ) => showConfirmationDialog( body ) }( Ui )
     .fail{ case exception => showErrorDialog( exception ) }( Ui )
     .always{ case _ => dialog.dismiss() }( Ui )
 ````
