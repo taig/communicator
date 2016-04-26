@@ -27,4 +27,4 @@ scalaVersion := "2.11.8"
 
 startYear := Some( 2013 )
 
-version := "2.3.0-SNAPSHOT"
+version := "2.3.0"
