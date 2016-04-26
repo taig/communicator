@@ -3,8 +3,7 @@ package io.taig.communicator
 import java.io.IOException
 import java.net.URL
 
-import com.squareup.okhttp
-import com.squareup.okhttp._
+import okhttp3.{ Call, OkHttpClient }
 
 import scala.concurrent.duration.Duration
 import scala.concurrent._
@@ -55,7 +54,7 @@ trait Request[T]
 
 object Request {
     private[communicator] case class Impl[T](
-        request:  okhttp.Request,
+        request:  okhttp3.Request,
         client:   OkHttpClient,
         executor: ExecutionContext
     )( implicit val parser: Parser[T] )
@@ -63,8 +62,10 @@ object Request {
         override val interceptor = new Interceptor( request )
 
         override val call = {
-            val client = this.client.clone()
-            client.networkInterceptors().add( interceptor )
+            val client = this.client.newBuilder()
+                .addNetworkInterceptor( interceptor )
+                .build()
+
             client.newCall( request )
         }
 
@@ -81,13 +82,13 @@ object Request {
         }( executor )
     }
 
-    def prepare(): okhttp.Request.Builder = new okhttp.Request.Builder()
+    def prepare(): okhttp3.Request.Builder = new okhttp3.Request.Builder()
 
-    def prepare( url: String ): okhttp.Request.Builder = prepare().url( url )
+    def prepare( url: String ): okhttp3.Request.Builder = prepare().url( url )
 
-    def prepare( url: URL ): okhttp.Request.Builder = prepare().url( url )
+    def prepare( url: URL ): okhttp3.Request.Builder = prepare().url( url )
 
-    def apply[T: Parser]( request: okhttp.Request )( implicit client: OkHttpClient, executor: ExecutionContext ): Request[T] = {
+    def apply[T: Parser]( request: okhttp3.Request )( implicit client: OkHttpClient, executor: ExecutionContext ): Request[T] = {
         new Impl( request, client, executor )
     }
 }

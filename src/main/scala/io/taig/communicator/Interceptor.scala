@@ -1,11 +1,10 @@
 package io.taig.communicator
 
-import com.squareup.okhttp
-import com.squareup.okhttp.Interceptor.Chain
+import okhttp3.Interceptor.Chain
 
 import scala.language.reflectiveCalls
 
-class Interceptor( request: okhttp.Request ) extends okhttp.Interceptor {
+class Interceptor( request: okhttp3.Request ) extends okhttp3.Interceptor {
     private val event = new {
         var send: Progress.Send ⇒ Unit = null
 
@@ -39,7 +38,7 @@ class Interceptor( request: okhttp.Request ) extends okhttp.Interceptor {
         receive( chain.proceed( request ) )
     }
 
-    protected def send( request: okhttp.Request ): okhttp.Request = {
+    protected def send( request: okhttp3.Request ): okhttp3.Request = {
         if ( request.body() != null ) {
             wrapper.request = new body.Request( request.body(), event.send )
 
@@ -52,7 +51,7 @@ class Interceptor( request: okhttp.Request ) extends okhttp.Interceptor {
         }
     }
 
-    protected def receive( response: okhttp.Response ) = {
+    protected def receive( response: okhttp3.Response ) = {
         if ( response.body() != null ) {
             val builder = response.newBuilder()
 

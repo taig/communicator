@@ -1,8 +1,6 @@
 package io.taig.communicator
 
-import com.squareup.okhttp
-
-class Response private[communicator] ( wrapped: okhttp.Response ) {
+class Response private[communicator] ( wrapped: okhttp3.Response ) {
     def code = wrapped.code()
 
     def message = wrapped.message()
@@ -32,7 +30,7 @@ class Response private[communicator] ( wrapped: okhttp.Response ) {
     def withPayload[T]( payload: T ) = new Response.Payload( wrapped, payload )
 
     override def toString = {
-        s">>> ${request.urlString()}\n${request.headers()}\n\n\n" +
+        s">>> ${request.url.toString}\n${request.headers()}\n\n\n" +
             s"<<< $code $message\n${headers.newBuilder().removeAll( "Status" ).build()}"
     }
 }
@@ -40,7 +38,7 @@ class Response private[communicator] ( wrapped: okhttp.Response ) {
 object Response {
     def unapply[T]( response: Response with Payload[T] ) = Some( response.code, response.body )
 
-    class Payload[+T] private[communicator] ( wrapped: okhttp.Response, val body: T ) extends Response( wrapped ) {
+    class Payload[+T] private[communicator] ( wrapped: okhttp3.Response, val body: T ) extends Response( wrapped ) {
         override def toString = super.toString + "\n\n\n" + body
     }
 }

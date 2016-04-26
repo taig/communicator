@@ -1,10 +1,9 @@
-package test.io.taig.communicator
+package io.taig.communicator
 
 import java.io.{ IOException, InputStream }
 import java.util.concurrent.TimeUnit.SECONDS
 
-import com.squareup.okhttp.{ MediaType, OkHttpClient, RequestBody }
-import io.taig.communicator._
+import okhttp3.{ MediaType, OkHttpClient, RequestBody }
 import org.mockserver.client.server.MockServerClient
 import org.mockserver.integration.ClientAndServer.startClientAndServer
 import org.mockserver.matchers.Times
@@ -15,12 +14,10 @@ import org.scalatest.concurrent.ScalaFutures.whenReady
 import org.scalatest.time._
 import org.scalatest.{ BeforeAndAfterAll, FlatSpec, Matchers }
 
-import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration.Duration.Inf
 import scala.language.reflectiveCalls
 
-class Request
+class RequestTest
         extends FlatSpec
         with Matchers
         with BeforeAndAfterAll {
