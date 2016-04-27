@@ -1,6 +1,6 @@
 package io.taig.communicator
 
-class Response private[communicator] ( wrapped: okhttp3.Response ) {
+class Response private[communicator] ( val wrapped: okhttp3.Response ) {
     def code = wrapped.code()
 
     def message = wrapped.message()
