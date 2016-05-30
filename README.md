@@ -31,7 +31,7 @@ Communicator was originally built for Android, but has no dependencies to the fr
 
 ## Installation
 
-`libraryDependencies += "io.taig" %% "communicator" % "2.3.1"`
+`libraryDependencies += "io.taig" %% "communicator" % "2.3.2"`
 
 ## Getting Started
 
@@ -124,7 +124,7 @@ Request
 
 ### Request
 
-A Request can be initiated from any `okhttp.Request` or `okhttp.Request.Builder` object via the implicit `start()` method. Alternatively, the `Request.apply( request: okhttp.Request )` does the job as well. The Request class extends Scalas Future and behaves in a similar way. Once a Request has been instantiated, it starts its networking immediatly.
+A Request can be initiated from any `okhttp.Request` or `okhttp.Request.Builder` object via the implicit `start()` method. Alternatively, the `Request.apply( request: okhttp.Request )` does the job as well. The Request class extends Scalas Future and behaves in a similar way. Once a Request has been instantiated, it starts its networking immediately.
 
 To handle the server response, you have to convert the `Request` object to a `Request.Payload[T]` instance. This is done via the `Request.parse[T]()` method.
 
@@ -208,7 +208,7 @@ The Java predecessor of this library has been deprecated. You still can [access]
 ## License
 
 The MIT License (MIT)  
-Copyright (c) 2015 Niklas Klein <mail@taig.io>
+Copyright (c) 2016 Niklas Klein <mail@taig.io>
 
 [1]: http://square.github.io/okhttp/
 [2]: https://github.com/Taig/Communicator/tree/f820d08b1cc4d77083e384568ce89223e53ab693
