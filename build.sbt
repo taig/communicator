@@ -8,7 +8,7 @@ javacOptions ++=
     Nil
 
 libraryDependencies ++=
-    "com.squareup.okhttp3" % "okhttp" % "3.2.0" ::
+    "com.squareup.okhttp3" % "okhttp" % "3.3.1" ::
     "ch.qos.logback" % "logback-classic" % "1.1.7" % "test" ::
     "org.scalatest" %% "scalatest" % "2.2.6" % "test" ::
     "org.mock-server" % "mockserver-netty" % "3.10.4" % "test" ::
