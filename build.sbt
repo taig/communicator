@@ -10,9 +10,8 @@ javacOptions ++=
 libraryDependencies ++=
     "com.squareup.okhttp3" % "okhttp" % "3.3.1" ::
     "io.monix" %% "monix" % "2.0-RC7" ::
-    "ch.qos.logback" % "logback-classic" % "1.1.7" % "test" ::
+    "com.squareup.okhttp3" % "mockwebserver" % "3.3.1" % "test" ::
     "org.scalatest" %% "scalatest" % "2.2.6" % "test" ::
-    "org.mock-server" % "mockserver-netty" % "3.10.4" % "test" ::
     Nil
 
 name := "Communicator"

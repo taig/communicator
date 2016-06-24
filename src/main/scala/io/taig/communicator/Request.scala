@@ -16,25 +16,35 @@ object Request {
 
     def builder( url: URL ): Request.Builder = builder.url( url )
 
+    def builder( url: HttpUrl ): Request.Builder = builder.url( url )
+
     def apply[T: Parser]( request: Request )( implicit ohc: OkHttpClient ): Task[Response[T]] = {
-        Task.create { ( _, callback ) ⇒
+        Task.create { ( _, taskCallback ) ⇒
             val call = ohc.newCall( request )
 
-            call.enqueue {
-                new Callback {
-                    override def onResponse( call: Call, response: okhttp3.Response ) = {
+            val requestCallback = new Callback {
+                override def onResponse( call: Call, response: okhttp3.Response ) = {
+                    try {
                         val headers = ResponseHeaders( response )
-                        val content = Parser[T].parse( headers, response.body().byteStream() )
-                        callback.onSuccess( headers.withBody( content ) )
+                        val stream = response.body().byteStream()
+                        val content = Parser[T].parse( headers, stream )
+                        taskCallback.onSuccess( headers.withBody( content ) )
+                    } catch {
+                        case exception: Throwable ⇒ taskCallback.onError( exception )
                     }
+                }
 
-                    override def onFailure( call: Call, exception: IOException ) = {
-                        callback.onError( exception )
-                    }
+                override def onFailure( call: Call, exception: IOException ) = {
+                    taskCallback.onError( exception )
                 }
             }
 
-            Cancelable( () ⇒ call.cancel() )
+            call.enqueue( requestCallback )
+
+            Cancelable { () ⇒
+                requestCallback.onFailure( call, new IOException( "Canceled" ) )
+                call.cancel()
+            }
         }
     }
 

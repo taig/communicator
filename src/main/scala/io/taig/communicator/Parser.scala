@@ -26,7 +26,7 @@ object Parser {
 
     implicit val parserUnit: Parser[Unit] = instance( ( _, stream ) ⇒ stream.close() )
 
-    implicit val parserUtf8String: Parser[String] = instance { ( response, stream ) ⇒
+    implicit val parserString: Parser[String] = instance { ( response, stream ) ⇒
         try {
             val charset = for {
                 contentType ← Option( response.headers.get( "Content-Type" ) )
