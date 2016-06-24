@@ -7,30 +7,39 @@ import okhttp3.MediaType
 
 import scala.io.Source
 
-trait Parser[T] {
-    def parse( response: Response, stream: InputStream ): T
+trait Parser[+T] {
+    def parse( response: ResponseHeaders, stream: InputStream ): T
+
+    def map[U]( f: T ⇒ U ): Parser[U] = Parser.instance { ( response, stream ) ⇒
+        f( parse( response, stream ) )
+    }
 }
 
 object Parser {
     def apply[T: Parser]: Parser[T] = implicitly[Parser[T]]
 
-    implicit val parserNothing = new Parser[Nothing] {
-        override def parse( response: Response, stream: InputStream ) = null.asInstanceOf[Nothing]
+    def instance[T]( f: ( ResponseHeaders, InputStream ) ⇒ T ): Parser[T] = new Parser[T] {
+        override def parse( response: ResponseHeaders, stream: InputStream ) = f( response, stream )
     }
 
-    implicit val parserUnit = new Parser[Unit] {
-        override def parse( response: Response, stream: InputStream ) = null.asInstanceOf[Unit]
-    }
+    implicit val parserInputStream: Parser[InputStream] = instance( ( _, stream ) ⇒ stream )
 
-    implicit val parserString = new Parser[String] {
-        override def parse( response: Response, stream: InputStream ) = {
-            val charset = Option( response.headers.get( "Content-Type" ) )
-                .map( MediaType.parse )
-                .map( _.charset() )
-                .flatMap( Option.apply )
-                .getOrElse( Charset.forName( "UTF-8" ) )
+    implicit val parserUnit: Parser[Unit] = instance( ( _, stream ) ⇒ stream.close() )
 
-            Source.fromInputStream( stream, charset.displayName() ).mkString
+    implicit val parserUtf8String: Parser[String] = instance { ( response, stream ) ⇒
+        try {
+            val charset = for {
+                contentType ← Option( response.headers.get( "Content-Type" ) )
+                mediaType ← Option( MediaType.parse( contentType ) )
+                charset ← Option( mediaType.charset() )
+            } yield charset
+
+            Source.fromInputStream(
+                stream,
+                charset.getOrElse( Charset.forName( "UTF-8" ) ).displayName()
+            ).mkString
+        } finally {
+            stream.close()
         }
     }
 }
