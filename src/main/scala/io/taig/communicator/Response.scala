@@ -1,33 +1,43 @@
 package io.taig.communicator
 
 class Response private[communicator] ( val wrapped: okhttp3.Response ) {
+    @inline
     def code = wrapped.code()
 
+    @inline
     def message = wrapped.message()
 
+    @inline
     def headers = wrapped.headers
 
+    @inline
     def request = wrapped.request
 
+    @inline
     def protocol = wrapped.protocol
 
+    @inline
     def handshake = wrapped.handshake
 
+    @inline
     def isSuccessful = wrapped.isSuccessful
 
+    @inline
     def isRedirect = wrapped.isRedirect
 
+    @inline
     def challenges = wrapped.challenges
 
+    @inline
     def cacheControl = wrapped.cacheControl
 
-    def cacheResponse = wrapped.cacheResponse()
+    lazy val cacheResponse: Option[Response] = Option( wrapped.cacheResponse() ).map( new Response( _ ) )
 
-    def networkResponse = wrapped.networkResponse()
+    lazy val networkResponse: Option[Response] = Option( wrapped.networkResponse() ).map( new Response( _ ) )
 
-    def priorResponse = wrapped.priorResponse()
+    lazy val priorResponse: Option[Response] = Option( wrapped.priorResponse() ).map( new Response( _ ) )
 
-    def withPayload[T]( payload: T ) = new Response.Payload( wrapped, payload )
+    private[communicator] def withPayload[T]( payload: T ) = new Response.Payload( wrapped, payload )
 
     override def toString = {
         s">>> ${request.url.toString}\n${request.headers()}\n\n\n" +
