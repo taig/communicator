@@ -21,6 +21,7 @@ test:
     - sbt clean
   override:
     - sbt coverage test coverageReport
+    - sbt tut
   post:
     - sbt coverageAggregate
     - pip install --user codecov && codecov

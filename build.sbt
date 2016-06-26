@@ -1,3 +1,5 @@
+tutSettings
+
 description := "An OkHttp wrapper for Scala built with Android in mind"
 
 githubProject := "communicator"
