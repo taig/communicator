@@ -26,31 +26,41 @@ Communicator provides a simple way to construct OkHttp requests as `monix.Task`s
 ## Quickstart
 
 **Prerequisites**
-```tut
+```scala
+scala> import io.taig.communicator._
 import io.taig.communicator._
 
-// To build request tasks, an implicit OkHttpClient should be in scope
-implicit val client = new Client()
+scala> // To build request tasks, an implicit OkHttpClient should be in scope
+     | implicit val client = new Client()
+client: okhttp3.OkHttpClient = okhttp3.OkHttpClient@15e157fc
 
-// Simple OkHttp request builder
-val builder = Request.Builder().url( "http://taig.io/" )
+scala> // Simple OkHttp request builder
+     | val builder = Request.Builder().url( "http://taig.io/" )
+builder: okhttp3.Request.Builder = okhttp3.Request$Builder@1508de6c
 
-// Construct a Task[Response] and parse the content to a String
+scala> // Construct a Task[Response] and parse the content to a String
+     | import monix.eval.Task
 import monix.eval.Task
 
-val request: Request = Request( builder.build() )
+scala> val request: Request = Request( builder.build() )
+request: io.taig.communicator.Request = io.taig.communicator.Request@63370890
 
-// Parse the content to a String
-val requestContent: Task[Response.With[String]] = request.parse[String]
+scala> // Parse the content to a String
+     | val requestContent: Task[Response.With[String]] = request.parse[String]
+requestContent: monix.eval.Task[io.taig.communicator.Response.With[String]] = BindAsync(<function3>,<function1>)
 
-// Kick off the actual request
+scala> // Kick off the actual request
+     | import monix.execution.Scheduler.Implicits.global
 import monix.execution.Scheduler.Implicits.global
-import scala.util.{ Failure, Success }
 
-requestContent.runAsync.andThen {
-    case Success( content ) => "Success"
-    case Failure( exception ) => "Failure"
-}
+scala> import scala.util.{ Failure, Success }
+import scala.util.{Failure, Success}
+
+scala> requestContent.runAsync.andThen {
+     |     case Success( content ) => "Success"
+     |     case Failure( exception ) => "Failure"
+     | }
+res5: monix.execution.CancelableFuture[io.taig.communicator.Response.With[String]] = monix.execution.CancelableFuture$Implementation@b68ef94
 ```
 
 ## Communicator 2.x

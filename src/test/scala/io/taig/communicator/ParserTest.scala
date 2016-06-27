@@ -16,8 +16,8 @@ class ParserTest extends Suite {
         }
 
         val request = builder.build()
-        whenReady( Request.empty( request ).runAsync )( _.code shouldBe 200 )
-        whenReady( Request[String]( request ).runAsync )( _.body shouldBe "foobar" )
+        whenReady( Request( request ).runAsync )( _.code shouldBe 200 )
+        whenReady( Request( request ).parse[String].runAsync )( _.body shouldBe "foobar" )
     }
 
     it should "support Strings" in {
@@ -26,7 +26,7 @@ class ParserTest extends Suite {
         }
 
         val request = builder.build()
-        whenReady( Request[String]( request ).runAsync )( _.body shouldBe "foobar" )
+        whenReady( Request( request ).parse[String].runAsync )( _.body shouldBe "foobar" )
     }
 
     it should "support InputStream" in {
@@ -35,7 +35,7 @@ class ParserTest extends Suite {
         }
 
         val request = builder.build()
-        whenReady( Request[InputStream]( request ).runAsync ) { response ⇒
+        whenReady( Request( request ).parse[InputStream].runAsync ) { response ⇒
             Source.fromInputStream( response.body ).mkString shouldBe "foobar"
             response.body.close()
         }

@@ -4,7 +4,7 @@ import okhttp3.{ CacheControl, Challenge, Handshake, Headers, Protocol }
 
 import scala.collection.JavaConversions._
 
-sealed trait ResponseHeaders {
+sealed trait Response {
     def wrapped: okhttp3.Response
 
     @inline
@@ -43,20 +43,20 @@ sealed trait ResponseHeaders {
     @inline
     def receivedResponseAtMillis: Long = wrapped.receivedResponseAtMillis()
 
-    lazy val cacheResponse: Option[ResponseHeaders] = {
-        Option( wrapped.cacheResponse() ).map( ResponseHeaders( _ ) )
+    lazy val cacheResponse: Option[Response] = {
+        Option( wrapped.cacheResponse() ).map( Response( _ ) )
     }
 
-    lazy val networkResponse: Option[ResponseHeaders] = {
-        Option( wrapped.networkResponse() ).map( ResponseHeaders( _ ) )
+    lazy val networkResponse: Option[Response] = {
+        Option( wrapped.networkResponse() ).map( Response( _ ) )
     }
 
-    lazy val priorResponse: Option[ResponseHeaders] = {
-        Option( wrapped.priorResponse() ).map( ResponseHeaders( _ ) )
+    lazy val priorResponse: Option[Response] = {
+        Option( wrapped.priorResponse() ).map( Response( _ ) )
     }
 
-    private[communicator] def withBody[T]( content: T ): Response[T] = new Response[T] {
-        override def wrapped = ResponseHeaders.this.wrapped
+    private[communicator] def withBody[T]( content: T ): Response.With[T] = new Response.With[T] {
+        override def wrapped = Response.this.wrapped
 
         override def body = content
     }
@@ -67,12 +67,12 @@ sealed trait ResponseHeaders {
     }
 }
 
-object ResponseHeaders {
-    private[communicator] def apply( response: okhttp3.Response ): ResponseHeaders = new ResponseHeaders {
+object Response {
+    sealed trait With[+T] extends Response {
+        def body: T
+    }
+
+    private[communicator] def apply( response: okhttp3.Response ): Response = new Response {
         override def wrapped = response
     }
-}
-
-sealed trait Response[+T] extends ResponseHeaders {
-    def body: T
 }

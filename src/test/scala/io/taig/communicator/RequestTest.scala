@@ -9,7 +9,9 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.concurrent.ScalaFutures.whenReady
 import org.scalatest.time.{ Milliseconds, Seconds, Span }
 
-import scala.language.reflectiveCalls
+import scala.concurrent.duration._
+import scala.language.{ postfixOps, reflectiveCalls }
+import scala.util.{ Failure, Success }
 
 class RequestTest extends Suite {
     it should "support GET requests" in {
@@ -18,7 +20,7 @@ class RequestTest extends Suite {
         }
 
         val request = builder.build()
-        whenReady( Request.empty( request ).runAsync )( _.code shouldBe 200 )
+        whenReady( Request( request ).runAsync )( _.code shouldBe 200 )
     }
 
     it should "support POST requests" in {
@@ -30,22 +32,23 @@ class RequestTest extends Suite {
             .post( RequestBody.create( MediaType.parse( "text/plain" ), "foobar" ) )
             .build()
 
-        whenReady( Request.empty( request ).runAsync )( _.code shouldBe 200 )
+        whenReady( Request( request ).runAsync )( _.code shouldBe 200 )
     }
 
     it should "be cancellable" in {
         implicit val patience = ScalaFutures.PatienceConfig( Span( 10, Seconds ), Span( 500, Milliseconds ) )
 
-        val builder = init { server ⇒
-            server.enqueue( new MockResponse().setBody( "foobar" ).setBodyDelay( 5, TimeUnit.SECONDS ) )
+        val request = init { server ⇒
+            server.enqueue( new MockResponse().setBody( "foobar" ).setBodyDelay( 1, TimeUnit.SECONDS ) )
+        } build ()
+
+        val future = Request( request ).parse[String].runAsync
+
+        future.cancel()
+
+        global.scheduleOnce( 250 milliseconds ) {
+            future.cancel()
         }
-
-        val request = builder.build()
-        val future = Request[String]( request ).runAsync
-
-        global.scheduleOnce( 500, TimeUnit.MILLISECONDS, new Runnable {
-            override def run() = future.cancel()
-        } )
 
         whenReady( future.failed )( _.getMessage shouldEqual "Canceled" )
     }

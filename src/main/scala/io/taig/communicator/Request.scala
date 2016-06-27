@@ -1,34 +1,67 @@
 package io.taig.communicator
 
 import java.io.IOException
-import java.net.URL
 
 import monix.eval.Task
 import monix.execution.Cancelable
-import okhttp3._
+import okhttp3.{ Call, Callback }
+import scala.language.implicitConversions
+
+final class Request private ( task: Task[Response] ) {
+    /**
+     * Transform the Request's InputStream to an instance of T
+     *
+     * An implicit Parser[T] has to be in scope.
+     *
+     * @tparam T
+     * @return Task that parses the response body
+     */
+    def parse[T: Parser]: Task[Response.With[T]] = task.map { response ⇒
+        val content = Parser[T].parse( response, response.wrapped.body().byteStream() )
+        response.withBody( content )
+    }
+
+    /**
+     * Ignore the server response (and close the InputStream right away)
+     *
+     * Calling methods of monix.Task on a Request instance (e.g. Request.map) will implicitly call this method to
+     * convert the Request to a Task (and therefore close the response InputStream).
+     *
+     * @return Task that ignores the response body
+     */
+    def ignoreBody: Task[Response] = task.map { response ⇒
+        response.wrapped.close()
+        response
+    }
+
+    /**
+     * Get the raw Task instance
+     *
+     * When calling this method it is necessary to handle and close the InputStream manually. You are discouraged to
+     * use this method and should only do so with damn good reasons.
+     *
+     * @return Task with an untouched Response object
+     */
+    def unsafeToTask: Task[Response] = task
+}
 
 object Request {
     type Builder = okhttp3.Request.Builder
 
-    def builder: Request.Builder = new Request.Builder()
+    object Builder {
+        def apply() = new Builder()
+    }
 
-    def builder( url: String ): Request.Builder = builder.url( url )
+    implicit def requestToTask( request: Request ): Task[Response] = request.ignoreBody
 
-    def builder( url: URL ): Request.Builder = builder.url( url )
-
-    def builder( url: HttpUrl ): Request.Builder = builder.url( url )
-
-    def apply[T: Parser]( request: Request )( implicit ohc: OkHttpClient ): Task[Response[T]] = {
-        Task.create { ( _, taskCallback ) ⇒
-            val call = ohc.newCall( request )
+    def apply( request: okhttp3.Request )( implicit c: Client ): Request = {
+        val task = Task.create[Response] { ( _, taskCallback ) ⇒
+            val call = c.newCall( request )
 
             val requestCallback = new Callback {
                 override def onResponse( call: Call, response: okhttp3.Response ) = {
                     try {
-                        val headers = ResponseHeaders( response )
-                        val stream = response.body().byteStream()
-                        val content = Parser[T].parse( headers, stream )
-                        taskCallback.onSuccess( headers.withBody( content ) )
+                        taskCallback.onSuccess( Response( response ) )
                     } catch {
                         case exception: Throwable ⇒ taskCallback.onError( exception )
                     }
@@ -46,9 +79,7 @@ object Request {
                 call.cancel()
             }
         }
-    }
 
-    def empty( request: Request )( implicit ohc: OkHttpClient ): Task[ResponseHeaders] = {
-        Request[Unit]( request )
+        new Request( task )
     }
 }

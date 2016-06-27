@@ -28,3 +28,5 @@ scalacOptions ++=
 scalaVersion := "2.11.8"
 
 startYear := Some( 2013 )
+
+tutTargetDirectory := baseDirectory.value

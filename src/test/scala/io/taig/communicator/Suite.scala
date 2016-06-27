@@ -14,6 +14,6 @@ trait Suite
         val server = new MockWebServer
         f( server )
         server.start()
-        Request.builder( server.url( "/" ) )
+        Request.Builder().url( server.url( "/" ) )
     }
 }
