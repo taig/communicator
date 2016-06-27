@@ -69,5 +69,5 @@ Copyright (c) 2016 Niklas Klein <mail@taig.io>
 
 [1]: http://square.github.io/okhttp/
 [2]: https://monix.io/
-[3]: ???
+[3]: https://github.com/Taig/Communicator/tree/2.3.2
 [4]: https://github.com/Taig/Communicator/tree/f820d08b1cc4d77083e384568ce89223e53ab693
