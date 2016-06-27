@@ -38,7 +38,7 @@ final class Request private ( task: Task[Response] ) {
      * Get the raw Task instance
      *
      * When calling this method it is necessary to handle and close the InputStream manually. You are discouraged to
-     * use this method and should only do so with damn good reasons.
+     * use this method and should only do so with good reasons.
      *
      * @return Task with an untouched Response object
      */
