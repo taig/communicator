@@ -1,7 +1,8 @@
 # Communicator
 
 [![Circle CI](https://circleci.com/gh/Taig/Communicator.svg?style=shield)](https://circleci.com/gh/Taig/Communicator)
-[![codecov](https://codecov.io/gh/Taig/Communicator/branch/master/graph/badge.svg)](https://codecov.io/gh/Taig/Communicator)
+[![codecov](https://codecov.io/github/Taig/Communicator/coverage.svg?branch=master)](https://codecov.io/github/Taig/Communicator?branch=master)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/Taig/Communicator/master/LICENSE)
 
 > A [`monix.Task`][3] wrapper for [OkHttp][1]
 
