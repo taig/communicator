@@ -62,8 +62,12 @@ sealed trait Response {
     }
 
     override def toString = {
-        s">>> ${request.url.toString}\n${request.headers()}\n\n\n" +
-            s"<<< $code $message\n${headers.newBuilder().removeAll( "Status" ).build()}"
+        s"""
+          |>>> ${request.url}
+          |${if ( request.headers().size() == 0 ) "[No headers]" else request.headers()}
+          |<<< $code${message.map( " " + _ ).getOrElse( "" )}
+          |${if ( headers.size() == 0 ) "[No headers]" else headers}
+        """.stripMargin.trim
     }
 }
 
