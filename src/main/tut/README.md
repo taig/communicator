@@ -56,6 +56,22 @@ requestContent.runAsync.andThen {
 }
 ```
 
+## Usage
+
+Lorem Ipsum
+
+### Building Requests
+
+Lorem Ipsum
+
+### Parsing Content
+
+Lorem Ipsum
+
+## Roadmap
+
+Lorem Ipsum
+
 ## Communicator 2.x
 
 The `scala.concurrent.Future` predecessor of this library has been deprecated. You You can still [access][3] the source and documentation.
