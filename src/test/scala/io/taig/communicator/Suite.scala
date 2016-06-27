@@ -1,6 +1,5 @@
 package io.taig.communicator
 
-import okhttp3.OkHttpClient
 import okhttp3.Request.Builder
 import okhttp3.mockwebserver.MockWebServer
 import org.scalatest.{ FlatSpec, Matchers }
@@ -8,7 +7,7 @@ import org.scalatest.{ FlatSpec, Matchers }
 trait Suite
         extends FlatSpec
         with Matchers {
-    implicit val client = new OkHttpClient()
+    implicit val client = Client()
 
     def init[U]( f: MockWebServer ⇒ U ): Builder = {
         val server = new MockWebServer

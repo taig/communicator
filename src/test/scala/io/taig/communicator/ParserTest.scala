@@ -22,7 +22,7 @@ class ParserTest extends Suite {
 
     it should "support Strings" in {
         val builder = init { server ⇒
-            server.enqueue( new MockResponse().setResponseCode( 200 ).setBody( "foobar" ) )
+            server.enqueue( new MockResponse().setBody( "foobar" ) )
         }
 
         val request = builder.build()
@@ -31,7 +31,7 @@ class ParserTest extends Suite {
 
     it should "support InputStream" in {
         val builder = init { server ⇒
-            server.enqueue( new MockResponse().setResponseCode( 200 ).setBody( "foobar" ) )
+            server.enqueue( new MockResponse().setBody( "foobar" ) )
         }
 
         val request = builder.build()
@@ -39,5 +39,16 @@ class ParserTest extends Suite {
             Source.fromInputStream( response.body ).mkString shouldBe "foobar"
             response.body.close()
         }
+    }
+
+    it should "be possible to map of a Parser" in {
+        val parser = Parser[String].map( _.toUpperCase )
+
+        val builder = init { server ⇒
+            server.enqueue( new MockResponse().setBody( "foobar" ) )
+        }
+
+        val request = builder.build()
+        whenReady( Request( request ).parse( parser ).runAsync )( _.body shouldBe "FOOBAR" )
     }
 }
