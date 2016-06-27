@@ -21,16 +21,17 @@ Communicator provides a simple way to construct OkHttp requests as `monix.Task`s
 
 ## Installation
 
-`libraryDependencies += "io.taig" %% "communicator" % "3.0.0-SNAPSHOT"`
+```scala
+libraryDependencies += "io.taig" %% "communicator" % "3.0.0-SNAPSHOT"
+```
 
 ## Quickstart
 
-**Prerequisites**
 ```tut
 import io.taig.communicator._
 
 // To build request tasks, an implicit OkHttpClient should be in scope
-implicit val client = new Client()
+implicit val client = Client()
 
 // Simple OkHttp request builder
 val builder = Request.Builder().url( "http://taig.io/" )
