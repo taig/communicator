@@ -8,7 +8,7 @@ import okhttp3.MediaType
 import scala.io.Source
 
 /**
- * Type class that describes to to transform an InputStream to an instance of T
+ * Type class that describes how to transform an InputStream to an instance of T
  *
  * The InputStream has to be closed after processing (but also when not using it)!
  *
