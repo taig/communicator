@@ -1,94 +1,78 @@
 package io.taig.communicator
 
 import java.io.IOException
-import java.net.URL
 
-import okhttp3.{ Call, OkHttpClient }
+import monix.eval.Task
+import monix.execution.Cancelable
+import okhttp3.{ Call, Callback }
+import scala.language.implicitConversions
 
-import scala.concurrent.duration.Duration
-import scala.concurrent._
-import scala.util.Try
-
-trait Request[T]
-        extends Future[Response with Response.Payload[T]] {
-    implicit def parser: Parser[T]
-
-    def wrapped: Future[Response with Response.Payload[T]]
-
-    def call: Call
-
-    def interceptor: Interceptor
-
-    def isCanceled = call.isCanceled
-
-    def cancel() = call.cancel()
-
-    def onSend[U]( f: Progress.Send ⇒ U )( implicit executor: ExecutionContext ): this.type = {
-        interceptor.onSend( ( progress: Progress.Send ) ⇒ executor.execute( f( progress ): Unit ) )
-        this
+final class Request private ( task: Task[Response] ) {
+    /**
+     * Transform the Request's InputStream to an instance of T
+     *
+     * An implicit Parser[T] has to be in scope.
+     *
+     * @tparam T
+     * @return Task that parses the response body
+     */
+    def parse[T: Parser]: Task[Response.With[T]] = task.map { response ⇒
+        val content = Parser[T].parse( response, response.wrapped.body().byteStream() )
+        response.withBody( content )
     }
 
-    def onReceive[U]( f: Progress.Receive ⇒ U )( implicit executor: ExecutionContext ): this.type = {
-        interceptor.onReceive( ( progress: Progress.Receive ) ⇒ executor.execute( f( progress ): Unit ) )
-        this
+    /**
+     * Ignore the server response (and close the InputStream right away)
+     *
+     * Calling methods of monix.Task on a Request instance (e.g. Request.map) will implicitly call this method to
+     * convert the Request to a Task (and therefore close the response InputStream).
+     *
+     * @return Task that ignores the response body
+     */
+    def ignoreBody: Task[Response] = task.map { response ⇒
+        response.wrapped.close()
+        response
     }
 
-    override def onComplete[U]( f: Try[Response with Response.Payload[T]] ⇒ U )( implicit executor: ExecutionContext ): Unit = {
-        wrapped.onComplete( f )
-    }
-
-    override def isCompleted = wrapped.isCompleted
-
-    override def value = wrapped.value
-
-    @throws[Exception]
-    override def result( atMost: Duration )( implicit permit: CanAwait ) = wrapped.result( atMost )
-
-    @throws[InterruptedException]
-    @throws[TimeoutException]
-    override def ready( atMost: Duration )( implicit permit: CanAwait ) = {
-        wrapped.ready( atMost )
-        this
-    }
+    /**
+     * Get the raw Task instance
+     *
+     * When calling this method it is necessary to handle and close the InputStream manually. You are discouraged to
+     * use this method and should only do so with damn good reasons.
+     *
+     * @return Task with an untouched Response object
+     */
+    def unsafeToTask: Task[Response] = task
 }
 
 object Request {
-    private[communicator] case class Impl[T](
-        request:  okhttp3.Request,
-        client:   OkHttpClient,
-        executor: ExecutionContext
-    )( implicit val parser: Parser[T] )
-            extends Request[T] {
-        override val interceptor = new Interceptor( request )
+    type Builder = okhttp3.Request.Builder
 
-        override val call = {
-            val client = this.client.newBuilder()
-                .addNetworkInterceptor( interceptor )
-                .build()
-
-            client.newCall( request )
-        }
-
-        override val wrapped = Future {
-            try {
-                val response = call.execute()
-                val body = response.body()
-                val content = parser.parse( new Response( response ), body.byteStream() )
-                body.close()
-                new Response.Payload( response, content )
-            } catch {
-                case error: IOException if call.isCanceled ⇒ throw new exception.io.Canceled( error )
-            }
-        }( executor )
+    object Builder {
+        def apply() = new Builder()
     }
 
-    def prepare(): okhttp3.Request.Builder = new okhttp3.Request.Builder()
+    implicit def requestToTask( request: Request ): Task[Response] = request.ignoreBody
 
-    def prepare( url: String ): okhttp3.Request.Builder = prepare().url( url )
+    def apply( request: okhttp3.Request )( implicit c: Client ): Request = {
+        val task = Task.create[Response] { ( _, taskCallback ) ⇒
+            val call = c.newCall( request )
 
-    def prepare( url: URL ): okhttp3.Request.Builder = prepare().url( url )
+            val requestCallback = new Callback {
+                override def onResponse( call: Call, response: okhttp3.Response ) = {
+                    taskCallback.onSuccess( Response( response ) )
+                }
 
-    def apply[T: Parser]( request: okhttp3.Request )( implicit client: OkHttpClient, executor: ExecutionContext ): Request[T] = {
-        new Impl( request, client, executor )
+                override def onFailure( call: Call, exception: IOException ) = {
+                    taskCallback.onError( exception )
+                }
+            }
+
+            call.enqueue( requestCallback )
+
+            Cancelable { () ⇒ call.cancel() }
+        }
+
+        new Request( task )
     }
 }

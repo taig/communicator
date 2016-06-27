@@ -12,6 +12,16 @@ dependencies:
   override:
     - sbt test:compile
 
+general:
+  artifacts:
+    - target/scala-2.11/coverage-report
+
 test:
+  pre:
+    - sbt clean
   override:
-    - sbt test
+    - sbt coverage test coverageReport
+    - sbt tut
+  post:
+    - sbt coverageAggregate
+    - pip install --user codecov && codecov

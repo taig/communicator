@@ -27,41 +27,31 @@ libraryDependencies += "io.taig" %% "communicator" % "3.0.0-SNAPSHOT"
 
 ## Quickstart
 
-```scala
-scala> import io.taig.communicator._
+```tut
 import io.taig.communicator._
 
-scala> // To build request tasks, an implicit OkHttpClient should be in scope
-     | implicit val client = Client()
-client: okhttp3.OkHttpClient = okhttp3.OkHttpClient@74f8ae23
+// To build request tasks, an implicit OkHttpClient should be in scope
+implicit val client = Client()
 
-scala> // Simple OkHttp request builder
-     | val builder = Request.Builder().url( "http://taig.io/" )
-builder: okhttp3.Request.Builder = okhttp3.Request$Builder@2aadbcc3
+// Simple OkHttp request builder
+val builder = Request.Builder().url( "http://taig.io/" )
 
-scala> // Construct a Task[Response] and parse the content to a String
-     | import monix.eval.Task
+// Construct a Task[Response] and parse the content to a String
 import monix.eval.Task
 
-scala> val request: Request = Request( builder.build() )
-request: io.taig.communicator.Request = io.taig.communicator.Request@5073f5ac
+val request: Request = Request( builder.build() )
 
-scala> // Parse the content to a String
-     | val requestContent: Task[Response.With[String]] = request.parse[String]
-requestContent: monix.eval.Task[io.taig.communicator.Response.With[String]] = BindAsync(<function3>,<function1>)
+// Parse the content to a String
+val requestContent: Task[Response.With[String]] = request.parse[String]
 
-scala> // Kick off the actual request
-     | import monix.execution.Scheduler.Implicits.global
+// Kick off the actual request
 import monix.execution.Scheduler.Implicits.global
+import scala.util.{ Failure, Success }
 
-scala> import scala.util.{ Failure, Success }
-import scala.util.{Failure, Success}
-
-scala> requestContent.runAsync.andThen {
-     |     case Success( content ) => "Success"
-     |     case Failure( exception ) => "Failure"
-     | }
-res5: monix.execution.CancelableFuture[io.taig.communicator.Response.With[String]] = monix.execution.CancelableFuture$Implementation@460e648d
+requestContent.runAsync.andThen {
+    case Success( content ) => "Success"
+    case Failure( exception ) => "Failure"
+}
 ```
 
 ## Communicator 2.x

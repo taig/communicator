@@ -1,33 +1,65 @@
 package io.taig.communicator
 
-class Response private[communicator] ( val wrapped: okhttp3.Response ) {
-    def code = wrapped.code()
+import okhttp3.{ CacheControl, Challenge, Handshake, Headers, Protocol }
 
-    def message = wrapped.message()
+import scala.collection.JavaConversions._
 
-    def headers = wrapped.headers
+sealed trait Response {
+    def wrapped: okhttp3.Response
 
-    def request = wrapped.request
+    @inline
+    def code: Int = wrapped.code()
 
-    def protocol = wrapped.protocol
+    @inline
+    def message: Option[String] = Option( wrapped.message() )
 
-    def handshake = wrapped.handshake
+    @inline
+    def headers: Headers = wrapped.headers
 
-    def isSuccessful = wrapped.isSuccessful
+    @inline
+    def request: okhttp3.Request = wrapped.request
 
-    def isRedirect = wrapped.isRedirect
+    @inline
+    def protocol: Protocol = wrapped.protocol
 
-    def challenges = wrapped.challenges
+    @inline
+    def handshake: Option[Handshake] = Option( wrapped.handshake )
 
-    def cacheControl = wrapped.cacheControl
+    @inline
+    def isSuccessful: Boolean = wrapped.isSuccessful
 
-    def cacheResponse = wrapped.cacheResponse()
+    @inline
+    def isRedirect: Boolean = wrapped.isRedirect
 
-    def networkResponse = wrapped.networkResponse()
+    @inline
+    def challenges: List[Challenge] = wrapped.challenges.toList
 
-    def priorResponse = wrapped.priorResponse()
+    @inline
+    def cacheControl: CacheControl = wrapped.cacheControl
 
-    def withPayload[T]( payload: T ) = new Response.Payload( wrapped, payload )
+    @inline
+    def sentRequestAtMillis: Long = wrapped.sentRequestAtMillis()
+
+    @inline
+    def receivedResponseAtMillis: Long = wrapped.receivedResponseAtMillis()
+
+    lazy val cacheResponse: Option[Response] = {
+        Option( wrapped.cacheResponse() ).map( Response( _ ) )
+    }
+
+    lazy val networkResponse: Option[Response] = {
+        Option( wrapped.networkResponse() ).map( Response( _ ) )
+    }
+
+    lazy val priorResponse: Option[Response] = {
+        Option( wrapped.priorResponse() ).map( Response( _ ) )
+    }
+
+    private[communicator] def withBody[T]( content: T ): Response.With[T] = new Response.With[T] {
+        override def wrapped = Response.this.wrapped
+
+        override def body = content
+    }
 
     override def toString = {
         s">>> ${request.url.toString}\n${request.headers()}\n\n\n" +
@@ -36,9 +68,11 @@ class Response private[communicator] ( val wrapped: okhttp3.Response ) {
 }
 
 object Response {
-    def unapply[T]( response: Response with Payload[T] ) = Some( response.code, response.body )
+    sealed trait With[+T] extends Response {
+        def body: T
+    }
 
-    class Payload[+T] private[communicator] ( wrapped: okhttp3.Response, val body: T ) extends Response( wrapped ) {
-        override def toString = super.toString + "\n\n\n" + body
+    private[communicator] def apply( response: okhttp3.Response ): Response = new Response {
+        override def wrapped = response
     }
 }
