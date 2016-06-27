@@ -2,6 +2,7 @@
 
 [![Circle CI](https://circleci.com/gh/Taig/Communicator.svg?style=shield)](https://circleci.com/gh/Taig/Communicator)
 [![codecov](https://codecov.io/github/Taig/Communicator/coverage.svg?branch=master)](https://codecov.io/github/Taig/Communicator?branch=master)
+[![Maven](https://img.shields.io/maven-central/v/io.taig/communicator_2.11.svg)](http://search.maven.org/#artifactdetails%7Cio.taig%7communicator_2.11%7C3.0.0%7Cjar)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/Taig/Communicator/master/LICENSE)
 
 > A [`monix.Task`][3] wrapper for [OkHttp][1]
@@ -34,18 +35,18 @@ import io.taig.communicator._
 
 scala> // To build request tasks, an implicit OkHttpClient should be in scope
      | implicit val client = Client()
-client: okhttp3.OkHttpClient = okhttp3.OkHttpClient@20c0480c
+client: okhttp3.OkHttpClient = okhttp3.OkHttpClient@d1ce7a1
 
 scala> // Simple OkHttp request builder
      | val builder = Request.Builder().url( "http://taig.io/" )
-builder: okhttp3.Request.Builder = okhttp3.Request$Builder@6b22041b
+builder: okhttp3.Request.Builder = okhttp3.Request$Builder@285ea2f6
 
 scala> // Construct a Task[Response] and parse the content to a String
      | import monix.eval.Task
 import monix.eval.Task
 
 scala> val request: Request = Request( builder.build() )
-request: io.taig.communicator.Request = io.taig.communicator.Request@f03ff87
+request: io.taig.communicator.Request = io.taig.communicator.Request@79808bae
 
 scala> // Parse the content to a String
      | val requestContent: Task[Response.With[String]] = request.parse[String]
@@ -62,7 +63,7 @@ scala> requestContent.runAsync.andThen {
      |     case Success( content ) => "Success"
      |     case Failure( exception ) => "Failure"
      | }
-res5: monix.execution.CancelableFuture[io.taig.communicator.Response.With[String]] = monix.execution.CancelableFuture$Implementation@5d6cc72d
+res5: monix.execution.CancelableFuture[io.taig.communicator.Response.With[String]] = monix.execution.CancelableFuture$Implementation@3be0e88e
 ```
 
 ## Communicator 2.x
