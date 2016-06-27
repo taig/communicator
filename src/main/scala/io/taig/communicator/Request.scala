@@ -60,11 +60,7 @@ object Request {
 
             val requestCallback = new Callback {
                 override def onResponse( call: Call, response: okhttp3.Response ) = {
-                    try {
-                        taskCallback.onSuccess( Response( response ) )
-                    } catch {
-                        case exception: Throwable ⇒ taskCallback.onError( exception )
-                    }
+                    taskCallback.onSuccess( Response( response ) )
                 }
 
                 override def onFailure( call: Call, exception: IOException ) = {
@@ -74,10 +70,7 @@ object Request {
 
             call.enqueue( requestCallback )
 
-            Cancelable { () ⇒
-                requestCallback.onFailure( call, new IOException( "Canceled" ) )
-                call.cancel()
-            }
+            Cancelable { () ⇒ call.cancel() }
         }
 
         new Request( task )
