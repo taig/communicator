@@ -76,7 +76,13 @@ object Response {
         def body: T
     }
 
+    object With {
+        def unapply[T]( response: Response.With[T] ): Option[( Int, T )] = Some( response.code, response.body )
+    }
+
     private[communicator] def apply( response: okhttp3.Response ): Response = new Response {
         override def wrapped = response
     }
+
+    def unapply( response: Response ): Option[Int] = Some( response.code )
 }
