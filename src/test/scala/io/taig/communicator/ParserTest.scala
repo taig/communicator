@@ -20,6 +20,15 @@ class ParserTest extends Suite {
         whenReady( Request( request ).parse[String].runAsync )( _.body shouldBe "foobar" )
     }
 
+    it should "support Byte Array" in {
+        val builder = init { server ⇒
+            server.enqueue( new MockResponse().setBody( "foobar" ) )
+        }
+
+        val request = builder.build()
+        whenReady( Request( request ).parse[Array[Byte]].runAsync )( _.body shouldBe "foobar".getBytes )
+    }
+
     it should "support Strings" in {
         val builder = init { server ⇒
             server.enqueue( new MockResponse().setBody( "foobar" ) )
