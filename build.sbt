@@ -11,7 +11,7 @@ javacOptions ++=
 
 libraryDependencies ++=
     "com.squareup.okhttp3" % "okhttp" % "3.3.1" ::
-    "io.monix" %% "monix" % "2.0-RC8" ::
+    "io.monix" %% "monix-eval" % "2.0-RC8" ::
     "com.squareup.okhttp3" % "mockwebserver" % "3.3.1" % "test" ::
     "org.scalatest" %% "scalatest" % "2.2.6" % "test" ::
     Nil
