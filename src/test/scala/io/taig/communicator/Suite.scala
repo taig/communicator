@@ -1,5 +1,7 @@
 package io.taig.communicator
 
+import java.util.logging.LogManager
+
 import okhttp3.Request.Builder
 import okhttp3.mockwebserver.MockWebServer
 import org.scalatest.{ FlatSpec, Matchers }
@@ -7,6 +9,8 @@ import org.scalatest.{ FlatSpec, Matchers }
 trait Suite
         extends FlatSpec
         with Matchers {
+    LogManager.getLogManager.reset()
+
     implicit val client = Client()
 
     def init[U]( f: MockWebServer ⇒ U ): Builder = {
