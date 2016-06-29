@@ -63,4 +63,8 @@ class RequestTest extends Suite {
 
         whenReady( Request( request ).runAsync )( _.code shouldBe 200 )
     }
+
+    it should "apply the OkHttp Request.Builder constructor" in {
+        Request.Builder() shouldBe an[okhttp3.Request.Builder]
+    }
 }
