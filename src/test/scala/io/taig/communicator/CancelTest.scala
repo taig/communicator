@@ -4,7 +4,7 @@ import java.util.concurrent.TimeUnit
 
 import monix.execution.Scheduler.Implicits.global
 import okhttp3.mockwebserver.MockResponse
-import org.scalatest.concurrent.ScalaFutures._
+import org.scalatest.concurrent.ScalaFutures.whenReady
 
 import scala.concurrent.duration._
 import scala.language.postfixOps

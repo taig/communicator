@@ -2,7 +2,7 @@ package io.taig.communicator
 
 import monix.execution.Scheduler.Implicits.global
 import okhttp3.mockwebserver.MockResponse
-import org.scalatest.concurrent.ScalaFutures._
+import org.scalatest.concurrent.ScalaFutures.whenReady
 
 class ResponseTest extends Suite {
     it should "have a useful toString implementation" in {

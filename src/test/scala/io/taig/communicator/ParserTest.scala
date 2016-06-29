@@ -2,9 +2,9 @@ package io.taig.communicator
 
 import java.io.InputStream
 
-import okhttp3.mockwebserver.MockResponse
-import org.scalatest.concurrent.ScalaFutures._
 import monix.execution.Scheduler.Implicits.global
+import okhttp3.mockwebserver.MockResponse
+import org.scalatest.concurrent.ScalaFutures.whenReady
 
 import scala.io.Source
 
