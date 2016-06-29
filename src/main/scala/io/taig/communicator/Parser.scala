@@ -29,6 +29,14 @@ object Parser {
         override def parse( response: Response, stream: InputStream ) = f( response, stream )
     }
 
+    implicit val parserByteArray: Parser[Array[Byte]] = instance { ( _, stream ) ⇒
+        try {
+            Iterator.continually( stream.read ).takeWhile( _ != -1 ).map( _.toByte ).toArray
+        } finally {
+            stream.close()
+        }
+    }
+
     implicit val parserInputStream: Parser[InputStream] = instance( ( _, stream ) ⇒ stream )
 
     implicit val parserUnit: Parser[Unit] = instance( ( _, stream ) ⇒ stream.close() )
