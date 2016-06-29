@@ -6,7 +6,6 @@ import monix.execution.Scheduler.Implicits.global
 import okhttp3.mockwebserver.MockResponse
 import org.scalatest.concurrent.ScalaFutures.whenReady
 
-import scala.concurrent.duration._
 import scala.language.postfixOps
 
 class CancelTest extends Suite {
@@ -19,10 +18,6 @@ class CancelTest extends Suite {
         val future = Request( request ).parse[String].runAsync
 
         future.cancel()
-
-        global.scheduleOnce( 250 milliseconds ) {
-            future.cancel()
-        }
 
         whenReady( future.failed )( _.getMessage shouldEqual "Canceled" )
     }
