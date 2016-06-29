@@ -17,8 +17,8 @@ import scala.io.Source
 trait Parser[+T] {
     def parse( response: Response, stream: InputStream ): T
 
-    def map[U]( f: T ⇒ U ): Parser[U] = Parser.instance { ( response, stream ) ⇒
-        f( parse( response, stream ) )
+    def map[U]( f: ( Response, T ) ⇒ U ): Parser[U] = Parser.instance { ( response, stream ) ⇒
+        f( response, parse( response, stream ) )
     }
 }
 
