@@ -55,7 +55,7 @@ sealed trait Response {
         Option( wrapped.priorResponse() ).map( Response( _ ) )
     }
 
-    private[communicator] def withBody[T]( content: T ): Response.With[T] = new Response.With[T] {
+    def withBody[T]( content: T ): Response.With[T] = new Response.With[T] {
         override def wrapped = Response.this.wrapped
 
         override def body = content
