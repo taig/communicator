@@ -47,4 +47,28 @@ class ResponseTest extends Suite {
             response.priorResponse.map( _.wrapped ).orNull shouldBe response.wrapped.priorResponse()
         }
     }
+
+    it should "unapply a Response" in {
+        val builder = init { server ⇒
+            server.enqueue( new MockResponse().setResponseCode( 404 ) )
+        }
+
+        val request = builder.build()
+        whenReady( Request( request ).runAsync ) {
+            case Response( code ) ⇒ code shouldBe 404
+        }
+    }
+
+    it should "unapply a Response.With" in {
+        val builder = init { server ⇒
+            server.enqueue( new MockResponse().setResponseCode( 201 ).setBody( "foobar" ) )
+        }
+
+        val request = builder.build()
+        whenReady( Request( request ).parse[String].runAsync ) {
+            case Response.With( code, body ) ⇒
+                code shouldBe 201
+                body shouldBe "foobar"
+        }
+    }
 }
