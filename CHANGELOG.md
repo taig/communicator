@@ -5,3 +5,4 @@
 _2016-06-**_
 
  * Migrate from `scala.concurrent.Future` to `monix.Task`
+ * Introduce `Parser[Array[Byte]]` and `Parser[InputStream]`
