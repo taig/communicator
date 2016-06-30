@@ -1,10 +1,7 @@
 package io.taig.communicator
 
-import java.io.IOException
-
 import monix.eval.Task
 import monix.execution.Cancelable
-import okhttp3.{ Call, Callback }
 import scala.language.implicitConversions
 
 final class Request private ( task: Task[Response] ) {
@@ -55,20 +52,21 @@ object Request {
     implicit def requestToTask( request: Request ): Task[Response] = request.ignoreBody
 
     def apply( request: okhttp3.Request )( implicit c: Client ): Request = {
-        val task = Task.create[Response] { ( _, taskCallback ) ⇒
+        val task = Task.create[Response] { ( scheduler, callback ) ⇒
             val call = c.newCall( request )
 
-            val requestCallback = new Callback {
-                override def onResponse( call: Call, response: okhttp3.Response ) = {
-                    taskCallback.onSuccess( Response( response ) )
-                }
-
-                override def onFailure( call: Call, exception: IOException ) = {
-                    taskCallback.onError( exception )
+            scheduler.execute {
+                new Runnable {
+                    override def run() = {
+                        try {
+                            val response = call.execute()
+                            callback.onSuccess( Response( response ) )
+                        } catch {
+                            case exception: Throwable ⇒ callback.onError( exception )
+                        }
+                    }
                 }
             }
-
-            call.enqueue( requestCallback )
 
             Cancelable { () ⇒ call.cancel() }
         }
