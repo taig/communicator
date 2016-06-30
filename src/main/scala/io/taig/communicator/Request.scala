@@ -17,7 +17,7 @@ final class Request private ( task: Task[Response] ) {
      * @return Task that parses the response body
      */
     def parse[T: Parser]: Task[Response.With[T]] = task.map { response ⇒
-        val content = Parser[T].parse( response, response.wrapped.body().byteStream() )
+        val content = Parser[T].parse( response, response.wrapped.body )
         response.withBody( content )
     }
 

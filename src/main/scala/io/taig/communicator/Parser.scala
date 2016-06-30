@@ -1,9 +1,8 @@
 package io.taig.communicator
 
-import java.io.InputStream
 import java.nio.charset.Charset
 
-import okhttp3.MediaType
+import okhttp3.{ MediaType, ResponseBody }
 
 import scala.io.Source
 
@@ -15,33 +14,34 @@ import scala.io.Source
  * @tparam T
  */
 trait Parser[+T] {
-    def parse( response: Response, stream: InputStream ): T
+    def parse( response: Response, body: ResponseBody ): T
 
-    def map[U]( f: ( Response, T ) ⇒ U ): Parser[U] = Parser.instance { ( response, stream ) ⇒
-        f( response, parse( response, stream ) )
+    def map[U]( f: ( Response, T ) ⇒ U ): Parser[U] = Parser.instance { ( response, body ) ⇒
+        f( response, parse( response, body ) )
     }
 }
 
 object Parser {
     def apply[T: Parser]: Parser[T] = implicitly[Parser[T]]
 
-    def instance[T]( f: ( Response, InputStream ) ⇒ T ): Parser[T] = new Parser[T] {
-        override def parse( response: Response, stream: InputStream ) = f( response, stream )
+    def instance[T]( f: ( Response, ResponseBody ) ⇒ T ): Parser[T] = new Parser[T] {
+        override def parse( response: Response, body: ResponseBody ) = f( response, body )
     }
 
-    implicit val parserByteArray: Parser[Array[Byte]] = instance { ( _, stream ) ⇒
+    implicit val parserByteArray: Parser[Array[Byte]] = instance { ( response, body ) ⇒
         try {
+            val stream = body.byteStream
             Iterator.continually( stream.read ).takeWhile( _ != -1 ).map( _.toByte ).toArray
         } finally {
-            stream.close()
+            body.close()
         }
     }
 
-    implicit val parserInputStream: Parser[InputStream] = instance( ( _, stream ) ⇒ stream )
+    implicit val parserResponseBody: Parser[ResponseBody] = instance( ( _, body ) ⇒ body )
 
-    implicit val parserUnit: Parser[Unit] = instance( ( _, stream ) ⇒ stream.close() )
+    implicit val parserUnit: Parser[Unit] = instance( ( _, body ) ⇒ body.close() )
 
-    implicit val parserString: Parser[String] = instance { ( response, stream ) ⇒
+    implicit val parserString: Parser[String] = instance { ( response, body ) ⇒
         try {
             val charset = for {
                 contentType ← Option( response.headers.get( "Content-Type" ) )
@@ -49,12 +49,14 @@ object Parser {
                 charset ← Option( mediaType.charset() )
             } yield charset
 
+            val stream = body.byteStream
+
             Source.fromInputStream(
                 stream,
                 charset.getOrElse( Charset.forName( "UTF-8" ) ).displayName()
             ).mkString
         } finally {
-            stream.close()
+            body.close()
         }
     }
 }

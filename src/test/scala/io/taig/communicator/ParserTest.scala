@@ -1,12 +1,9 @@
 package io.taig.communicator
 
-import java.io.InputStream
-
 import monix.execution.Scheduler.Implicits.global
+import okhttp3.ResponseBody
 import okhttp3.mockwebserver.MockResponse
 import org.scalatest.concurrent.ScalaFutures.whenReady
-
-import scala.io.Source
 
 class ParserTest extends Suite {
     it should "allow to ignore the response" in {
@@ -38,14 +35,14 @@ class ParserTest extends Suite {
         whenReady( Request( request ).parse[String].runAsync )( _.body shouldBe "foobar" )
     }
 
-    it should "support InputStream" in {
+    it should "support ResponseBody" in {
         val builder = init { server ⇒
             server.enqueue( new MockResponse().setBody( "foobar" ) )
         }
 
         val request = builder.build()
-        whenReady( Request( request ).parse[InputStream].runAsync ) { response ⇒
-            Source.fromInputStream( response.body ).mkString shouldBe "foobar"
+        whenReady( Request( request ).parse[ResponseBody].runAsync ) { response ⇒
+            response.body.string shouldBe "foobar"
             response.body.close()
         }
     }
