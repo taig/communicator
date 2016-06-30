@@ -2,6 +2,7 @@ package io.taig.communicator
 
 import java.util.logging.LogManager
 
+import monix.execution.Scheduler
 import okhttp3.Request.Builder
 import okhttp3.mockwebserver.MockWebServer
 import org.scalatest.concurrent.ScalaFutures
@@ -12,6 +13,8 @@ trait Suite
         extends FlatSpec
         with Matchers {
     LogManager.getLogManager.reset()
+
+    implicit val scheduler = Scheduler.singleThread( "tests" )
 
     implicit val patience = ScalaFutures.PatienceConfig(
         timeout  = Span( 5, Seconds ),

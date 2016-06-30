@@ -2,7 +2,6 @@ package io.taig.communicator
 
 import java.io.IOException
 
-import monix.execution.Scheduler.Implicits.global
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.{ MediaType, RequestBody }
 import org.scalatest.concurrent.ScalaFutures.whenReady
