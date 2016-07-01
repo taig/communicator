@@ -1,10 +1,6 @@
 package io.taig.communicator
 
-import java.nio.charset.Charset
-
-import okhttp3.{ MediaType, ResponseBody }
-
-import scala.io.Source
+import okhttp3.ResponseBody
 
 /**
  * Type class that describes how to transform an InputStream to an instance of T
@@ -41,22 +37,5 @@ object Parser {
 
     implicit val parserUnit: Parser[Unit] = instance( ( _, body ) ⇒ body.close() )
 
-    implicit val parserString: Parser[String] = instance { ( response, body ) ⇒
-        try {
-            val charset = for {
-                contentType ← Option( response.headers.get( "Content-Type" ) )
-                mediaType ← Option( MediaType.parse( contentType ) )
-                charset ← Option( mediaType.charset() )
-            } yield charset
-
-            val stream = body.byteStream
-
-            Source.fromInputStream(
-                stream,
-                charset.getOrElse( Charset.forName( "UTF-8" ) ).displayName()
-            ).mkString
-        } finally {
-            body.close()
-        }
-    }
+    implicit val parserString: Parser[String] = instance { ( _, body ) ⇒ body.string }
 }
