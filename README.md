@@ -5,7 +5,7 @@
 [![Maven](https://img.shields.io/maven-central/v/io.taig/communicator_2.11.svg)](http://search.maven.org/#artifactdetails%7Cio.taig%7Ccommunicator_2.11%7C3.0.0%7Cjar)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/Taig/Communicator/master/LICENSE)
 
-> A [`monix.Task`][3] wrapper for [OkHttp][1]
+> A [`monix.Task`][1] wrapper for [OkHttp][2]
 
 Communicator provides a simple way to construct OkHttp requests as `monix.Task`s which is equipped with a beautiful functional interface and comes with first class support for cancellation.
 
@@ -35,18 +35,18 @@ import io.taig.communicator._
 
 scala> // To build request tasks, an implicit OkHttpClient should be in scope
      | implicit val client = Client()
-client: okhttp3.OkHttpClient = okhttp3.OkHttpClient@2872ad5e
+client: okhttp3.OkHttpClient = okhttp3.OkHttpClient@61cabbd4
 
 scala> // Simple OkHttp request builder
      | val builder = Request.Builder().url( "http://taig.io/" )
-builder: okhttp3.Request.Builder = okhttp3.Request$Builder@6f6299b3
+builder: okhttp3.Request.Builder = okhttp3.Request$Builder@271924a3
 
 scala> // Construct a Task[Response] and parse the content to a String
      | import monix.eval.Task
 import monix.eval.Task
 
 scala> val request: Request = Request( builder.build() )
-request: io.taig.communicator.Request = io.taig.communicator.Request@7f5c5db1
+request: io.taig.communicator.Request = io.taig.communicator.Request@282f0691
 
 scala> // Parse the content to a String
      | val requestContent: Task[Response.With[String]] = request.parse[String]
@@ -63,7 +63,7 @@ scala> requestContent.runAsync.andThen {
      |     case Success( content ) => "Success"
      |     case Failure( exception ) => "Failure"
      | }
-res5: monix.execution.CancelableFuture[io.taig.communicator.Response.With[String]] = monix.execution.CancelableFuture$Implementation@39fabc85
+res5: monix.execution.CancelableFuture[io.taig.communicator.Response.With[String]] = monix.execution.CancelableFuture$Implementation@36e7d70
 ```
 
 ## Usage
@@ -95,7 +95,7 @@ The Java predecessor of this library has been deprecated. You can still [access]
 The MIT License (MIT)  
 Copyright (c) 2016 Niklas Klein <mail@taig.io>
 
-[1]: http://square.github.io/okhttp/
 [2]: https://monix.io/
+[1]: http://square.github.io/okhttp/
 [3]: https://github.com/Taig/Communicator/tree/2.3.2
 [4]: https://github.com/Taig/Communicator/tree/f820d08b1cc4d77083e384568ce89223e53ab693

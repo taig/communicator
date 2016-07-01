@@ -5,7 +5,7 @@
 [![Maven](https://img.shields.io/maven-central/v/io.taig/communicator_2.11.svg)](http://search.maven.org/#artifactdetails%7Cio.taig%7Ccommunicator_2.11%7C3.0.0%7Cjar)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/Taig/Communicator/master/LICENSE)
 
-> A [`monix.Task`][3] wrapper for [OkHttp][1]
+> A [`monix.Task`][1] wrapper for [OkHttp][2]
 
 Communicator provides a simple way to construct OkHttp requests as `monix.Task`s which is equipped with a beautiful functional interface and comes with first class support for cancellation.
 
@@ -85,7 +85,7 @@ The Java predecessor of this library has been deprecated. You can still [access]
 The MIT License (MIT)  
 Copyright (c) 2016 Niklas Klein <mail@taig.io>
 
-[1]: http://square.github.io/okhttp/
 [2]: https://monix.io/
+[1]: http://square.github.io/okhttp/
 [3]: https://github.com/Taig/Communicator/tree/2.3.2
 [4]: https://github.com/Taig/Communicator/tree/f820d08b1cc4d77083e384568ce89223e53ab693
