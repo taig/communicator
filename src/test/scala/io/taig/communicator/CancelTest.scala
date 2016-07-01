@@ -3,10 +3,10 @@ package io.taig.communicator
 import java.util.concurrent.TimeUnit
 
 import okhttp3.mockwebserver.MockResponse
-import org.scalatest.concurrent.ScalaFutures.whenReady
 
-import scala.language.postfixOps
+import scala.concurrent.Await
 import scala.concurrent.duration._
+import scala.language.postfixOps
 
 class CancelTest extends Suite {
     it should "be cancellable" in {
@@ -18,7 +18,7 @@ class CancelTest extends Suite {
         val future = Request( request ).parse[String].runAsync
 
         future.cancel()
-
-        whenReady( future.failed )( _.getMessage shouldEqual "Canceled" )
+        
+        Await.result( future.failed, 3 seconds ).getMessage shouldBe "Canceled"
     }
 }

@@ -5,8 +5,6 @@ import java.util.logging.LogManager
 import monix.execution.Scheduler
 import okhttp3.Request.Builder
 import okhttp3.mockwebserver.MockWebServer
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.time.{ Millis, Seconds, Span }
 import org.scalatest.{ FlatSpec, Matchers }
 
 trait Suite
@@ -15,11 +13,6 @@ trait Suite
     LogManager.getLogManager.reset()
 
     implicit val scheduler = Scheduler.singleThread( "tests" )
-
-    implicit val patience = ScalaFutures.PatienceConfig(
-        timeout  = Span( 10, Seconds ),
-        interval = Span( 3, Seconds )
-    )
 
     implicit def client = Client()
 
