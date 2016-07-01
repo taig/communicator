@@ -6,9 +6,11 @@ import okhttp3.mockwebserver.MockResponse
 import okhttp3.{ MediaType, RequestBody }
 import org.scalatest.concurrent.ScalaFutures.whenReady
 
-import scala.language.{ postfixOps, reflectiveCalls }
-
 class RequestTest extends Suite {
+    it should "apply the OkHttp Request.Builder constructor" in {
+        Request.Builder() shouldBe an[okhttp3.Request.Builder]
+    }
+
     it should "allow to parse the response" in {
         val builder = init { server ⇒
             server.enqueue( new MockResponse().setBody( "foobar" ) )
@@ -61,9 +63,5 @@ class RequestTest extends Suite {
             .build()
 
         whenReady( Request( request ).runAsync )( _.code shouldBe 200 )
-    }
-
-    it should "apply the OkHttp Request.Builder constructor" in {
-        Request.Builder() shouldBe an[okhttp3.Request.Builder]
     }
 }
