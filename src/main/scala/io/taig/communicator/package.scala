@@ -9,9 +9,9 @@ package object communicator {
         type Builder = OkHttpClient.Builder
 
         object Builder {
-            def apply() = new Builder()
+            def apply(): Builder = new Builder()
         }
 
-        def apply() = new Client
+        def apply(): Client = new Client
     }
 }

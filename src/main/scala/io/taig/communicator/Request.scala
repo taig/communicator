@@ -46,7 +46,7 @@ object Request {
     type Builder = okhttp3.Request.Builder
 
     object Builder {
-        def apply() = new Builder()
+        def apply(): Builder = new Builder()
     }
 
     implicit def requestToTask( request: Request ): Task[Response] = request.ignoreBody

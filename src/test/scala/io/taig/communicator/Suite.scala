@@ -27,6 +27,6 @@ trait Suite
         val server = new MockWebServer
         f( server )
         server.start()
-        Request.Builder().url( server.url( "/" ) )
+        new okhttp3.Request.Builder().url( server.url( "/" ) )
     }
 }
