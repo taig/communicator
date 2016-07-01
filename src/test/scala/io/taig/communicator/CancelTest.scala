@@ -18,7 +18,7 @@ class CancelTest extends Suite {
         val future = Request( request ).parse[String].runAsync
 
         future.cancel()
-        
+
         Await.result( future.failed, 3 seconds ).getMessage shouldBe "Canceled"
     }
 }

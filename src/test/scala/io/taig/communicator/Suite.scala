@@ -12,7 +12,7 @@ trait Suite
         with Matchers {
     LogManager.getLogManager.reset()
 
-    implicit val scheduler = Scheduler.singleThread( "tests" )
+    implicit val scheduler = Scheduler.fixedPool( "tests", 2 )
 
     implicit def client = Client()
 
