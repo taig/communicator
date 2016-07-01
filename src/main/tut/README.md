@@ -70,7 +70,9 @@ Lorem Ipsum
 
 ## Roadmap
 
-Lorem Ipsum
+ * Easy API to track progress updates in Requests and Responses
+ * Additional module for OkHttp WebSocket
+ * Additional module for Phoenix WebSocket
 
 ## Communicator 2.x
 
