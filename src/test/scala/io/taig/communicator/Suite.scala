@@ -17,8 +17,8 @@ trait Suite
     implicit val scheduler = Scheduler.singleThread( "tests" )
 
     implicit val patience = ScalaFutures.PatienceConfig(
-        timeout  = Span( 5, Seconds ),
-        interval = Span( 500, Millis )
+        timeout  = Span( 10, Seconds ),
+        interval = Span( 3, Seconds )
     )
 
     implicit def client = Client()
