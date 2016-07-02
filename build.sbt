@@ -13,18 +13,28 @@ lazy val communicator = project.in( file( "." ) )
         test <<= test in tests in Test,
         tut <<= tut in documentation
     )
-    .aggregate( request, websocket )
+    .aggregate( common, request, websocket )
+
+lazy val common = project
+    .settings( Settings.common )
+    .settings(
+        libraryDependencies ++=
+            "com.squareup.okhttp3" % "okhttp" % Settings.dependency.okhttp ::
+            Nil,
+        name := "Common",
+        startYear := Some( 2016 )
+    )
 
 lazy val request = project
     .settings( Settings.common )
     .settings(
         libraryDependencies ++=
-            "com.squareup.okhttp3" % "okhttp" % Settings.dependency.okhttp ::
             "io.monix" %% "monix-eval" % Settings.dependency.monix ::
             Nil,
         name := "Request",
         startYear := Some( 2016 )
     )
+    .dependsOn( common )
 
 lazy val websocket = project
     .settings( Settings.common )
@@ -36,13 +46,14 @@ lazy val websocket = project
         name := "WebSocket",
         startYear := Some( 2016 )
     )
+    .dependsOn( common )
 
 lazy val documentation = project
     .settings( tutSettings ++ Settings.common )
     .settings(
         tutTargetDirectory := file( "." )
     )
-    .dependsOn( request, websocket )
+    .dependsOn( common, request, websocket )
 
 lazy val tests = project
     .settings( Settings.common )
@@ -52,4 +63,4 @@ lazy val tests = project
             "org.scalatest" %% "scalatest" % "3.0.0-RC3" % "test" ::
             Nil
     )
-    .dependsOn( request, websocket )
+    .dependsOn( common, request, websocket )
