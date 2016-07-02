@@ -2,6 +2,7 @@ package io.taig.communicator
 
 import monix.eval.Task
 import monix.execution.Cancelable
+
 import scala.language.implicitConversions
 
 final class Request private ( task: Task[Response] ) {
@@ -55,16 +56,12 @@ object Request {
         val task = Task.create[Response] { ( scheduler, callback ) ⇒
             val call = c.newCall( request )
 
-            scheduler.execute {
-                new Runnable {
-                    override def run() = {
-                        try {
-                            val response = call.execute()
-                            callback.onSuccess( Response( response ) )
-                        } catch {
-                            case exception: Throwable ⇒ callback.onError( exception )
-                        }
-                    }
+            scheduler.execute { () ⇒
+                try {
+                    val response = call.execute()
+                    callback.onSuccess( Response( response ) )
+                } catch {
+                    case exception: Throwable ⇒ callback.onError( exception )
                 }
             }
 
