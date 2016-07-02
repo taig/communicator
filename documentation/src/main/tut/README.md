@@ -1,7 +1,7 @@
 # Communicator
 
-[![Circle CI](https://circleci.com/gh/Taig/Communicator.svg?style=shield)](https://circleci.com/gh/Taig/Communicator)
-[![codecov](https://codecov.io/github/Taig/Communicator/coverage.svg?branch=master)](https://codecov.io/github/Taig/Communicator?branch=master)
+[![CircleCI](https://circleci.com/gh/Taig/Communicator/tree/develop-websocket.svg?style=shield)](https://circleci.com/gh/Taig/Communicator/tree/develop-websocket)
+[![codecov](https://codecov.io/github/Taig/Communicator/coverage.svg?branch=develop-websocket)](https://codecov.io/github/Taig/Communicator?branch=master)
 [![Maven](https://img.shields.io/maven-central/v/io.taig/communicator_2.11.svg)](http://search.maven.org/#artifactdetails%7Cio.taig%7Ccommunicator_2.11%7C3.0.0%7Cjar)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/Taig/Communicator/master/LICENSE)
 
@@ -24,7 +24,8 @@ Communicator provides a simple way to construct OkHttp requests as `monix.Task`s
 ## Installation
 
 ```scala
-libraryDependencies += "io.taig" %% "communicator" % "3.0.0-SNAPSHOT"
+libraryDependencies += "io.taig" %% "communicator-request" % "3.0.0-SNAPSHOT"
+libraryDependencies += "io.taig" %% "communicator-websocket" % "3.0.0-SNAPSHOT"
 ```
 
 ## Quickstart
