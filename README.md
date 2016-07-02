@@ -86,7 +86,7 @@ Lorem Ipsum
 
 ## Communicator 2.x
 
-The `scala.concurrent.Future` predecessor of this library has been deprecated. You You can still [access][3] the source and documentation.
+The `scala.concurrent.Future` predecessor of this library has been deprecated. You can still [access][3] the source and documentation.
 
 ## Communicator 1.x
 
@@ -97,7 +97,7 @@ The Java predecessor of this library has been deprecated. You can still [access]
 The MIT License (MIT)  
 Copyright (c) 2016 Niklas Klein <mail@taig.io>
 
-[2]: https://monix.io/
-[1]: http://square.github.io/okhttp/
+[1]: https://monix.io/
+[2]: http://square.github.io/okhttp/
 [3]: https://github.com/Taig/Communicator/tree/2.3.2
 [4]: https://github.com/Taig/Communicator/tree/f820d08b1cc4d77083e384568ce89223e53ab693
