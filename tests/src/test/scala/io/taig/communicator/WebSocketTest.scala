@@ -4,7 +4,7 @@ import java.io.IOException
 
 import monix.reactive.OverflowStrategy
 import okhttp3.RequestBody
-import okhttp3.ws.{WebSocket => OkHttpSocket}
+import okhttp3.ws.{ WebSocket ⇒ OkHttpSocket }
 import okio.Buffer
 
 import scala.concurrent.Await
