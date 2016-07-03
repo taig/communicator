@@ -5,6 +5,7 @@ import java.util.logging.LogManager
 import monix.execution.Scheduler
 import okhttp3.Request.Builder
 import okhttp3.mockwebserver.MockWebServer
+import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.{ FlatSpec, Matchers }
 
 trait Suite
@@ -12,7 +13,7 @@ trait Suite
         with Matchers {
     LogManager.getLogManager.reset()
 
-    implicit val scheduler = Scheduler.fixedPool( "tests", 2 )
+    implicit val scheduler = Scheduler.fixedPool( "tests", 1 )
 
     implicit def client = Client()
 
