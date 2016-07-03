@@ -2,14 +2,13 @@ package io.taig.communicator
 
 import java.io.IOException
 
-import monix.eval.{ Callback, Task }
+import monix.eval.{Callback, Task}
 import monix.execution.Ack.Stop
 import monix.execution.Cancelable
 import monix.execution.atomic.AtomicBoolean
-import monix.reactive.observers.Subscriber
-import monix.reactive.{ Observable, OverflowStrategy }
+import monix.reactive.{Observable, OverflowStrategy}
 import okhttp3._
-import okhttp3.ws.{ WebSocketCall, WebSocketListener, WebSocket ⇒ OkHttpSocket }
+import okhttp3.ws.{WebSocketCall, WebSocketListener, WebSocket => OkHttpSocket}
 import okio.Buffer
 
 private case class Listener(
@@ -24,11 +23,8 @@ private case class Listener(
     var onFailure: Throwable ⇒ Unit = null
 
     override def onOpen( socket: OkHttpSocket, response: Response ) = {
-        if ( open.compareAndSet( false, true ) ) {
-            callback.onSuccess( socket, this )
-        } else {
-            throw new IllegalStateException( "Socket already open" )
-        }
+        open.set( true )
+        callback.onSuccess( socket, this )
     }
 
     override def onMessage( message: ResponseBody ) = {
@@ -61,7 +57,7 @@ object WebSocket {
             Cancelable { () ⇒ call.cancel() }
         } map {
             case ( socket, listener ) ⇒
-                val observable = Observable.create( strategy ) { downstream ⇒
+                val observable = Observable.unsafeCreate[Array[Byte]] { downstream ⇒
                     listener.onMessage = { data ⇒
                         if ( downstream.onNext( data ) == Stop ) {
                             socket.close( 1000, "" )
