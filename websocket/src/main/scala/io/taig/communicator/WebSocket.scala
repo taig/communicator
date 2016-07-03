@@ -2,21 +2,21 @@ package io.taig.communicator
 
 import java.io.IOException
 
-import monix.eval.{Callback, Task}
+import monix.eval.{ Callback, Task }
 import monix.execution.Ack.Stop
 import monix.execution.Cancelable
 import monix.execution.atomic.AtomicBoolean
 import monix.reactive.observers.Subscriber
-import monix.reactive.{Observable, OverflowStrategy}
+import monix.reactive.{ Observable, OverflowStrategy }
 import okhttp3._
-import okhttp3.ws.{WebSocketCall, WebSocketListener, WebSocket => OkHttpSocket}
+import okhttp3.ws.{ WebSocketCall, WebSocketListener, WebSocket ⇒ OkHttpSocket }
 import okio.Buffer
 
 private case class Listener(
         callback: Callback[( OkHttpSocket, Listener )]
 ) extends WebSocketListener {
     val open = AtomicBoolean( false )
-    
+
     var onMessage: Array[Byte] ⇒ Unit = null
 
     var onClose: () ⇒ Unit = null
@@ -32,20 +32,20 @@ private case class Listener(
     }
 
     override def onMessage( message: ResponseBody ) = {
-        if( onMessage != null ) onMessage( message.bytes() )
+        onMessage( message.bytes() )
     }
 
-    override def onPong( payload: Buffer ) = if( onMessage != null ) onMessage {
+    override def onPong( payload: Buffer ) = onMessage {
         Option( payload ).map( _.readByteArray() ).getOrElse( Array.emptyByteArray )
     }
 
-    override def onClose( code: Int, reason: String ) = if( onClose != null ) onClose()
+    override def onClose( code: Int, reason: String ) = onClose()
 
     override def onFailure( exception: IOException, response: Response ) = {
         if ( open.compareAndSet( false, true ) ) {
             callback.onError( exception )
         } else {
-            if( onFailure != null ) onFailure( exception )
+            onFailure( exception )
         }
     }
 }
