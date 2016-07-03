@@ -32,7 +32,9 @@ private case class Listener(
 
     override def onMessage( message: ResponseBody ) = onMessage( message.bytes() )
 
-    override def onPong( payload: Buffer ) = ???
+    override def onPong( payload: Buffer ) = onMessage {
+        Option( payload ).map( _.readByteArray() ).getOrElse( Array.emptyByteArray )
+    }
 
     override def onClose( code: Int, reason: String ) = onClose()
 
