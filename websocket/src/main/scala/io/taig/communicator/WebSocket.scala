@@ -1,0 +1,82 @@
+package io.taig.communicator
+
+import java.io.IOException
+
+import monix.eval.{ Callback, Task }
+import monix.execution.Ack.Stop
+import monix.execution.atomic.AtomicBoolean
+import monix.execution.{ Cancelable, Scheduler }
+import monix.reactive.{ Observable, OverflowStrategy }
+import okhttp3._
+import okhttp3.ws.{ WebSocketCall, WebSocketListener, WebSocket ⇒ OkHttpSocket }
+import okio.Buffer
+
+private case class Listener(
+        callback: Callback[( OkHttpSocket, Listener )]
+) extends WebSocketListener {
+    val open = AtomicBoolean( false )
+
+    var onMessage: Array[Byte] ⇒ Unit = null
+
+    var onClose: () ⇒ Unit = null
+
+    var onFailure: Throwable ⇒ Unit = null
+
+    override def onOpen( socket: OkHttpSocket, response: Response ) = {
+        open.set( true )
+        callback.onSuccess( socket, this )
+    }
+
+    override def onMessage( message: ResponseBody ) = {
+        onMessage( message.bytes() )
+    }
+
+    override def onPong( payload: Buffer ) = onMessage {
+        Option( payload ).map( _.readByteArray() ).getOrElse( Array.emptyByteArray )
+    }
+
+    override def onClose( code: Int, reason: String ) = onClose()
+
+    override def onFailure( exception: IOException, response: Response ) = {
+        if ( open.compareAndSet( false, true ) ) {
+            callback.onError( exception )
+        } else {
+            onFailure( exception )
+        }
+    }
+}
+
+object WebSocket {
+    def apply( request: Request, strategy: OverflowStrategy.Synchronous[Array[Byte]] )(
+        implicit
+        c: Client,
+        s: Scheduler
+    ): Task[( OkHttpSocket, Observable[Array[Byte]] )] = {
+        Task.create[( OkHttpSocket, Listener )] { ( _, callback ) ⇒
+            val call = WebSocketCall.create( c, request )
+            call.enqueue( Listener( callback ) )
+            Cancelable { () ⇒ call.cancel() }
+        } flatMap {
+            case ( socket, listener ) ⇒ Task.create[( OkHttpSocket, Observable[Array[Byte]] )] { ( _, callback ) ⇒
+                val observable: Observable[Array[Byte]] = Observable.create( strategy ) { downstream ⇒
+                    listener.onMessage = { data ⇒
+                        if ( downstream.onNext( data ) == Stop ) {
+                            socket.close( 1000, "" )
+                        }
+                    }
+
+                    listener.onClose = () ⇒ downstream.onComplete()
+
+                    listener.onFailure = downstream.onError
+
+                    Cancelable { () ⇒ socket.close( 1001, "" ) }
+                }
+
+                val cancelable = observable.subscribe()
+                callback.onSuccess( ( socket, observable ) )
+
+                Cancelable { () ⇒ cancelable.cancel() }
+            }
+        }
+    }
+}
