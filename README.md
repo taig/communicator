@@ -24,8 +24,14 @@ Communicator provides a simple way to construct OkHttp requests as `monix.Task`s
 ## Installation
 
 ```scala
-libraryDependencies += "io.taig" %% "communicator-request" % "3.0.0-SNAPSHOT"
-libraryDependencies += "io.taig" %% "communicator-websocket" % "3.0.0-SNAPSHOT"
+libraryDependencies ++=
+    "io.taig" %% "communicator-request" % "3.0.0-SNAPSHOT" ::
+    "io.taig" %% "communicator-websocket" % "3.0.0-SNAPSHOT" ::
+    Nil
+```
+
+```scala
+libraryDependencies += "io.taig" %% "communicator" % "3.0.0-SNAPSHOT"
 ```
 
 ## Quickstart
@@ -37,15 +43,15 @@ import monix.eval.Task
 
 scala> // To build request tasks, an implicit OkHttpClient should be in scope
      | implicit val client = Client()
-client: io.taig.communicator.Client = okhttp3.OkHttpClient@1088b543
+client: io.taig.communicator.Client = okhttp3.OkHttpClient@58aa8e6c
 
 scala> // Simple OkHttp request builder
      | val builder = Request.Builder().url( "http://taig.io/" )
-builder: okhttp3.Request.Builder = okhttp3.Request$Builder@9720a4e
+builder: okhttp3.Request.Builder = okhttp3.Request$Builder@104b6b88
 
 scala> // Construct a Task[Response]
      | val request: Request = Request( builder.build() )
-request: io.taig.communicator.Request = io.taig.communicator.Request@4d164202
+request: io.taig.communicator.Request = io.taig.communicator.Request@2f344938
 
 scala> // Parse the response to a String
      | val requestContent: Task[Response.With[String]] = request.parse[String]
@@ -62,7 +68,7 @@ scala> requestContent.runAsync.andThen {
      |     case Success( content ) => "Success"
      |     case Failure( exception ) => "Failure"
      | }
-res5: monix.execution.CancelableFuture[io.taig.communicator.Response.With[String]] = monix.execution.CancelableFuture$Implementation@a0eab71
+res5: monix.execution.CancelableFuture[io.taig.communicator.Response.With[String]] = monix.execution.CancelableFuture$Implementation@233e7645
 ```
 
 ## Usage
