@@ -31,7 +31,7 @@ libraryDependencies += "io.taig" %% "communicator-websocket" % "3.0.0-SNAPSHOT"
 ## Quickstart
 
 ```tut
-import io.taig.communicator._
+import io.taig.communicator._; import monix.eval.Task
 
 // To build request tasks, an implicit OkHttpClient should be in scope
 implicit val client = Client()
@@ -39,12 +39,10 @@ implicit val client = Client()
 // Simple OkHttp request builder
 val builder = Request.Builder().url( "http://taig.io/" )
 
-// Construct a Task[Response] and parse the content to a String
-import monix.eval.Task
-
+// Construct a Task[Response]
 val request: Request = Request( builder.build() )
 
-// Parse the content to a String
+// Parse the response to a String
 val requestContent: Task[Response.With[String]] = request.parse[String]
 
 // Kick off the actual request

@@ -4,8 +4,8 @@ import java.io.IOException
 
 import monix.eval.{ Callback, Task }
 import monix.execution.Ack.Stop
-import monix.execution.Cancelable
 import monix.execution.atomic.AtomicBoolean
+import monix.execution.{ Cancelable, Scheduler }
 import monix.reactive.{ Observable, OverflowStrategy }
 import okhttp3._
 import okhttp3.ws.{ WebSocketCall, WebSocketListener, WebSocket ⇒ OkHttpSocket }
@@ -49,15 +49,16 @@ private case class Listener(
 object WebSocket {
     def apply( request: Request, strategy: OverflowStrategy.Synchronous[Array[Byte]] )(
         implicit
-        c: Client
+        c: Client,
+        s: Scheduler
     ): Task[( OkHttpSocket, Observable[Array[Byte]] )] = {
         Task.create[( OkHttpSocket, Listener )] { ( _, callback ) ⇒
             val call = WebSocketCall.create( c, request )
             call.enqueue( Listener( callback ) )
             Cancelable { () ⇒ call.cancel() }
-        } map {
-            case ( socket, listener ) ⇒
-                val observable = Observable.create[Array[Byte]]( strategy ) { downstream ⇒
+        } flatMap {
+            case ( socket, listener ) ⇒ Task.create[( OkHttpSocket, Observable[Array[Byte]] )] { ( _, callback ) ⇒
+                val observable: Observable[Array[Byte]] = Observable.create( strategy ) { downstream ⇒
                     listener.onMessage = { data ⇒
                         if ( downstream.onNext( data ) == Stop ) {
                             socket.close( 1000, "" )
@@ -71,7 +72,11 @@ object WebSocket {
                     Cancelable { () ⇒ socket.close( 1001, "" ) }
                 }
 
-                ( socket, observable )
+                val cancelable = observable.subscribe()
+                callback.onSuccess( ( socket, observable ) )
+
+                Cancelable { () ⇒ cancelable.cancel() }
+            }
         }
     }
 }

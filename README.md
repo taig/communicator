@@ -31,25 +31,23 @@ libraryDependencies += "io.taig" %% "communicator-websocket" % "3.0.0-SNAPSHOT"
 ## Quickstart
 
 ```scala
-scala> import io.taig.communicator._
+scala> import io.taig.communicator._; import monix.eval.Task
 import io.taig.communicator._
+import monix.eval.Task
 
 scala> // To build request tasks, an implicit OkHttpClient should be in scope
      | implicit val client = Client()
-client: io.taig.communicator.Client = okhttp3.OkHttpClient@6b2f897c
+client: io.taig.communicator.Client = okhttp3.OkHttpClient@1088b543
 
 scala> // Simple OkHttp request builder
      | val builder = Request.Builder().url( "http://taig.io/" )
-builder: okhttp3.Request.Builder = okhttp3.Request$Builder@4b7ae468
+builder: okhttp3.Request.Builder = okhttp3.Request$Builder@9720a4e
 
-scala> // Construct a Task[Response] and parse the content to a String
-     | import monix.eval.Task
-import monix.eval.Task
+scala> // Construct a Task[Response]
+     | val request: Request = Request( builder.build() )
+request: io.taig.communicator.Request = io.taig.communicator.Request@4d164202
 
-scala> val request: Request = Request( builder.build() )
-request: io.taig.communicator.Request = io.taig.communicator.Request@182c819d
-
-scala> // Parse the content to a String
+scala> // Parse the response to a String
      | val requestContent: Task[Response.With[String]] = request.parse[String]
 requestContent: monix.eval.Task[io.taig.communicator.Response.With[String]] = BindAsync(<function3>,<function1>)
 
@@ -64,7 +62,7 @@ scala> requestContent.runAsync.andThen {
      |     case Success( content ) => "Success"
      |     case Failure( exception ) => "Failure"
      | }
-res5: monix.execution.CancelableFuture[io.taig.communicator.Response.With[String]] = monix.execution.CancelableFuture$Implementation@327c991d
+res5: monix.execution.CancelableFuture[io.taig.communicator.Response.With[String]] = monix.execution.CancelableFuture$Implementation@a0eab71
 ```
 
 ## Usage

@@ -8,13 +8,11 @@ lazy val communicator = project.in( file( "." ) )
         normalizedName := "communicator",
         releaseTagName := releaseTagName.value drop 1,
         startYear := Some( 2013 ),
-        publish := (),
-        publishArtifact := false,
-        publishLocal := (),
         test <<= test in tests in Test,
         tut <<= tut in documentation
     )
     .aggregate( common, request, websocket )
+    .dependsOn( common, request, websocket )
 
 lazy val common = project
     .settings( Settings.common )
