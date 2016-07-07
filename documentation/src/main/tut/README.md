@@ -1,7 +1,7 @@
 # Communicator
 
-[![Circle CI](https://circleci.com/gh/Taig/Communicator.svg?style=shield)](https://circleci.com/gh/Taig/Communicator)
-[![codecov](https://codecov.io/github/Taig/Communicator/coverage.svg?branch=master)](https://codecov.io/github/Taig/Communicator?branch=master)
+[![CircleCI](https://circleci.com/gh/Taig/Communicator/tree/develop-websocket.svg?style=shield)](https://circleci.com/gh/Taig/Communicator/tree/develop-websocket)
+[![codecov](https://codecov.io/github/Taig/Communicator/coverage.svg?branch=develop-websocket)](https://codecov.io/github/Taig/Communicator?branch=develop-websocket)
 [![Maven](https://img.shields.io/maven-central/v/io.taig/communicator_2.11.svg)](http://search.maven.org/#artifactdetails%7Cio.taig%7Ccommunicator_2.11%7C3.0.0%7Cjar)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/Taig/Communicator/master/LICENSE)
 
@@ -24,13 +24,14 @@ Communicator provides a simple way to construct OkHttp requests as `monix.Task`s
 ## Installation
 
 ```scala
-libraryDependencies += "io.taig" %% "communicator" % "3.0.0-SNAPSHOT"
+libraryDependencies += "io.taig" %% "communicator-request" % "3.0.0-SNAPSHOT"
+libraryDependencies += "io.taig" %% "communicator-websocket" % "3.0.0-SNAPSHOT"
 ```
 
 ## Quickstart
 
 ```tut
-import io.taig.communicator._
+import io.taig.communicator._; import monix.eval.Task
 
 // To build request tasks, an implicit OkHttpClient should be in scope
 implicit val client = Client()
@@ -38,12 +39,10 @@ implicit val client = Client()
 // Simple OkHttp request builder
 val builder = Request.Builder().url( "http://taig.io/" )
 
-// Construct a Task[Response] and parse the content to a String
-import monix.eval.Task
-
+// Construct a Task[Response]
 val request: Request = Request( builder.build() )
 
-// Parse the content to a String
+// Parse the response to a String
 val requestContent: Task[Response.With[String]] = request.parse[String]
 
 // Kick off the actual request

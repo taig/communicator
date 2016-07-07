@@ -1,5 +1,7 @@
 package io.taig.communicator
 
+import java.io.IOException
+
 import monix.eval.Task
 import monix.execution.Cancelable
 
@@ -65,7 +67,10 @@ object Request {
                 }
             }
 
-            Cancelable { () ⇒ call.cancel() }
+            Cancelable { () ⇒
+                callback.onError( new IOException( "Canceled" ) )
+                call.cancel()
+            }
         }
 
         new Request( task )
