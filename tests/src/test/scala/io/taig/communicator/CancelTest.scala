@@ -9,7 +9,7 @@ import scala.concurrent.duration._
 import scala.language.postfixOps
 
 class CancelTest extends Suite {
-    it should "be cancellable" in {
+    ignore should "be cancellable" in {
         val builder = init { server ⇒
             server.enqueue( new MockResponse().throttleBody( 1, 100, TimeUnit.MILLISECONDS ).setBody( "foobar" ) )
         }

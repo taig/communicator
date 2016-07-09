@@ -2,7 +2,10 @@ package io.taig.communicator
 
 import okhttp3.ResponseBody
 import okhttp3.mockwebserver.MockResponse
-import org.scalatest.concurrent.ScalaFutures.whenReady
+
+import scala.concurrent.Await
+import scala.concurrent.duration._
+import scala.language.postfixOps
 
 class ParserTest extends Suite {
     it should "allow to ignore the response" in {
@@ -12,8 +15,8 @@ class ParserTest extends Suite {
         }
 
         val request = builder.build()
-        whenReady( Request( request ).runAsync )( _.code shouldBe 200 )
-        whenReady( Request( request ).parse[String].runAsync )( _.body shouldBe "foobar" )
+        Await.result( Request( request ).runAsync, 3 seconds ).code shouldBe 200
+        Await.result( Request( request ).parse[String].runAsync, 3 seconds ).body shouldBe "foobar"
     }
 
     it should "support Byte Array" in {
@@ -22,7 +25,7 @@ class ParserTest extends Suite {
         }
 
         val request = builder.build()
-        whenReady( Request( request ).parse[Array[Byte]].runAsync )( _.body shouldBe "foobar".getBytes )
+        Await.result( Request( request ).parse[Array[Byte]].runAsync, 3 seconds ).body shouldBe "foobar".getBytes
     }
 
     it should "support Strings" in {
@@ -31,7 +34,7 @@ class ParserTest extends Suite {
         }
 
         val request = builder.build()
-        whenReady( Request( request ).parse[String].runAsync )( _.body shouldBe "foobar" )
+        Await.result( Request( request ).parse[String].runAsync, 3 seconds ).body shouldBe "foobar"
     }
 
     it should "support ResponseBody" in {
@@ -40,10 +43,9 @@ class ParserTest extends Suite {
         }
 
         val request = builder.build()
-        whenReady( Request( request ).parse[ResponseBody].runAsync ) { response ⇒
-            response.body.string shouldBe "foobar"
-            response.body.close()
-        }
+        val response = Await.result( Request( request ).parse[ResponseBody].runAsync, 3 seconds ).body
+        response.string shouldBe "foobar"
+        response.close()
     }
 
     it should "be possible to map of a Parser" in {
@@ -54,6 +56,6 @@ class ParserTest extends Suite {
         }
 
         val request = builder.build()
-        whenReady( Request( request ).parse( parser ).runAsync )( _.body shouldBe "FOOBAR" )
+        Await.result( Request( request ).parse( parser ).runAsync, 3 seconds ).body shouldBe "FOOBAR"
     }
 }

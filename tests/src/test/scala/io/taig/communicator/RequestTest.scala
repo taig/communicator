@@ -4,7 +4,10 @@ import java.io.IOException
 
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.{ MediaType, RequestBody }
-import org.scalatest.concurrent.ScalaFutures.whenReady
+
+import scala.concurrent.Await
+import scala.concurrent.duration._
+import scala.language.postfixOps
 
 class RequestTest extends Suite {
     it should "apply the OkHttp Request.Builder constructor" in {
@@ -17,7 +20,7 @@ class RequestTest extends Suite {
         }
 
         val request = builder.build()
-        whenReady( Request( request ).parse[String].runAsync )( _.body shouldBe "foobar" )
+        Await.result( Request( request ).parse[String].runAsync, 3 seconds ).body shouldBe "foobar"
     }
 
     it should "allow to ignore the response" in {
@@ -26,10 +29,12 @@ class RequestTest extends Suite {
         }
 
         val request = builder.build()
-        whenReady( Request( request ).ignoreBody.runAsync ) { response ⇒
-            intercept[IOException] {
-                response.wrapped.body().byteStream().read()
-            }
+        intercept[IOException] {
+            Await.result( Request( request ).ignoreBody.runAsync, 3 seconds )
+                .wrapped
+                .body()
+                .byteStream()
+                .read()
         }
     }
 
@@ -39,9 +44,10 @@ class RequestTest extends Suite {
         }
 
         val request = builder.build()
-        whenReady( Request( request ).unsafeToTask.runAsync ) { response ⇒
-            response.wrapped.body().string() shouldBe "foobar"
-        }
+        Await.result( Request( request ).unsafeToTask.runAsync, 3 seconds )
+            .wrapped
+            .body()
+            .string() shouldBe "foobar"
     }
 
     it should "support GET requests" in {
@@ -50,7 +56,7 @@ class RequestTest extends Suite {
         }
 
         val request = builder.build()
-        whenReady( Request( request ).runAsync )( _.code shouldBe 200 )
+        Await.result( Request( request ).runAsync, 3 seconds ).code shouldBe 200
     }
 
     it should "support POST requests" in {
@@ -62,6 +68,6 @@ class RequestTest extends Suite {
             .post( RequestBody.create( MediaType.parse( "text/plain" ), "foobar" ) )
             .build()
 
-        whenReady( Request( request ).runAsync )( _.code shouldBe 200 )
+        Await.result( Request( request ).runAsync, 3 seconds ).code shouldBe 200
     }
 }
