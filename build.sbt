@@ -19,6 +19,7 @@ lazy val common = project
     .settings(
         libraryDependencies ++=
             "com.squareup.okhttp3" % "okhttp" % Settings.dependency.okhttp ::
+            "io.monix" %% "monix-eval" % Settings.dependency.monix ::
             Nil,
         name := "Common",
         startYear := Some( 2016 )
@@ -27,9 +28,6 @@ lazy val common = project
 lazy val request = project
     .settings( Settings.common )
     .settings(
-        libraryDependencies ++=
-            "io.monix" %% "monix-eval" % Settings.dependency.monix ::
-            Nil,
         name := "Request",
         startYear := Some( 2016 )
     )

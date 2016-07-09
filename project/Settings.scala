@@ -14,6 +14,11 @@ object Settings {
         scalacOptions ++=
             "-deprecation" ::
             "-feature" ::
+            "-Ywarn-dead-code" ::
+            "-Ywarn-infer-any" ::
+            "-Ywarn-numeric-widen" ::
+            "-Ywarn-unused-import" ::
+            "-Ywarn-value-discard" ::
             Nil,
         scalaVersion := "2.11.8"
     )

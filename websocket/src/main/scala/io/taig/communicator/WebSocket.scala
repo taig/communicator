@@ -2,49 +2,13 @@ package io.taig.communicator
 
 import java.io.IOException
 
-import monix.eval.{ Callback, Task }
+import monix.eval.Task
 import monix.execution.Ack.Stop
-import monix.execution.atomic.AtomicBoolean
 import monix.execution.{ Cancelable, Scheduler }
 import monix.reactive.{ Observable, OverflowStrategy }
 import okhttp3._
 import okhttp3.ws.{ WebSocketCall, WebSocketListener, WebSocket ⇒ OkHttpSocket }
 import okio.Buffer
-
-private case class Listener(
-        callback: Callback[( OkHttpSocket, Listener )]
-) extends WebSocketListener {
-    val open = AtomicBoolean( false )
-
-    var onMessage: Array[Byte] ⇒ Unit = null
-
-    var onClose: () ⇒ Unit = null
-
-    var onFailure: Throwable ⇒ Unit = null
-
-    override def onOpen( socket: OkHttpSocket, response: Response ) = {
-        open.set( true )
-        callback.onSuccess( socket, this )
-    }
-
-    override def onMessage( message: ResponseBody ) = {
-        onMessage( message.bytes() )
-    }
-
-    override def onPong( payload: Buffer ) = onMessage {
-        Option( payload ).map( _.readByteArray() ).getOrElse( Array.emptyByteArray )
-    }
-
-    override def onClose( code: Int, reason: String ) = onClose()
-
-    override def onFailure( exception: IOException, response: Response ) = {
-        if ( open.compareAndSet( false, true ) ) {
-            callback.onError( exception )
-        } else {
-            onFailure( exception )
-        }
-    }
-}
 
 object WebSocket {
     def apply( request: Request, strategy: OverflowStrategy.Synchronous[Array[Byte]] )(
@@ -52,30 +16,63 @@ object WebSocket {
         c: Client,
         s: Scheduler
     ): Task[( OkHttpSocket, Observable[Array[Byte]] )] = {
-        Task.create[( OkHttpSocket, Listener )] { ( _, callback ) ⇒
+        var socket: OkHttpSocket = null
+
+        def close(): Unit = {
+            if ( socket != null ) {
+                socket.close( 1000, "" )
+            }
+        }
+
+        Task.create[( OkHttpSocket, Observable[Array[Byte]] )] { ( _, callback ) ⇒
             val call = WebSocketCall.create( c, request )
-            call.enqueue( Listener( callback ) )
-            Cancelable { () ⇒ call.cancel() }
-        } flatMap {
-            case ( socket, listener ) ⇒ Task.create[( OkHttpSocket, Observable[Array[Byte]] )] { ( _, callback ) ⇒
-                val observable: Observable[Array[Byte]] = Observable.create( strategy ) { downstream ⇒
-                    listener.onMessage = { data ⇒
-                        if ( downstream.onNext( data ) == Stop ) {
-                            socket.close( 1000, "" )
-                        }
+
+            lazy val observable: Observable[Array[Byte]] = Observable.create( strategy ) { downstream ⇒
+                def handle( data: Array[Byte] ): Unit = {
+                    if ( downstream.onNext( data ) == Stop ) {
+                        close()
                     }
-
-                    listener.onClose = () ⇒ downstream.onComplete()
-
-                    listener.onFailure = downstream.onError
-
-                    Cancelable { () ⇒ socket.close( 1001, "" ) }
                 }
 
-                val cancelable = observable.subscribe()
-                callback.onSuccess( ( socket, observable ) )
+                call.enqueue {
+                    new WebSocketListener {
+                        override def onOpen( webSocket: OkHttpSocket, response: Response ) = {
+                            socket = webSocket
+                            callback.onSuccess( ( webSocket, observable ) )
+                            Option( response.body() ).map( _.bytes() ).foreach( handle )
+                        }
 
-                Cancelable { () ⇒ cancelable.cancel() }
+                        override def onMessage( message: ResponseBody ) = {
+                            handle( message.bytes() )
+                        }
+
+                        override def onPong( payload: Buffer ) = {
+                            Option( payload ).map( _.readByteArray() ).foreach( handle )
+                        }
+
+                        override def onClose( code: Int, reason: String ) = {
+                            downstream.onComplete()
+                        }
+
+                        override def onFailure( exception: IOException, response: Response ) = {
+                            if ( socket == null ) {
+                                callback.onError( exception )
+                            } else {
+                                downstream.onError( exception )
+                            }
+                        }
+                    }
+                }
+
+                Cancelable.empty
+            }.share
+
+            val subscription = observable.subscribe()
+
+            Cancelable { () ⇒
+                call.cancel()
+                subscription.cancel()
+                close()
             }
         }
     }
