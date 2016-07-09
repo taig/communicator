@@ -10,18 +10,14 @@ dependencies:
     - "~/.ivy2"
     - "~/.sbt"
   override:
-    - sbt test:compile
+    - sbt ";test:update;compile"
 
 general:
   artifacts:
     - target/scala-2.11/coverage-report
 
 test:
-  pre:
-    - sbt clean
   override:
-    - sbt coverage test coverageReport
-    - sbt tut
+    - sbt ";clean;coverage;test;coverageReport;tut;coverageAggregate"
   post:
-    - sbt coverageAggregate
     - pip install --user codecov && codecov
