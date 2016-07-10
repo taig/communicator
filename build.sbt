@@ -47,6 +47,11 @@ lazy val websocket = project
 lazy val documentation = project
     .settings( tutSettings ++ Settings.common )
     .settings(
+        tutScalacOptions :=
+            "-deprecation" ::
+            "-feature" ::
+            "-Xfatal-warnings" ::
+            Nil,
         tutTargetDirectory := file( "." )
     )
     .dependsOn( common, request, websocket )
