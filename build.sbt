@@ -6,7 +6,6 @@ lazy val communicator = project.in( file( "." ) )
         description := "An OkHttp wrapper for Scala",
         name := "Communicator",
         normalizedName := "communicator",
-        releaseTagName := releaseTagName.value drop 1,
         startYear := Some( 2013 ),
         test <<= test in tests in Test,
         tut <<= tut in documentation
