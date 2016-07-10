@@ -1,7 +1,10 @@
 import io.taig.sbt.sonatype.Plugin.autoImport._
 import sbt.Def
 import sbt.Keys._
+import sbtrelease.ReleasePlugin.autoImport.ReleaseStep._
 import sbtrelease.ReleasePlugin.autoImport._
+import sbtrelease.ReleaseStateTransformations._
+import tut.Plugin._
 
 object Settings {
     val common = Def.settings(
@@ -26,6 +29,20 @@ object Settings {
         scalaVersion := "2.11.8"
     )
     
+    val releaseSteps: List[ReleaseStep] =
+        checkSnapshotDependencies ::
+        Release.inquireVersions ::
+        runTest ::
+        func2ReleasePart( releaseStepTaskAggregated( tut ) ) ::
+        setReleaseVersion ::
+        Release.commitReleaseVersion ::
+        Release.tagRelease ::
+        publishArtifacts ::
+        Release.setNextVersion ::
+        Release.commitNextVersion ::
+        Release.pushChanges ::
+        Nil
+
     object dependency {
         val monix = "2.0-RC8"
 
