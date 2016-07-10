@@ -59,17 +59,6 @@ class WebSocketTest extends Suite {
         Await.result( task.runAsync, 5 seconds ) shouldBe true
     }
 
-    it should "pings with payload" in {
-        val task = WebSocket( request, OverflowStrategy.Unbounded ).flatMap {
-            case ( socket, observable ) ⇒
-                socket.sendPing( new Buffer().writeUtf8( "foobar" ) )
-                socket.close( 1000, "" )
-                observable.map( new String( _ ) ).firstOptionL
-        }
-
-        Await.result( task.runAsync, 5 seconds ) shouldBe Some( "foobar" )
-    }
-
     it should "not provide a socket and observable instance when failing to connect" in {
         val request = Request.Builder()
             .url( "wss://localhost" )
