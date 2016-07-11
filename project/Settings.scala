@@ -29,19 +29,20 @@ object Settings {
         scalaVersion := "2.11.8"
     )
     
-    val releaseSteps: List[ReleaseStep] =
-        checkSnapshotDependencies ::
-        Release.inquireVersions ::
-        runTest ::
-        func2ReleasePart( releaseStepTaskAggregated( tut ) ) ::
-        setReleaseVersion ::
-        Release.commitReleaseVersion ::
-        Release.tagRelease ::
-        publishArtifacts ::
-        Release.setNextVersion ::
-        Release.commitNextVersion ::
-        Release.pushChanges ::
-        Nil
+    val releaseSteps: Seq[ReleaseStep] = Seq(
+//        checkSnapshotDependencies,
+//        Release.inquireVersions,
+//        runTest,
+        Release.updateChangelog//,
+//        releaseStepTaskAggregated( tut ),
+//        setReleaseVersion,
+//        Release.commitReleaseVersion,
+//        Release.tagRelease,
+//        publishArtifacts,
+//        Release.setNextVersion,
+//        Release.commitNextVersion,
+//        Release.pushChanges
+    )
 
     object dependency {
         val monix = "2.0-RC8"
