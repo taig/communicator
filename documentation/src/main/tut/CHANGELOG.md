@@ -7,3 +7,4 @@ _2016-07-**_
  * Migrated from `scala.concurrent.Future` to `monix.Task`
  * Introduced WebSocket module
  * Introduced `Parser[Array[Byte]]` and `Parser[InputStream]`
+ * Upgraded to okhttp 3.4.1
