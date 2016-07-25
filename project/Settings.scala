@@ -1,9 +1,9 @@
 import io.taig.sbt.sonatype.Plugin.autoImport._
 import sbt.Def
 import sbt.Keys._
-import sbtrelease.ReleasePlugin.autoImport.ReleaseStep._
-import sbtrelease.ReleasePlugin.autoImport._
-import sbtrelease.ReleaseStateTransformations._
+//import sbtrelease.ReleasePlugin.autoImport.ReleaseStep._
+//import sbtrelease.ReleasePlugin.autoImport._
+//import sbtrelease.ReleaseStateTransformations._
 import tut.Plugin._
 
 object Settings {
@@ -15,7 +15,7 @@ object Settings {
             Nil,
         normalizedName := s"communicator-${normalizedName.value}",
         organization := "io.taig",
-        releaseTagName := releaseTagName.value drop 1,
+//        releaseTagName := releaseTagName.value drop 1,
         scalacOptions ++=
             "-deprecation" ::
             "-feature" ::
@@ -29,11 +29,11 @@ object Settings {
         scalaVersion := "2.11.8"
     )
     
-    val releaseSteps: Seq[ReleaseStep] = Seq(
+//    val releaseSteps: Seq[ReleaseStep] = Seq(
 //        checkSnapshotDependencies,
 //        Release.inquireVersions,
 //        runTest,
-        Release.updateChangelog//,
+//        Release.updateChangelog,
 //        releaseStepTaskAggregated( tut ),
 //        setReleaseVersion,
 //        Release.commitReleaseVersion,
@@ -42,7 +42,7 @@ object Settings {
 //        Release.setNextVersion,
 //        Release.commitNextVersion,
 //        Release.pushChanges
-    )
+//    )
 
     object dependency {
         val monix = "2.0-RC8"
