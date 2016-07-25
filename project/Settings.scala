@@ -1,4 +1,4 @@
-import io.taig.sbt.sonatype.Plugin.autoImport._
+import io.taig.sbt.sonatype.SonatypeHouserulePlugin.autoImport._
 import sbt.Def
 import sbt.Keys._
 //import sbtrelease.ReleasePlugin.autoImport.ReleaseStep._
