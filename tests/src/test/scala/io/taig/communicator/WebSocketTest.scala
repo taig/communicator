@@ -37,29 +37,29 @@ class WebSocketTest extends Suite {
         Await.result( task.runAsync, 5 seconds ) shouldBe Some( "foobar" )
     }
 
-    it should "propagate pings as messages when they are received" in {
-        val task = WebSocket( request, OverflowStrategy.Unbounded ).flatMap {
-            case ( socket, observable ) ⇒
-                socket.sendPing( null )
-                socket.close( 1000, "" )
-                observable.firstOptionL
-        }
-
-        Await.result( task.runAsync, 5 seconds ) shouldBe Some( Array.emptyByteArray )
-    }
-
-    it should "pings with payload" in {
+    it should "propagate pings as messages" in {
         val task = WebSocket( request, OverflowStrategy.Unbounded ).flatMap {
             case ( socket, observable ) ⇒
                 socket.sendPing( new Buffer().writeUtf8( "foobar" ) )
                 socket.close( 1000, "" )
-                observable.map( new String( _ ) ).firstOptionL
+                observable.firstOptionL
         }
 
-        Await.result( task.runAsync, 5 seconds ) shouldBe Some( "foobar" )
+        Await.result( task.runAsync, 5 seconds ).map( new String( _ ) ) shouldBe Some( "foobar" )
     }
 
-    it should "not provide a socket and observable instance when failing to conntect" in {
+    it should "not propagate empty pings as messages" in {
+        val task = WebSocket( request, OverflowStrategy.Unbounded ).flatMap {
+            case ( socket, observable ) ⇒
+                socket.sendPing( null )
+                socket.close( 1000, "" )
+                observable.isEmptyL
+        }
+
+        Await.result( task.runAsync, 5 seconds ) shouldBe true
+    }
+
+    it should "not provide a socket and observable instance when failing to connect" in {
         val request = Request.Builder()
             .url( "wss://localhost" )
             .build()

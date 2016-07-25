@@ -4,9 +4,9 @@ lazy val communicator = project.in( file( "." ) )
         aggregate in test := false,
         aggregate in tut := false,
         description := "An OkHttp wrapper for Scala",
-        name := "Communicator",
+        name := "communicator",
         normalizedName := "communicator",
-        releaseTagName := releaseTagName.value drop 1,
+//        releaseProcess := Settings.releaseSteps,
         startYear := Some( 2013 ),
         test <<= test in tests in Test,
         tut <<= tut in documentation
@@ -19,18 +19,16 @@ lazy val common = project
     .settings(
         libraryDependencies ++=
             "com.squareup.okhttp3" % "okhttp" % Settings.dependency.okhttp ::
+            "io.monix" %% "monix-eval" % Settings.dependency.monix ::
             Nil,
-        name := "Common",
+        name := "common",
         startYear := Some( 2016 )
     )
 
 lazy val request = project
     .settings( Settings.common )
     .settings(
-        libraryDependencies ++=
-            "io.monix" %% "monix-eval" % Settings.dependency.monix ::
-            Nil,
-        name := "Request",
+        name := "request",
         startYear := Some( 2016 )
     )
     .dependsOn( common )
@@ -42,7 +40,7 @@ lazy val websocket = project
             "com.squareup.okhttp3" % "okhttp-ws" % Settings.dependency.okhttp ::
             "io.monix" %% "monix-reactive" % Settings.dependency.monix ::
             Nil,
-        name := "WebSocket",
+        name := "websocket",
         startYear := Some( 2016 )
     )
     .dependsOn( common )
@@ -50,6 +48,11 @@ lazy val websocket = project
 lazy val documentation = project
     .settings( tutSettings ++ Settings.common )
     .settings(
+        tutScalacOptions :=
+            "-deprecation" ::
+            "-feature" ::
+            "-Xfatal-warnings" ::
+            Nil,
         tutTargetDirectory := file( "." )
     )
     .dependsOn( common, request, websocket )

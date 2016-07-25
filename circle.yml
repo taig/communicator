@@ -1,14 +1,18 @@
 machine:
   java:
-    version: oraclejdk7
+    version: oraclejdk8
 
 dependencies:
   pre:
-    - wget -q https://dl.bintray.com/sbt/debian/sbt-0.13.11.deb
-    - sudo dpkg -i sbt-0.13.11.deb
+    - wget -q https://dl.bintray.com/sbt/debian/sbt-0.13.12.deb
+    - sudo dpkg -i sbt-0.13.12.deb
   cache_directories:
-    - "~/.ivy2"
-    - "~/.sbt"
+    - "~/.ivy2/"
+    - "~/.sbt/"
+    - "target/resolution-cache/"
+    - "target/streams/"
+    - "project/target/resolution-cache/"
+    - "project/target/streams/"
   override:
     - sbt test:compile
 
@@ -17,11 +21,7 @@ general:
     - target/scala-2.11/coverage-report
 
 test:
-  pre:
-    - sbt clean
   override:
-    - sbt coverage test coverageReport
-    - sbt tut
+    - sbt ";clean;coverage;test;coverageReport;tut;coverageAggregate"
   post:
-    - sbt coverageAggregate
     - pip install --user codecov && codecov
