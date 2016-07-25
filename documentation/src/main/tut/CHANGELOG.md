@@ -1,8 +1,8 @@
 # Changelog
 
-## 3.0.0-SNAPSHOT
+## 3.0.0-RC1
 
-_2016-07-**_
+_2016-07-25_
 
  * Migrated from `scala.concurrent.Future` to `monix.Task`
  * Introduced WebSocket module
