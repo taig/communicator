@@ -5,7 +5,7 @@ lazy val communicator = project.in( file( "." ) )
         aggregate in tut := false,
         description := "An OkHttp wrapper for Scala",
         name := "communicator",
-        normalizedName := "communicator",
+        normalizedName := name.value,
 //        releaseProcess := Settings.releaseSteps,
         startYear := Some( 2013 ),
         test <<= test in tests in Test,
@@ -62,7 +62,7 @@ lazy val tests = project
     .settings (
         libraryDependencies ++=
             "com.squareup.okhttp3" % "mockwebserver" % Settings.dependency.okhttp % "test" ::
-            "org.scalatest" %% "scalatest" % "3.0.0-RC3" % "test" ::
+            "org.scalatest" %% "scalatest" % "3.0.0-RC4" % "test" ::
             Nil
     )
     .dependsOn( common, request, websocket )
