@@ -9,10 +9,6 @@ dependencies:
   cache_directories:
     - "~/.ivy2/"
     - "~/.sbt/"
-    - "target/resolution-cache/"
-    - "target/streams/"
-    - "project/target/resolution-cache/"
-    - "project/target/streams/"
   override:
     - sbt test:compile
 

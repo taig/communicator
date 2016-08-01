@@ -25,13 +25,13 @@ Communicator provides a simple way to construct OkHttp requests as `monix.Task`s
 
 ```scala
 libraryDependencies ++=
-    "io.taig" %% "communicator-request" % "3.0.0-RC1" ::
-    "io.taig" %% "communicator-websocket" % "3.0.0-RC1" ::
+    "io.taig" %% "communicator-request" % "3.0.0-RC2" ::
+    "io.taig" %% "communicator-websocket" % "3.0.0-RC2" ::
     Nil
 ```
 
 ```scala
-libraryDependencies += "io.taig" %% "communicator" % "3.0.0-RC1"
+libraryDependencies += "io.taig" %% "communicator" % "3.0.0-RC2"
 ```
 
 ## Quickstart
