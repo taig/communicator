@@ -45,7 +45,7 @@ object Settings {
 //    )
 
     object dependency {
-        val monix = "2.0-RC8"
+        val monix = "2.0-RC9"
 
         val okhttp = "3.4.1"
     }
