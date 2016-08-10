@@ -11,8 +11,8 @@ lazy val communicator = project.in( file( "." ) )
         test <<= test in tests in Test,
         tut <<= tut in documentation
     )
-    .aggregate( common, request, websocket )
-    .dependsOn( common, request, websocket )
+    .aggregate( common, request, websocket, phoenix )
+    .dependsOn( common, request, websocket, phoenix )
 
 lazy val common = project
     .settings( Settings.common )
