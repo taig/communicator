@@ -45,6 +45,14 @@ lazy val websocket = project
     )
     .dependsOn( common )
 
+lazy val phoenix = project
+    .settings( Settings.common )
+    .settings(
+        name := "phoenix",
+        startYear := Some( 2016 )
+    )
+    .dependsOn( websocket )
+
 lazy val documentation = project
     .settings( tutSettings ++ Settings.common )
     .settings(
