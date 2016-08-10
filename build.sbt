@@ -70,7 +70,7 @@ lazy val tests = project
     .settings (
         libraryDependencies ++=
             "com.squareup.okhttp3" % "mockwebserver" % Settings.dependency.okhttp % "test" ::
-            "org.scalatest" %% "scalatest" % "3.0.0-RC4" % "test" ::
+            "org.scalatest" %% "scalatest" % "3.0.0" % "test" ::
             Nil
     )
     .dependsOn( common, request, websocket )
