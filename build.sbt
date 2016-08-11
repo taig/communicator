@@ -48,6 +48,11 @@ lazy val websocket = project
 lazy val phoenix = project
     .settings( Settings.common )
     .settings(
+        libraryDependencies ++=
+            "io.circe" %% "circe-core" % Settings.dependency.circe ::
+            "io.circe" %% "circe-generic" % Settings.dependency.circe ::
+            "io.circe" %% "circe-parser" % Settings.dependency.circe ::
+            Nil,
         name := "phoenix",
         startYear := Some( 2016 )
     )
@@ -63,14 +68,15 @@ lazy val documentation = project
             Nil,
         tutTargetDirectory := file( "." )
     )
-    .dependsOn( common, request, websocket )
+    .dependsOn( common, request, websocket, phoenix )
 
 lazy val tests = project
     .settings( Settings.common )
     .settings (
         libraryDependencies ++=
             "com.squareup.okhttp3" % "mockwebserver" % Settings.dependency.okhttp % "test" ::
+            "io.backchat.hookup" %% "hookup" % "0.4.2" % "test" ::
             "org.scalatest" %% "scalatest" % "3.0.0" % "test" ::
             Nil
     )
-    .dependsOn( common, request, websocket )
+    .dependsOn( common, request, websocket, phoenix )

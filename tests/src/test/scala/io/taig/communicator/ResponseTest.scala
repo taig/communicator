@@ -1,5 +1,7 @@
 package io.taig.communicator
 
+import io.taig.communicator.request.{ Request, Response }
+import monix.execution.Scheduler.Implicits.global
 import okhttp3.mockwebserver.MockResponse
 
 import scala.concurrent.Await
@@ -8,7 +10,7 @@ import scala.language.postfixOps
 
 class ResponseTest extends Suite {
     it should "have a useful toString implementation" in {
-        val builder = init { server ⇒
+        val builder = http { server ⇒
             server.enqueue( new MockResponse().setBody( "foobar" ) )
         }
 
@@ -23,7 +25,7 @@ class ResponseTest extends Suite {
     }
 
     it should "proxy all okhttp.Response methods" in {
-        val builder = init { server ⇒
+        val builder = http { server ⇒
             server.enqueue( new MockResponse().setBody( "foobar" ) )
         }
 
@@ -49,7 +51,7 @@ class ResponseTest extends Suite {
     }
 
     it should "unapply a Response" in {
-        val builder = init { server ⇒
+        val builder = http { server ⇒
             server.enqueue( new MockResponse().setResponseCode( 404 ) )
         }
 
@@ -58,7 +60,7 @@ class ResponseTest extends Suite {
     }
 
     it should "unapply a Response.With" in {
-        val builder = init { server ⇒
+        val builder = http { server ⇒
             server.enqueue( new MockResponse().setResponseCode( 201 ).setBody( "foobar" ) )
         }
 

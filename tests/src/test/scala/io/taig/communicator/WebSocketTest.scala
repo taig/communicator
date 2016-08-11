@@ -2,6 +2,9 @@ package io.taig.communicator
 
 import java.io.IOException
 
+import io.taig.communicator.request.Request
+import io.taig.communicator.websocket.WebSocket
+import monix.execution.Scheduler.Implicits.global
 import monix.reactive.OverflowStrategy
 import okhttp3.RequestBody
 import okhttp3.ws.{ WebSocket ⇒ OkHttpSocket }

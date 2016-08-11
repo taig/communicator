@@ -1,7 +1,8 @@
-package io.taig.communicator
+package io.taig.communicator.request
 
 import java.io.IOException
 
+import io.taig.communicator._
 import monix.eval.Task
 import monix.execution.Cancelable
 

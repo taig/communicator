@@ -12,11 +12,9 @@ trait Suite
         with Matchers {
     LogManager.getLogManager.reset()
 
-    implicit def scheduler = Scheduler.singleThread( "tests" )
+    implicit val client = Client()
 
-    implicit def client = Client()
-
-    def init[U]( f: MockWebServer ⇒ U ): Builder = {
+    def http[U]( f: MockWebServer ⇒ U ): Builder = {
         val server = new MockWebServer
         f( server )
         server.start()
