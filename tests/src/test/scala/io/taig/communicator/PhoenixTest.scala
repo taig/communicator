@@ -1,38 +1,50 @@
 package io.taig.communicator
 
-import java.net.{ Socket, URI }
-
 import io.backchat.hookup._
-import io.taig.communicator.request.Request
-import io.taig.communicator.websocket.WebSocket
-import io.taig.communicator.websocket.OkHttpWebSocket
-import monix.eval.Task
+import io.circe.Json
+import io.circe.generic.auto._
+import io.circe.parser._
+import io.circe.syntax._
+import io.taig.communicator.phoenix.message.{ Request, Response }
+import io.taig.communicator.phoenix.{ Event, Phoenix, Topic }
+import io.taig.communicator.request.Request.Builder
 import monix.execution.Scheduler.Implicits.global
 import monix.reactive.OverflowStrategy
-import okhttp3.RequestBody
-import okhttp3.mockwebserver.MockWebServer
-import okhttp3.ws.WebSocket.TEXT
-import org.scalatest.BeforeAndAfterAll
+import org.json4s.DefaultFormats
+import org.json4s.jackson.Serialization
+import org.scalatest.{ AsyncFlatSpec, BeforeAndAfterAll, Matchers }
 
-import scala.concurrent.Await
-import scala.concurrent.duration._
 import scala.language.postfixOps
 
 class PhoenixTest
-        extends Suite
+        extends AsyncFlatSpec
+        with Matchers
         with BeforeAndAfterAll {
-    val request = Request.Builder()
+    implicit val client = Client()
+
+    val request = Builder()
         .url( "ws://localhost:9000/ws" )
         .build()
 
     val server = HookupServer( 9000 ) {
         new HookupServerClient {
             def receive = {
-                case Connected           ⇒ send( "Connected" )
-                case TextMessage( text ) ⇒ send( text )
-                case Disconnected( _ )   ⇒ send( "Disconnected" )
+                case JsonMessage( json ) ⇒
+                    val serialized = Serialization.write( json )( DefaultFormats )
+                    val request = decode[Request]( serialized ).valueOr( throw _ )
+                    val response = generateResponseFor( request )
+                    send( response.asJson.spaces4 )
             }
         }
+    }
+
+    def generateResponseFor( request: Request ): Response = {
+        Response(
+            request.topic,
+            Event.Reply,
+            Response.Payload( "ok", Json.Null ),
+            request.ref
+        )
     }
 
     override def beforeAll() = {
@@ -44,26 +56,18 @@ class PhoenixTest
     override def afterAll() = {
         super.afterAll()
 
-        println( "Stopping..." )
-
         server.stop
     }
 
-    it should "complete the Observable when the Socket is closed" in {
-        val task = WebSocket( request, OverflowStrategy.Unbounded ).flatMap {
-            case ( socket, observable ) ⇒
-                val send = Task {
-                    socket.sendMessage( RequestBody.create( TEXT, "yolo" ) )
-                }
+    it should "be possible to join a Channel" in {
+        val phoenix = Phoenix( request, OverflowStrategy.Unbounded )
 
-                val receive = observable.headL.map( new String( _ ) )
+        val topic = Topic( "users", "12345" )
 
-                for {
-                    _ ← send
-                    receive ← receive
-                } yield receive
+        phoenix.join( topic ).runAsync.map { channel ⇒
+            channel.topic shouldBe topic
+        }.andThen {
+            case _ ⇒ phoenix.close()
         }
-
-        Await.result( task.runAsync, 5 seconds ) == "yolo"
     }
 }
