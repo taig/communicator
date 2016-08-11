@@ -3,58 +3,90 @@ package io.taig.communicator.websocket
 import java.io.IOException
 
 import io.taig.communicator._
-import monix.execution.Ack.{ Continue, Stop }
+import io.taig.communicator.websocket.WebSocket.Event
+import monix.execution.Ack.Stop
 import monix.execution.Cancelable
-import monix.reactive.{ Observable, Observer, OverflowStrategy }
+import monix.reactive.{ Observable, OverflowStrategy }
 import okhttp3._
 import okhttp3.ws.{ WebSocketCall, WebSocketListener }
 import okio.Buffer
 
 import scala.util.{ Failure, Success }
 
+class WebSocket[T: Codec] {
+    private var socket: OkHttpWebSocket = null
+
+    private val buffer = collection.mutable.ListBuffer[Event[T]]()
+
+    private def inject( socket: OkHttpWebSocket )( implicit c: Codec[T] ): Unit = {
+        this.socket = socket
+
+        buffer.foreach {
+            case Event.Send( value )         ⇒ send( value )
+            case Event.Ping( value )         ⇒ ping( value )
+            case Event.Close( code, reason ) ⇒ close( code, reason )
+        }
+    }
+
+    def send( value: T ): Unit = {
+        if ( socket == null ) {
+            buffer += Event.Send( value )
+        } else {
+            socket.sendMessage( Codec[T].encode( value ) )
+        }
+    }
+
+    def ping( value: Option[T] = None ): Unit = {
+        if ( socket == null ) {
+            buffer += Event.Ping( value )
+        } else {
+            val sink = value.map { value ⇒
+                val sink = new Buffer
+                val request = Codec[T].encode( value )
+
+                try {
+                    request.writeTo( sink )
+                    sink
+                } finally {
+                    sink.close()
+                }
+            }
+
+            socket.sendPing( sink.orNull )
+        }
+    }
+
+    def close( code: Int, reason: String ): Unit = {
+        if ( socket == null ) {
+            buffer += Event.Close( code, reason )
+        } else {
+            socket.close( code, reason )
+        }
+    }
+}
+
 object WebSocket {
+    private sealed trait Event[+T]
+
+    private object Event {
+        case class Send[T]( value: T ) extends Event[T]
+        case class Ping[T]( value: Option[T] ) extends Event[T]
+        case class Close( code: Int, reason: String ) extends Event[Nothing]
+    }
+
     def apply[T]( request: Request, strategy: OverflowStrategy.Synchronous[T] )(
         implicit
         cl: Client,
         co: Codec[T]
-    ): ( Observer[T], Observable[T] ) = {
+    ): ( WebSocket[T], Observable[T] ) = {
         val call = WebSocketCall.create( cl, request )
 
-        val buffer = collection.mutable.ListBuffer[Event[T]]()
-
+        val buffer = new WebSocket[T]
         var socket: OkHttpWebSocket = null
 
         def close(): Unit = {
             if ( socket != null ) {
                 socket.close( Close.GoingAway, "Client disconnected" )
-            }
-        }
-
-        val observer = new Observer[T] {
-            override def onNext( value: T ) = {
-                if ( socket == null ) {
-                    buffer += Event.OnNext( value )
-                } else {
-                    socket.sendMessage( co.encode( value ) )
-                }
-
-                Continue
-            }
-
-            override def onError( exception: Throwable ) = {
-                if ( socket == null ) {
-                    buffer += Event.OnError( exception )
-                } else {
-                    socket.close( Close.ProtocolError, exception.getMessage )
-                }
-            }
-
-            override def onComplete() = {
-                if ( socket == null ) {
-                    buffer += Event.OnComplete
-                } else {
-                    socket.close( Close.Normal, "Bye" )
-                }
             }
         }
 
@@ -73,14 +105,9 @@ object WebSocket {
 
             call.enqueue {
                 new WebSocketListener {
-                    override def onOpen( webSocket: OkHttpWebSocket, response: Response ) = {
-                        socket = webSocket
-
-                        buffer.foreach {
-                            case Event.OnNext( value )      ⇒ observer.onNext( value )
-                            case Event.OnError( exception ) ⇒ observer.onError( exception )
-                            case Event.OnComplete           ⇒ observer.onComplete()
-                        }
+                    override def onOpen( websocket: OkHttpWebSocket, response: Response ) = {
+                        socket = websocket
+                        buffer.inject( websocket )
                     }
 
                     override def onMessage( response: ResponseBody ) = {
@@ -104,6 +131,6 @@ object WebSocket {
             Cancelable( close )
         }
 
-        ( observer, observable )
+        ( buffer, observable )
     }
 }

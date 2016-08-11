@@ -10,15 +10,17 @@ import scala.concurrent.Future
 trait SocketServer extends BeforeAndAfterAll { this: org.scalatest.Suite ⇒
     implicit val client = Client()
 
+    val port = SocketServer.port.next()
+
     val request = Builder()
-        .url( "ws://localhost:9000/ws" )
+        .url( s"ws://localhost:$port/ws" )
         .build()
 
     var send: String ⇒ Future[OperationResult] = null
 
     def receive: Receive
 
-    val server = HookupServer( 9000 ) {
+    val server = HookupServer( port ) {
         new HookupServerClient {
             SocketServer.this.send = send( _: String )
             def receive = SocketServer.this.receive
@@ -36,4 +38,8 @@ trait SocketServer extends BeforeAndAfterAll { this: org.scalatest.Suite ⇒
 
         server.stop
     }
+}
+
+object SocketServer {
+    val port = Stream.from( 9000 ).iterator
 }

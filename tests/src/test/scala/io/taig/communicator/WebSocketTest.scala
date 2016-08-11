@@ -4,7 +4,7 @@ import java.io.IOException
 
 import io.backchat.hookup._
 import io.taig.communicator.request.Request
-import io.taig.communicator.websocket.WebSocket
+import io.taig.communicator.websocket.{ Close, WebSocket }
 import monix.execution.Scheduler.Implicits.global
 import monix.reactive.OverflowStrategy
 import org.scalatest.{ AsyncFlatSpec, Matchers }
@@ -25,10 +25,10 @@ class WebSocketTest
 
         val list = observable.toListL
 
-        socket.onNext( "foobar" )
-        socket.onNext( "foo" )
-        socket.onNext( "bar" )
-        socket.onComplete()
+        socket.send( "foobar" )
+        socket.send( "foo" )
+        socket.send( "bar" )
+        socket.close( Close.Normal, "Bye." )
 
         list.runAsync.map {
             _ should contain theSameElementsAs "Connected" :: "foobar" :: "foo" :: "bar" :: Nil

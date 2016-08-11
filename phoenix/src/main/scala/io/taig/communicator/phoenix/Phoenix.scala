@@ -6,7 +6,7 @@ import io.circe.generic.auto._
 import io.circe.syntax._
 import io.taig.communicator._
 import io.taig.communicator.phoenix.message.{ Request, Response }
-import io.taig.communicator.websocket.WebSocket
+import io.taig.communicator.websocket.{ Close, WebSocket }
 import monix.eval.Task
 import monix.reactive.{ Observable, Observer, OverflowStrategy }
 
@@ -14,7 +14,7 @@ import scala.concurrent.duration._
 import scala.language.postfixOps
 
 class Phoenix(
-        observer:   Observer[Json],
+        observer:   WebSocket[Json],
         observable: Observable[Json],
         heartbeat:  Option[Duration],
         reconnect:  Option[Duration]
@@ -28,7 +28,7 @@ class Phoenix(
     def join( topic: Topic, payload: Json = Json.Null ): Task[Channel] = withRef { ref ⇒
         val send = Task {
             val message = Request( topic, Event.Join, payload, ref )
-            observer.onNext( message.asJson )
+            observer.send( message.asJson )
         }
 
         val receive = observable.map( _.as[Response] ).collect {
@@ -42,7 +42,7 @@ class Phoenix(
         } yield receive
     }
 
-    def close(): Unit = observer.onComplete()
+    def close(): Unit = observer.close( Close.GoingAway, "" )
 }
 
 object Phoenix {
@@ -55,7 +55,7 @@ object Phoenix {
         implicit
         c: Client
     ): Phoenix = {
-        val ( observer, observable ) = WebSocket[Json]( request, strategy )
-        new Phoenix( observer, observable, heartbeat, reconnect )
+        val ( websocket, observable ) = WebSocket[Json]( request, strategy )
+        new Phoenix( websocket, observable, heartbeat, reconnect )
     }
 }
