@@ -7,39 +7,17 @@ import io.taig.communicator.request.Request
 import io.taig.communicator.websocket.WebSocket
 import monix.execution.Scheduler.Implicits.global
 import monix.reactive.OverflowStrategy
-import org.scalatest.{ AsyncFlatSpec, BeforeAndAfterAll, Matchers }
+import org.scalatest.{ AsyncFlatSpec, Matchers }
 
 import scala.language.postfixOps
 
 class WebSocketTest
         extends AsyncFlatSpec
         with Matchers
-        with BeforeAndAfterAll {
-    implicit val client = Client()
-
-    val request = Request.Builder()
-        .url( "ws://localhost:9000/ws" )
-        .build()
-
-    val server = HookupServer( 9000 ) {
-        new HookupServerClient {
-            def receive = {
-                case Connected           ⇒ send( "Connected" )
-                case TextMessage( text ) ⇒ send( text )
-            }
-        }
-    }
-
-    override def beforeAll() = {
-        super.beforeAll()
-
-        server.start
-    }
-
-    override def afterAll() = {
-        super.afterAll()
-
-        server.stop
+        with SocketServer {
+    override def receive = {
+        case Connected           ⇒ send( "Connected" )
+        case TextMessage( text ) ⇒ send( text )
     }
 
     it should "propagate messages when they are received" in {
