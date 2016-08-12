@@ -21,17 +21,17 @@ class WebSocketTest
     }
 
     it should "propagate messages when they are received" in {
-        val ( socket, observable ) = WebSocket[String]( request, OverflowStrategy.Unbounded )
+        val websocket = WebSocket[String]( request, OverflowStrategy.Unbounded )
 
-        val list = observable.toListL
+        val list = websocket.receiver.toListL
 
-        socket.send( "foobar" )
-        socket.send( "foo" )
-        socket.send( "bar" )
-        socket.close( Close.Normal, "Bye." )
+        val messages = "foobar" :: "foo" :: "bar" :: Nil
+
+        messages.foreach( websocket.sender.send )
+        websocket.sender.close( Close.Normal, "Bye." )
 
         list.runAsync.map {
-            _ should contain theSameElementsAs "Connected" :: "foobar" :: "foo" :: "bar" :: Nil
+            _ should contain theSameElementsAs "Connected" +: messages
         }
     }
 
@@ -40,9 +40,11 @@ class WebSocketTest
             .url( "wss://yourlocalhost" )
             .build()
 
-        val ( _, observable ) = WebSocket[String]( request, OverflowStrategy.Unbounded )
+        val WebSocket( _, receiver ) = {
+            WebSocket[String]( request, OverflowStrategy.Unbounded )
+        }
 
-        observable.firstL.runAsync.failed.map {
+        receiver.firstL.runAsync.failed.map {
             _ shouldBe a[IOException]
         }
     }

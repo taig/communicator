@@ -16,16 +16,15 @@ trait SocketServer extends BeforeAndAfterAll { this: org.scalatest.Suite ⇒
         .url( s"ws://localhost:$port/ws" )
         .build()
 
-    var send: String ⇒ Future[OperationResult] = null
+    private val socketServerClient = new HookupServerClient {
+        def receive = SocketServer.this.receive
+    }
+
+    val server = HookupServer( port )( socketServerClient )
 
     def receive: Receive
 
-    val server = HookupServer( port ) {
-        new HookupServerClient {
-            SocketServer.this.send = send( _: String )
-            def receive = SocketServer.this.receive
-        }
-    }
+    val send: String ⇒ Future[OperationResult] = socketServerClient.send( _: String )
 
     override def beforeAll() = {
         super.beforeAll()

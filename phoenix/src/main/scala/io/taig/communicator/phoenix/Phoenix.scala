@@ -1,38 +1,40 @@
 package io.taig.communicator.phoenix
 
-import cats.data.Xor
 import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.syntax._
 import io.taig.communicator._
+import io.taig.communicator.phoenix.message.Response.Payload
 import io.taig.communicator.phoenix.message.{ Request, Response }
 import io.taig.communicator.websocket.{ Close, WebSocket }
+import io.taig.communicator.websocket.WebSocket.Sender
 import monix.eval.Task
-import monix.reactive.{ Observable, Observer, OverflowStrategy }
+import monix.reactive.OverflowStrategy
 
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
 class Phoenix(
-        observer:   WebSocket[Json],
-        observable: Observable[Json],
-        heartbeat:  Option[Duration],
-        reconnect:  Option[Duration]
+        private[phoenix] val websocket: WebSocket[Request, Response],
+        heartbeat:                      Option[Duration],
+        reconnect:                      Option[Duration]
 ) {
     private val iterator: Iterator[Ref] = {
         Stream.iterate( 0L )( _ + 1 ).map( Ref( _ ) ).iterator
     }
 
-    private def withRef[T]( f: Ref ⇒ T ): T = f( synchronized( iterator.next() ) )
+    private[phoenix] def ref = synchronized( iterator.next() )
+
+    private[phoenix] def withRef[T]( f: Ref ⇒ T ): T = f( ref )
 
     def join( topic: Topic, payload: Json = Json.Null ): Task[Channel] = withRef { ref ⇒
         val send = Task {
-            val message = Request( topic, Event.Join, payload, ref )
-            observer.send( message.asJson )
+            val request = Request( topic, Event.Join, payload, ref )
+            websocket.sender.send( request )
         }
 
-        val receive = observable.map( _.as[Response] ).collect {
-            case Xor.Right( Response( topic, _, payload, `ref` ) ) if payload.status == "ok" ⇒
+        val receive = websocket.receiver.collect {
+            case Response( `topic`, _, Payload( "ok", _ ), `ref` ) ⇒
                 new Channel( this, topic )
         }.firstL
 
@@ -42,7 +44,7 @@ class Phoenix(
         } yield receive
     }
 
-    def close(): Unit = observer.close( Close.GoingAway, "" )
+    def close(): Unit = websocket.close()
 }
 
 object Phoenix {
@@ -55,7 +57,34 @@ object Phoenix {
         implicit
         c: Client
     ): Phoenix = {
-        val ( websocket, observable ) = WebSocket[Json]( request, strategy )
-        new Phoenix( websocket, observable, heartbeat, reconnect )
+        val websocket = WebSocket[Json]( request, strategy )
+
+        new Phoenix(
+            new WebSocket[Request, Response] {
+                override val sender = new Sender[Request] {
+                    override def send( value: Request ) = {
+                        websocket.sender.send( value.asJson )
+                    }
+
+                    override def ping( value: Option[Request] ) = {
+                        websocket.sender.ping( value.map( _.asJson ) )
+                    }
+
+                    override def close( code: Int, reason: String ) = {
+                        websocket.sender.close( code, reason )
+                    }
+                }
+
+                override val receiver = {
+                    websocket.receiver.map( _.as[Response].valueOr( throw _ ) )
+                }
+
+                override def close() = {
+                    websocket.sender.close( Close.GoingAway, "Bye." )
+                }
+            },
+            heartbeat,
+            reconnect
+        )
     }
 }
