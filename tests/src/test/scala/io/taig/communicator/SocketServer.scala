@@ -10,7 +10,7 @@ import scala.concurrent.Future
 trait SocketServer extends BeforeAndAfterAll { this: org.scalatest.Suite ⇒
     implicit val client = Client()
 
-    val port = SocketServer.port.next()
+    val port = SocketServer.synchronized( SocketServer.port.next() )
 
     val request = Builder()
         .url( s"ws://localhost:$port/ws" )

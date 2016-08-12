@@ -35,6 +35,7 @@ class Phoenix(
 
         val receive = websocket.receiver.collect {
             case Response( `topic`, _, Payload( "ok", _ ), `ref` ) ⇒
+                logger.info( s"Joining channel $topic" )
                 new Channel( this, topic )
         }.firstL
 

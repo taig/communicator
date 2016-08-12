@@ -36,24 +36,16 @@ object WebSocket {
         cl: Client,
         co: Codec[T]
     ): WebSocket[T, T] = {
-        val call = WebSocketCall.create( cl, request )
-
         val buffer = new BufferedOkHttpWebSocket
 
         var socket: OkHttpWebSocket = null
-
-        def close(): Unit = {
-            if ( socket != null ) {
-                socket.close( Close.GoingAway, "Client disconnected" )
-            }
-        }
 
         val observable = Observable.create( strategy ) { downstream ⇒
             def handle( data: Array[Byte] ): Unit = {
                 co.decode( data ) match {
                     case Success( data ) ⇒
                         if ( downstream.onNext( data ) == Stop ) {
-                            close()
+                            buffer.close( Close.GoingAway, "Bye." )
                         }
                     case Failure( exception ) ⇒
                         downstream.onError( exception )
@@ -61,32 +53,85 @@ object WebSocket {
                 }
             }
 
+            logger.info( s"Connecting to websocket ${request.url()}" )
+
+            val call = WebSocketCall.create( cl, request )
+
             call.enqueue {
                 new WebSocketListener {
                     override def onOpen( websocket: OkHttpWebSocket, response: Response ) = {
+                        logger.debug {
+                            val message = Option( response )
+                                .flatMap( response ⇒ Option( response.body() ) )
+                                .map( _.string() )
+                                .orNull
+
+                            s"""
+                              |[${request.url()}] onOpen:
+                              |$message
+                            """.stripMargin.trim
+                        }
+
                         socket = websocket
                         buffer.inject( websocket )
                     }
 
                     override def onMessage( response: ResponseBody ) = {
-                        handle( response.bytes() )
+                        val message = response.bytes()
+
+                        logger.debug {
+                            s"""
+                               |[${request.url()}] onMessage:
+                               |${new String( message )}
+                             """.stripMargin.trim
+                        }
+
+                        handle( message )
                     }
 
                     override def onPong( payload: Buffer ) = {
-                        handle( payload.readByteArray() )
+                        val message = Option( payload ).map( _.readByteArray() )
+
+                        logger.debug {
+                            s"""
+                              |[${request.url()}] onPing:
+                              |${message.map( new String( _ ) ).orNull}
+                            """.stripMargin.trim
+                        }
+
+                        handle( message.getOrElse( Array.emptyByteArray ) )
                     }
 
                     override def onClose( code: Int, reason: String ) = {
+                        logger.debug(
+                            s"""
+                               |[${request.url()}] onClose:
+                               |$code $reason
+                             """.stripMargin.trim
+                        )
+
                         downstream.onComplete()
                     }
 
                     override def onFailure( exception: IOException, response: Response ) = {
+                        logger.debug( {
+                            val message = Option( response )
+                                .flatMap( response ⇒ Option( response.body() ) )
+                                .map( _.string() )
+                                .orNull
+
+                            s"""
+                               |[${request.url()}] onFailure:
+                               |$message
+                             """.stripMargin.trim
+                        }, exception )
+
                         downstream.onError( exception )
                     }
                 }
             }
 
-            Cancelable( close )
+            Cancelable( () ⇒ buffer.close( Close.GoingAway, "Bye." ) )
         }
 
         new WebSocket[T, T] {

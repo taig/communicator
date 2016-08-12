@@ -43,6 +43,8 @@ class Channel( phoenix: Phoenix, val topic: Topic )
     }
 
     def leave() = {
+        logger.info( s"Leaving channel $topic" )
+
         val request = Request(
             topic,
             Event.Leave,

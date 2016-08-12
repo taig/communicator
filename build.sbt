@@ -19,6 +19,7 @@ lazy val common = project
     .settings(
         libraryDependencies ++=
             "com.squareup.okhttp3" % "okhttp" % Settings.dependency.okhttp ::
+            "com.typesafe.scala-logging" %% "scala-logging" % "3.4.0" ::
             "io.monix" %% "monix-eval" % Settings.dependency.monix ::
             Nil,
         name := "common",
@@ -75,6 +76,7 @@ lazy val tests = project
     .settings (
         libraryDependencies ++=
             "com.squareup.okhttp3" % "mockwebserver" % Settings.dependency.okhttp % "test" ::
+            "ch.qos.logback" %  "logback-classic" % "1.1.7" % "test" ::
             "io.backchat.hookup" %% "hookup" % "0.4.2" % "test" ::
             "org.scalatest" %% "scalatest" % "3.0.0" % "test" ::
             Nil
