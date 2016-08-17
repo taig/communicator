@@ -1,4 +1,4 @@
-package io.taig.communicator
+package io.taig.communicator.test
 
 import io.taig.communicator.request.{ Parser, Request }
 import monix.execution.Scheduler.Implicits.global

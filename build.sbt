@@ -21,6 +21,7 @@ lazy val common = project
             "com.squareup.okhttp3" % "okhttp" % Settings.dependency.okhttp ::
             "com.typesafe.scala-logging" %% "scala-logging" % "3.4.0" ::
             "io.monix" %% "monix-eval" % Settings.dependency.monix ::
+            "ch.qos.logback" %  "logback-classic" % "1.1.7" ::
             Nil,
         name := "common",
         startYear := Some( 2016 )
@@ -79,6 +80,7 @@ lazy val tests = project
             "ch.qos.logback" %  "logback-classic" % "1.1.7" % "test" ::
             "io.backchat.hookup" %% "hookup" % "0.4.2" % "test" ::
             "org.scalatest" %% "scalatest" % "3.0.0" % "test" ::
-            Nil
+            Nil,
+        testOptions in Test += Tests.Argument( "-oFD" )    
     )
     .dependsOn( common, request, websocket, phoenix )

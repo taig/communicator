@@ -9,3 +9,7 @@ addSbtPlugin( "io.taig" % "sbt-sonatype" % "1.1.0" )
 addSbtPlugin( "org.scoverage" % "sbt-scoverage" % "1.3.5" )
 
 addSbtPlugin( "org.tpolecat" % "tut-plugin" % "0.4.3" )
+
+libraryDependencies ++=
+    "ch.qos.logback" %  "logback-classic" % "1.1.7" ::
+    Nil

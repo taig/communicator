@@ -1,7 +1,8 @@
-package io.taig.communicator
+package io.taig.communicator.test
 
 import io.backchat.hookup.HookupClient.Receive
 import io.backchat.hookup._
+import io.taig.communicator.Client
 import io.taig.communicator.request.Request.Builder
 import org.scalatest.BeforeAndAfterAll
 
@@ -24,7 +25,13 @@ trait SocketServer extends BeforeAndAfterAll { this: org.scalatest.Suite ⇒
 
     def receive: Receive
 
-    val send: String ⇒ Future[OperationResult] = socketServerClient.send( _: String )
+    def send( message: String ): Future[OperationResult] = {
+        socketServerClient.send( message )
+    }
+
+    def disconnect(): Future[OperationResult] = {
+        socketServerClient.disconnect()
+    }
 
     override def beforeAll() = {
         super.beforeAll()

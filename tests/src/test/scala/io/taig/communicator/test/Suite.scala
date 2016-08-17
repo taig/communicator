@@ -1,8 +1,8 @@
-package io.taig.communicator
+package io.taig.communicator.test
 
 import java.util.logging.LogManager
 
-import monix.execution.Scheduler
+import io.taig.communicator.Client
 import okhttp3.Request.Builder
 import okhttp3.mockwebserver.MockWebServer
 import org.scalatest.{ FlatSpec, Matchers }

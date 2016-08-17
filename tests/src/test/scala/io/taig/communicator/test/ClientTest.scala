@@ -1,5 +1,6 @@
-package io.taig.communicator
+package io.taig.communicator.test
 
+import io.taig.communicator.Client
 import okhttp3.OkHttpClient
 
 class ClientTest extends Suite {

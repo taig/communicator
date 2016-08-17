@@ -2,153 +2,154 @@ package io.taig.communicator.websocket
 
 import java.io.IOException
 
-import io.taig.communicator._
-import monix.execution.Ack.Stop
+import io.taig.communicator.OkHttpRequest
+import monix.eval.{ Callback, Task }
 import monix.execution.Cancelable
-import monix.reactive.{ Observable, OverflowStrategy }
-import okhttp3._
-import okhttp3.ws.{ WebSocketCall, WebSocketListener }
+import monix.execution.atomic.AtomicBoolean
+import okhttp3.{ HttpUrl, OkHttpClient, Response, ResponseBody }
+import okhttp3.ws.WebSocketCall
 import okio.Buffer
 
 import scala.util.{ Failure, Success }
 
-trait WebSocket[S, +R] {
-    def sender: WebSocket.Sender[S]
-
-    def receiver: WebSocket.Receiver[R]
-
-    def close(): Unit
-}
-
 object WebSocket {
-    trait Sender[S] {
-        def send( value: S ): Unit
-
-        def ping( value: Option[S] = None ): Unit
-
-        def close( code: Int, reason: String ): Unit
-    }
-
-    type Receiver[+R] = Observable[R]
-
-    def apply[T]( request: Request, strategy: OverflowStrategy.Synchronous[T] )(
+    def apply[T: Codec]( request: OkHttpRequest )( listener: WebSocketListener[T] )(
         implicit
-        cl: Client,
-        co: Codec[T]
-    ): WebSocket[T, T] = {
-        val buffer = new BufferedOkHttpWebSocket
+        client: OkHttpClient
+    ): Task[( OkHttpWebSocket, Option[T] )] = {
+        Task.create { ( _, callback ) ⇒
+            val call = WebSocketCall.create( client, request )
 
-        var socket: OkHttpWebSocket = null
+            call.enqueue(
+                new WebSocketListenerProxy(
+                    request.url(),
+                    callback,
+                    listener
+                )
+            )
 
-        val observable = Observable.create( strategy ) { downstream ⇒
-            def handle( data: Array[Byte] ): Unit = {
-                co.decode( data ) match {
-                    case Success( data ) ⇒
-                        if ( downstream.onNext( data ) == Stop ) {
-                            buffer.close( Close.GoingAway, "Bye." )
-                        }
-                    case Failure( exception ) ⇒
-                        downstream.onError( exception )
-
-                }
-            }
-
-            logger.info( s"Connecting to websocket ${request.url()}" )
-
-            val call = WebSocketCall.create( cl, request )
-
-            call.enqueue {
-                new WebSocketListener {
-                    override def onOpen( websocket: OkHttpWebSocket, response: Response ) = {
-                        logger.debug {
-                            val message = Option( response )
-                                .flatMap( response ⇒ Option( response.body() ) )
-                                .map( _.string() )
-                                .orNull
-
-                            s"""
-                              |[${request.url()}] onOpen:
-                              |$message
-                            """.stripMargin.trim
-                        }
-
-                        socket = websocket
-                        buffer.inject( websocket )
-                    }
-
-                    override def onMessage( response: ResponseBody ) = {
-                        val message = response.bytes()
-
-                        logger.debug {
-                            s"""
-                               |[${request.url()}] onMessage:
-                               |${new String( message )}
-                             """.stripMargin.trim
-                        }
-
-                        handle( message )
-                    }
-
-                    override def onPong( payload: Buffer ) = {
-                        val message = Option( payload ).map( _.readByteArray() )
-
-                        logger.debug {
-                            s"""
-                              |[${request.url()}] onPing:
-                              |${message.map( new String( _ ) ).orNull}
-                            """.stripMargin.trim
-                        }
-
-                        handle( message.getOrElse( Array.emptyByteArray ) )
-                    }
-
-                    override def onClose( code: Int, reason: String ) = {
-                        logger.debug(
-                            s"""
-                               |[${request.url()}] onClose:
-                               |$code $reason
-                             """.stripMargin.trim
-                        )
-
-                        downstream.onComplete()
-                    }
-
-                    override def onFailure( exception: IOException, response: Response ) = {
-                        logger.debug( {
-                            val message = Option( response )
-                                .flatMap( response ⇒ Option( response.body() ) )
-                                .map( _.string() )
-                                .orNull
-
-                            s"""
-                               |[${request.url()}] onFailure:
-                               |$message
-                             """.stripMargin.trim
-                        }, exception )
-
-                        downstream.onError( exception )
-                    }
-                }
-            }
-
-            Cancelable( () ⇒ buffer.close( Close.GoingAway, "Bye." ) )
-        }
-
-        new WebSocket[T, T] {
-            override val sender = new BufferedWebSocketSender[T]( buffer )
-
-            override val receiver = observable
-
-            override def close() = {
-                sender.close( Close.GoingAway, "Bye." )
-            }
+            Cancelable { () ⇒ call.cancel() }
         }
     }
 
-    def unapply[S, R](
-        websocket: WebSocket[S, R]
-    ): Option[( Sender[S], Receiver[R] )] = {
-        Some( websocket.sender, websocket.receiver )
+    def pure[T: Codec]( request: OkHttpRequest )(
+        implicit
+        client: OkHttpClient
+    ): Task[( OkHttpWebSocket, Option[T] )] = {
+        WebSocket( request )( new WebSocketListenerNoop[T] )
     }
 }
 
+trait WebSocketListener[T] {
+    def onMessage( message: T ): Unit
+
+    def onPong( payload: Option[T] ): Unit
+
+    def onClose( code: Int, reason: Option[String] ): Unit
+
+    def onFailure( exception: IOException, response: Option[T] ): Unit
+}
+
+private class WebSocketListenerNoop[T] extends WebSocketListener[T] {
+    override def onMessage( message: T ) = {}
+
+    override def onPong( payload: Option[T] ) = {}
+
+    override def onClose( code: Int, reason: Option[String] ) = {}
+
+    override def onFailure( exception: IOException, response: Option[T] ) = {}
+}
+
+private class WebSocketListenerProxy[T: Codec](
+        url:      HttpUrl,
+        callback: Callback[( OkHttpWebSocket, Option[T] )],
+        listener: WebSocketListener[T]
+) extends OkHttpWebSocketListener {
+    val initialized = AtomicBoolean( false )
+
+    override def onOpen( socket: OkHttpWebSocket, response: Response ) = {
+        initialized.set( true )
+
+        val message = Option( response )
+            .flatMap( response ⇒ Option( response.body() ) )
+            .map( _.bytes() )
+            .flatMap( Codec[T].decode( _ ).toOption )
+
+        logger.debug {
+            s"""
+               |[$url] onOpen
+               |  Payload: ${message.orNull}
+            """.stripMargin.trim
+        }
+
+        callback.onSuccess( ( socket, message ) )
+    }
+
+    override def onFailure( exception: IOException, response: Response ) = {
+        val message = Option( response )
+            .flatMap( response ⇒ Option( response.body() ) )
+            .map( _.bytes() )
+            .flatMap( Codec[T].decode( _ ).toOption )
+
+        logger.debug( {
+            s"""
+               |[$url] onFailure
+               |  Payload: $message
+            """.stripMargin.trim
+        }, exception )
+
+        if ( initialized.compareAndSet( false, true ) ) {
+            callback.onError( exception )
+        } else {
+            listener.onFailure( exception, message )
+        }
+    }
+
+    override def onMessage( response: ResponseBody ) = {
+        Codec[T].decode( response.bytes() ) match {
+            case Success( message ) ⇒
+                logger.debug {
+                    s"""
+                       |[$url] onMessage
+                       |  Payload: $message
+                    """.stripMargin
+                }
+
+                listener.onMessage( message )
+            case Failure( exception ) ⇒
+                listener.onFailure(
+                    new IOException( "Failed to parse message", exception ),
+                    None
+                )
+        }
+    }
+
+    override def onPong( payload: Buffer ) = {
+        val message = Option( payload )
+            .map( _.readByteArray() )
+            .flatMap( Codec[T].decode( _ ).toOption )
+
+        logger.debug {
+            s"""
+               |[$url] onPing
+               |  Payload: ${message.orNull}
+            """.stripMargin.trim
+        }
+
+        listener.onPong( message )
+    }
+
+    override def onClose( code: Int, reason: String ) = {
+        val optionalReason = Some( reason ).filter( _.nonEmpty )
+
+        logger.debug {
+            s"""
+               |[$url] onClose
+               |  Code:   $code
+               |  Reason: ${optionalReason.orNull}
+            """.stripMargin.trim
+        }
+
+        listener.onClose( code, optionalReason )
+    }
+}
