@@ -5,6 +5,7 @@ import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.parser._
 import io.circe.syntax._
+import io.taig.communicator.phoenix.message.Response.Status
 import io.taig.communicator.phoenix.message.{ Request, Response }
 import io.taig.communicator.phoenix.{ Event, Topic }
 import monix.execution.Scheduler.Implicits.global
@@ -31,7 +32,7 @@ class PhoenixTest
         Response(
             request.topic,
             Event.Reply,
-            Response.Payload( "ok", Json.Null ),
+            Response.Payload( Status.Ok, Json.Null ),
             request.ref
         )
     }

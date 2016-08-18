@@ -2,11 +2,11 @@ package io.taig.communicator.phoenix
 
 import io.circe.Json
 import io.taig.communicator._
-import io.taig.communicator.phoenix.message.Response.Payload
-import io.taig.communicator.phoenix.message.{Request, Response}
-import io.taig.communicator.websocket.{WebSocketChannels, WebSocketWriter}
+import io.taig.communicator.phoenix.message.Response.{ Payload, Status }
+import io.taig.communicator.phoenix.message.{ Request, Response }
+import io.taig.communicator.websocket.{ WebSocketChannels, WebSocketWriter }
 import monix.eval.Task
-import monix.execution.{Cancelable, Scheduler}
+import monix.execution.{ Cancelable, Scheduler }
 import monix.reactive.OverflowStrategy
 
 import scala.concurrent.duration._
@@ -96,7 +96,7 @@ class Phoenix(
         }
 
         val receive = reader.collect {
-            case Response( `topic`, _, Payload( "ok", _ ), `ref` ) ⇒
+            case Response( `topic`, _, Payload( Status.Ok, _ ), `ref` ) ⇒
                 logger.info( s"Successfully joined channel $topic" )
                 new Channel( this, topic )
         }.firstL

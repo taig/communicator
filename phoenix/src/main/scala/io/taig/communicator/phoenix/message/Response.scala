@@ -1,6 +1,6 @@
 package io.taig.communicator.phoenix.message
 
-import io.circe.Json
+import io.circe.{ Decoder, Json }
 import io.taig.communicator.phoenix.{ Event, Ref, Topic }
 
 case class Response(
@@ -11,5 +11,18 @@ case class Response(
 )
 
 object Response {
-    case class Payload( status: String, response: Json )
+    case class Payload( status: Status, response: Json )
+
+    sealed case class Status( value: String )
+
+    object Status {
+        object Ok extends Status( "ok" )
+
+        implicit val decoderStatus: Decoder[Status] = {
+            Decoder[String].map {
+                case "ok"  ⇒ Ok
+                case value ⇒ Status( value )
+            }
+        }
+    }
 }
