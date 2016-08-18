@@ -63,8 +63,8 @@ case class WebSocketReader[T] private[websocket] (
 object WebSocketReader {
     def apply[T](
         request:   OkHttpRequest,
-        strategy:  OverflowStrategy.Synchronous[Event[T]] = OverflowStrategy.Unbounded,
-        reconnect: Option[FiniteDuration]                 = Some( 3 seconds )
+        strategy:  OverflowStrategy.Synchronous[Event[T]] = Default.strategy,
+        reconnect: Option[FiniteDuration]                 = Default.reconnect
     )(
         implicit
         client:  OkHttpClient,
@@ -85,7 +85,7 @@ private class ReconnectingSubscriberProxy[T](
     override def onNext( value: T ) = subscriber.onNext( value )
 
     override def onError( exception: Throwable ) = {
-        logger.debug( s"Websocket failure, reconnecting reader $delay" )
+        logger.debug( s"Websocket failure, reconnecting in $delay", exception )
 
         onDisconnected()
 
@@ -94,7 +94,16 @@ private class ReconnectingSubscriberProxy[T](
             .unsafeSubscribeFn( subscriber )
     }
 
-    override def onComplete() = subscriber.onComplete()
+    override def onComplete() = {
+        subscriber.onComplete()
+
+        // TODO When the server closes the connection, we want to reconnect
+        logger.debug( s"Websocket closed, reconnecting in $delay" )
+
+        //        observable
+        //            .delaySubscription( delay )
+        //            .unsafeSubscribeFn( subscriber )
+    }
 }
 
 private class WebSocketReaderListener[T: Decoder](

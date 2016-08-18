@@ -51,6 +51,11 @@ private class OkHttpWebSocketWriter[T: Encoder]( socket: OkHttpWebSocket )
 }
 
 trait BufferedWebSocketWriter[T] extends WebSocketWriter[T] {
+    /**
+     * Send via websocket immediately or drop if unavailable
+     */
+    def sendNow( value: T ): Unit
+
     def connect( socket: OkHttpWebSocket ): this.type
 
     def disconnect(): this.type
@@ -90,12 +95,23 @@ private class BufferedOkHttpWebSocketWriter[T: Encoder]
         this
     }
 
+    override def sendNow( value: T ) = synchronized {
+        socket.fold[Unit] {
+            logger.debug {
+                s"""
+                   |Dropping message (because socket is unavailable)
+                   |  Payload: $value
+                """.stripMargin.trim
+            }
+        } { _ ⇒ send( value ) }
+    }
+
     override def send( value: T ) = synchronized {
         socket.fold[Unit] {
             logger.debug {
                 s"""
                    |Buffering message
-                   |  Paylaod: $value
+                   |  Payload: $value
                 """.stripMargin.trim
             }
 

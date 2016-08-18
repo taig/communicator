@@ -18,12 +18,12 @@ trait WebSocketChannels[I, O] { self ⇒
 object WebSocketChannels {
     def apply[I: Decoder, O: Encoder](
         request:   OkHttpRequest,
-        strategy:  OverflowStrategy.Synchronous[Event[I]] = OverflowStrategy.Unbounded,
-        reconnect: Option[FiniteDuration]                 = Some( 3 seconds )
+        strategy:  OverflowStrategy.Synchronous[Event[I]] = Default.strategy,
+        reconnect: Option[FiniteDuration]                 = Default.reconnect
     )(
         implicit
         client: OkHttpClient
-    ): WebSocketChannels[I, O] = {
+    ): BufferedWebSocketChannels[I, O] = {
         val writer = BufferedWebSocketWriter()
 
         val reader = WebSocketReader(
@@ -34,7 +34,7 @@ object WebSocketChannels {
             () ⇒ writer.disconnect()
         )
 
-        new OkHttpWebSocketChannels[I, O]( reader, writer )
+        new BufferedWebSocketChannels[I, O]( reader, writer )
     }
 
     def symmetric[T: Encoder: Decoder](
@@ -55,7 +55,7 @@ object WebSocketChannels {
     }
 }
 
-private class OkHttpWebSocketChannels[I, O](
+class BufferedWebSocketChannels[I, O](
         val reader: WebSocketReader[I],
         val writer: BufferedWebSocketWriter[O]
 ) extends WebSocketChannels[I, O] {

@@ -185,10 +185,7 @@ private class WebSocketListenerProxy[I: Decoder](
 
                 listener.onMessage( message )
             case Failure( exception ) ⇒
-                listener.onFailure(
-                    new IOException( "Failed to parse message", exception ),
-                    None
-                )
+                logger.error( "Failed to parse message", exception )
         }
     }
 
