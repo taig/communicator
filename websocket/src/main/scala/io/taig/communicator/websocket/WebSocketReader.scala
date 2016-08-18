@@ -21,8 +21,8 @@ case class WebSocketReader[T] private[websocket] (
         onDisconnected: () ⇒ Unit
 )(
         implicit
-        client: OkHttpClient,
-        codec:  Codec[T]
+        client:  OkHttpClient,
+        decoder: Decoder[T]
 ) extends Observable[Event[T]] {
     val channel: Observable[Event[T]] = Observable.unsafeCreate { subscriber ⇒
         import subscriber.scheduler
@@ -67,8 +67,8 @@ object WebSocketReader {
         reconnect: Option[FiniteDuration]                 = Some( 3 seconds )
     )(
         implicit
-        client: OkHttpClient,
-        codec:  Codec[T]
+        client:  OkHttpClient,
+        decoder: Decoder[T]
     ): WebSocketReader[T] = {
         WebSocketReader( request, strategy, reconnect, _ ⇒ (), () ⇒ () )
     }
@@ -97,7 +97,7 @@ private class ReconnectingSubscriberProxy[T](
     override def onComplete() = subscriber.onComplete()
 }
 
-private class WebSocketReaderListener[T: Codec](
+private class WebSocketReaderListener[T: Decoder](
         downstream: Subscriber.Sync[Event[T]]
 ) extends WebSocketListener[T] {
     var socket: Option[OkHttpWebSocket] = None

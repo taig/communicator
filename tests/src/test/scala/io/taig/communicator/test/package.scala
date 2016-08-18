@@ -1,12 +1,15 @@
 package io.taig.communicator
 
-import io.taig.communicator.websocket.Codec
+import io.taig.communicator.websocket._
 
 import scala.util.Try
 
 package object test {
-    implicit val codecInt: Codec[Int] = Codec.instance(
-        value ⇒ Codec[String].encode( value.toString ),
+    implicit val encoderInt: Encoder[Int] = Encoder.instance(
+        value ⇒ Encoder[String].encode( value.toString )
+    )
+
+    implicit val decoderInt: Decoder[Int] = Decoder.instance(
         data ⇒ Try( new String( data ).toInt )
     )
 }

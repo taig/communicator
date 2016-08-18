@@ -30,7 +30,7 @@ class WebSocketTest
         }.runAsync
     }
 
-    it should "allow to send a message" in {
+    it should "allow to send a payload" in {
         WebSocketWriter[String]( request ).map { writer ⇒
             writer.send( "foobar" )
             writer.close( Close.GoingAway, None )
@@ -147,8 +147,8 @@ class WebSocketTest
     }
 
     "WebSocketChannels" should "support writing and reading to/from the socket" in {
-        val WebSocketChannels( writer, reader ) = {
-            WebSocketChannels[String]( request )
+        val WebSocketChannels( reader, writer ) = {
+            WebSocketChannels.symmetric[String]( request )
         }
 
         writer.send( "foo" )
@@ -165,8 +165,8 @@ class WebSocketTest
     }
 
     it should "be able to automatically close the socket" in {
-        val WebSocketChannels( writer, reader ) = {
-            WebSocketChannels[String]( request )
+        val WebSocketChannels( reader, writer ) = {
+            WebSocketChannels.symmetric[String]( request )
         }
 
         // Share observable to auto-cancel after execution

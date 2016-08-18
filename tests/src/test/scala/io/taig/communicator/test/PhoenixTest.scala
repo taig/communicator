@@ -5,7 +5,7 @@
 //import io.circe.generic.auto._
 //import io.circe.parser._
 //import io.circe.syntax._
-//import io.taig.communicator.phoenix.message.{ Request, Response }
+//import io.taig.communicator.phoenix.payload.{ Request, Response }
 //import io.taig.communicator.phoenix.{ Event, Phoenix, Topic }
 //import monix.execution.Scheduler.Implicits.global
 //import monix.reactive.OverflowStrategy

@@ -5,7 +5,7 @@ import monix.eval.Task
 import okhttp3.OkHttpClient
 import okio.Buffer
 
-trait WebSocketWriter[T] {
+trait WebSocketWriter[T] { self ⇒
     def send( value: T ): Unit
 
     def ping( value: Option[T] = None ): Unit
@@ -14,26 +14,25 @@ trait WebSocketWriter[T] {
 }
 
 object WebSocketWriter {
-    def apply[T: Codec]( request: OkHttpRequest )(
+    def apply[T: Encoder]( request: OkHttpRequest )(
         implicit
         client: OkHttpClient
     ): Task[WebSocketWriter[T]] = {
-        WebSocket( request )( new WebSocketListenerNoop[T] ).map {
-            case ( socket, _ ) ⇒ new OkHttpWebSocketWriter[T]( socket )
-        }
+        WebSocket.pure[T]( request )
+            .map( new OkHttpWebSocketWriter[T]( _ ) )
     }
 }
 
-private class OkHttpWebSocketWriter[T: Codec]( socket: OkHttpWebSocket )
+private class OkHttpWebSocketWriter[T: Encoder]( socket: OkHttpWebSocket )
         extends WebSocketWriter[T] {
     override def send( value: T ) = {
-        socket.sendMessage( Codec[T].encode( value ) )
+        socket.sendMessage( Encoder[T].encode( value ) )
     }
 
     override def ping( value: Option[T] ) = {
         val sink = value.map { value ⇒
             val sink = new Buffer
-            val request = Codec[T].encode( value )
+            val request = Encoder[T].encode( value )
 
             try {
                 request.writeTo( sink )
@@ -58,12 +57,12 @@ trait BufferedWebSocketWriter[T] extends WebSocketWriter[T] {
 }
 
 object BufferedWebSocketWriter {
-    def apply[T: Codec](): BufferedWebSocketWriter[T] = {
+    def apply[T: Encoder](): BufferedWebSocketWriter[T] = {
         new BufferedOkHttpWebSocketWriter[T]
     }
 }
 
-private class BufferedOkHttpWebSocketWriter[T: Codec]
+private class BufferedOkHttpWebSocketWriter[T: Encoder]
         extends BufferedWebSocketWriter[T] {
     import BufferedOkHttpWebSocketWriter.Event
 
@@ -109,7 +108,7 @@ private class BufferedOkHttpWebSocketWriter[T: Codec]
                 """.stripMargin.trim
             }
 
-            socket.sendMessage( Codec[T].encode( value ) )
+            socket.sendMessage( Encoder[T].encode( value ) )
         }
     }
 
@@ -133,7 +132,7 @@ private class BufferedOkHttpWebSocketWriter[T: Codec]
 
             val sink = value.map { value ⇒
                 val sink = new Buffer
-                val request = Codec[T].encode( value )
+                val request = Encoder[T].encode( value )
 
                 try {
                     request.writeTo( sink )
