@@ -7,7 +7,7 @@ import okhttp3.OkHttpClient
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
-trait WebSocketChannels[I, O] {
+trait WebSocketChannels[I, O] { self ⇒
     def reader: WebSocketReader[I]
 
     def writer: BufferedWebSocketWriter[O]
