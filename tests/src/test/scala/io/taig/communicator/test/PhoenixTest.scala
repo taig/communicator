@@ -36,7 +36,7 @@ class PhoenixTest
         Response(
             request.topic,
             Event.Reply,
-            Response.Payload( Status.Ok, Json.Null ),
+            Some( Response.Payload( Status.Ok, Json.Null ) ),
             request.ref
         ).asJson
     }

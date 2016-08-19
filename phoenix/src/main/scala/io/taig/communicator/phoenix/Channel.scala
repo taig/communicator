@@ -1,7 +1,7 @@
 package io.taig.communicator.phoenix
 
 import io.circe.Json
-import io.taig.communicator.phoenix.message.{Request, Response}
+import io.taig.communicator.phoenix.message.{ Request, Response }
 import io.taig.communicator.phoenix.message.Response.Payload
 import monix.reactive.Observable
 
@@ -18,7 +18,7 @@ class Channel( phoenix: Phoenix, val topic: Topic ) { self ⇒
         phoenix.reader
             .filter( _.topic == topic )
             .collect {
-                case Response( _, _ , Some( payload ), _ ) => payload
+                case Response( _, _, Some( payload ), _ ) ⇒ payload
             }
     }
 

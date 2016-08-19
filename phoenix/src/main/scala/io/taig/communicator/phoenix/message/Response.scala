@@ -22,7 +22,7 @@ object Response {
                         Json.Null
                     case json ⇒ json
                 }
-        
+
                 Decoder.decodeOption( deriveDecoder[Payload] )
                     .decodeJson( patched.focus )
             }
