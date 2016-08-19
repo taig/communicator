@@ -51,7 +51,7 @@ class Phoenix(
             new HeartbeatWebSocketWriterProxy(
                 channels.writer,
                 () ⇒ startHeartbeat( heartbeat ),
-                () ⇒ stopHeartbeat()
+                stopHeartbeat
             )
         }
     }
@@ -83,6 +83,8 @@ class Phoenix(
     }
 
     private def stopHeartbeat(): Unit = synchronized {
+        logger.debug( "Stopping heartbeat" )
+
         periodicHeartbeat.foreach( _.cancel() )
         periodicHeartbeat = None
     }

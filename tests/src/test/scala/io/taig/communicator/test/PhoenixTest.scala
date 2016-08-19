@@ -1,7 +1,7 @@
 package io.taig.communicator.test
 
 import io.backchat.hookup._
-import io.circe.Json
+import io.circe.{ Encoder, Json }
 import io.circe.generic.auto._
 import io.circe.parser._
 import io.circe.syntax._
@@ -25,16 +25,20 @@ class PhoenixTest
             val serialized = Serialization.write( json )( DefaultFormats )
             val request = decode[Request]( serialized ).valueOr( throw _ )
             val response = generateResponseFor( request )
-            send( response.asJson.spaces4 )
+            send( response.spaces4 )
     }
 
-    def generateResponseFor( request: Request ): Response = {
+    def generateResponseFor( request: Request ): Json = {
+        implicit val encoderStatus: Encoder[Status] = {
+            Encoder[String].contramap( _.value )
+        }
+
         Response(
             request.topic,
             Event.Reply,
             Response.Payload( Status.Ok, Json.Null ),
             request.ref
-        )
+        ).asJson
     }
 
     it should "be possible to join a Channel" in {
