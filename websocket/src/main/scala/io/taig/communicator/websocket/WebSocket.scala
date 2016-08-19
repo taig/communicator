@@ -174,18 +174,25 @@ private class WebSocketListenerProxy[I: Decoder](
     }
 
     override def onMessage( response: ResponseBody ) = {
-        Decoder[I].decode( response.bytes() ) match {
+        val bytes = response.bytes()
+
+        Decoder[I].decode( bytes ) match {
             case Success( message ) ⇒
                 logger.debug {
                     s"""
                        |[$url] onMessage
                        |  Payload: $message
-                    """.stripMargin
+                    """.stripMargin.trim
                 }
 
                 listener.onMessage( message )
             case Failure( exception ) ⇒
-                logger.error( "Failed to parse message", exception )
+                logger.error( {
+                    s"""
+                      |Failed to parse message
+                      |  Payload: ${new String( bytes )}
+                    """.stripMargin.trim
+                }, exception )
         }
     }
 

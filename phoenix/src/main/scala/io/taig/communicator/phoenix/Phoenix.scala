@@ -98,7 +98,7 @@ class Phoenix(
         }
 
         val receive = reader.collect {
-            case Response( `topic`, _, Payload( Status.Ok, _ ), `ref` ) ⇒
+            case Response( `topic`, _, Some( Payload( Status.Ok, _ ) ), `ref` ) ⇒
                 logger.info( s"Successfully joined channel $topic" )
                 new Channel( this, topic )
         }.firstL

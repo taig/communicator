@@ -1,7 +1,7 @@
 package io.taig.communicator.phoenix
 
 import io.circe.Json
-import io.taig.communicator.phoenix.message.Request
+import io.taig.communicator.phoenix.message.{Request, Response}
 import io.taig.communicator.phoenix.message.Response.Payload
 import monix.reactive.Observable
 
@@ -17,7 +17,9 @@ class Channel( phoenix: Phoenix, val topic: Topic ) { self ⇒
     val reader: Observable[Payload] = {
         phoenix.reader
             .filter( _.topic == topic )
-            .map( _.payload )
+            .collect {
+                case Response( _, _ , Some( payload ), _ ) => payload
+            }
     }
 
     val writer: ChannelWriter = new ChannelWriter {
