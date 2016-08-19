@@ -47,6 +47,15 @@ class WebSocketTest
         }.runAsync
     }
 
+    it should "have no effect when the socket is closed multiple times" in {
+        WebSocketWriter[String]( request ).map { writer ⇒
+            writer.close( Close.GoingAway, None )
+            writer.close( Close.GoingAway, None )
+            writer.close( Close.GoingAway, None )
+            writer shouldBe a[WebSocketWriter[_]]
+        }.runAsync
+    }
+
     it should "fail to write to a closed websocket" in {
         WebSocketWriter[String]( request ).map { writer ⇒
             writer.send( "foo" )
