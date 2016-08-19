@@ -30,6 +30,11 @@ class Channel( phoenix: Phoenix, val topic: Topic ) { self ⇒
         logger.info( s"Leaving channel $topic" )
         send( Event.Leave, Json.Null )
     }
+
+    def close(): Unit = {
+        leave()
+        phoenix.close()
+    }
 }
 
 object Channel {
