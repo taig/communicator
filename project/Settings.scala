@@ -45,7 +45,7 @@ object Settings {
 //    )
 
     object dependency {
-        val circe = "0.5.0-M2"
+        val circe = "0.5.0-M3"
 
         val monix = "2.0-RC11"
 
