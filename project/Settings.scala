@@ -47,7 +47,7 @@ object Settings {
     object dependency {
         val circe = "0.5.0-M2"
 
-        val monix = "2.0-RC10"
+        val monix = "2.0-RC11"
 
         val okhttp = "3.4.1"
     }
