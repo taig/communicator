@@ -37,7 +37,7 @@ libraryDependencies += "io.taig" %% "communicator" % "3.0.0-RC2"
 ## Quickstart
 
 ```tut
-import io.taig.communicator._; import monix.eval.Task
+import io.taig.communicator._; import request._; import monix.eval.Task
 
 // To build request tasks, an implicit OkHttpClient should be in scope
 implicit val client = Client()

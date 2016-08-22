@@ -1,4 +1,4 @@
-package io.taig.communicator
+package io.taig.communicator.request
 
 import okhttp3.ResponseBody
 

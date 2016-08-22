@@ -1,7 +1,9 @@
-package io.taig.communicator
+package io.taig.communicator.test
 
 import java.io.IOException
 
+import io.taig.communicator.request.Request
+import monix.execution.Scheduler.Implicits.global
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.{ MediaType, RequestBody }
 
@@ -15,7 +17,7 @@ class RequestTest extends Suite {
     }
 
     it should "allow to parse the response" in {
-        val builder = init { server ⇒
+        val builder = http { server ⇒
             server.enqueue( new MockResponse().setBody( "foobar" ) )
         }
 
@@ -24,7 +26,7 @@ class RequestTest extends Suite {
     }
 
     it should "allow to ignore the response" in {
-        val builder = init { server ⇒
+        val builder = http { server ⇒
             server.enqueue( new MockResponse().setResponseCode( 201 ).setBody( "foobar" ) )
         }
 
@@ -39,7 +41,7 @@ class RequestTest extends Suite {
     }
 
     it should "allow to handle the response manually" in {
-        val builder = init { server ⇒
+        val builder = http { server ⇒
             server.enqueue( new MockResponse().setResponseCode( 201 ).setBody( "foobar" ) )
         }
 
@@ -51,7 +53,7 @@ class RequestTest extends Suite {
     }
 
     it should "support GET requests" in {
-        val builder = init { server ⇒
+        val builder = http { server ⇒
             server.enqueue( new MockResponse().setResponseCode( 200 ) )
         }
 
@@ -60,7 +62,7 @@ class RequestTest extends Suite {
     }
 
     it should "support POST requests" in {
-        val builder = init { server ⇒
+        val builder = http { server ⇒
             server.enqueue( new MockResponse().setResponseCode( 200 ) )
         }
 

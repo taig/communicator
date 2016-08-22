@@ -1,7 +1,9 @@
-package io.taig.communicator
+package io.taig.communicator.test
 
 import java.util.concurrent.TimeUnit
 
+import io.taig.communicator.request.Request
+import monix.execution.Scheduler.Implicits.global
 import okhttp3.mockwebserver.MockResponse
 
 import scala.concurrent.Await
@@ -10,8 +12,12 @@ import scala.language.postfixOps
 
 class CancelTest extends Suite {
     ignore should "be cancellable" in {
-        val builder = init { server ⇒
-            server.enqueue( new MockResponse().throttleBody( 1, 100, TimeUnit.MILLISECONDS ).setBody( "foobar" ) )
+        val builder = http { server ⇒
+            server.enqueue {
+                new MockResponse()
+                    .throttleBody( 1, 100, TimeUnit.MILLISECONDS )
+                    .setBody( "foobar" )
+            }
         }
 
         val request = builder.build()

@@ -37,25 +37,26 @@ libraryDependencies += "io.taig" %% "communicator" % "3.0.0-RC2"
 ## Quickstart
 
 ```scala
-scala> import io.taig.communicator._; import monix.eval.Task
+scala> import io.taig.communicator._; import request._; import monix.eval.Task
 import io.taig.communicator._
+import request._
 import monix.eval.Task
 
 scala> // To build request tasks, an implicit OkHttpClient should be in scope
      | implicit val client = Client()
-client: io.taig.communicator.Client = okhttp3.OkHttpClient@457fda5e
+client: io.taig.communicator.Client = okhttp3.OkHttpClient@62903ff9
 
 scala> // Simple OkHttp request builder
      | val builder = Request.Builder().url( "http://taig.io/" )
-builder: okhttp3.Request.Builder = okhttp3.Request$Builder@62736268
+builder: okhttp3.Request.Builder = okhttp3.Request$Builder@4766c6
 
 scala> // Construct a Task[Response]
      | val request: Request = Request( builder.build() )
-request: io.taig.communicator.Request = io.taig.communicator.Request@555461ef
+request: io.taig.communicator.request.Request = io.taig.communicator.request.Request@12be74a9
 
 scala> // Parse the response to a String
      | val requestContent: Task[Response.With[String]] = request.parse[String]
-requestContent: monix.eval.Task[io.taig.communicator.Response.With[String]] = BindAsync(<function3>,<function1>)
+requestContent: monix.eval.Task[io.taig.communicator.request.Response.With[String]] = BindAsync(<function3>,<function1>)
 
 scala> // Kick off the actual request
      | import monix.execution.Scheduler.Implicits.global
@@ -68,7 +69,7 @@ scala> requestContent.runAsync.andThen {
      |     case Success( content ) => "Success"
      |     case Failure( exception ) => "Failure"
      | }
-res5: monix.execution.CancelableFuture[io.taig.communicator.Response.With[String]] = monix.execution.CancelableFuture$Implementation@3e8834f0
+res5: monix.execution.CancelableFuture[io.taig.communicator.request.Response.With[String]] = monix.execution.CancelableFuture$Implementation@69987e6
 ```
 
 ## Usage

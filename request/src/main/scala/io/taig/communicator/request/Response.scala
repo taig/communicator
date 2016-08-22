@@ -1,6 +1,6 @@
-package io.taig.communicator
+package io.taig.communicator.request
 
-import okhttp3.{ CacheControl, Challenge, Handshake, Headers, Protocol }
+import okhttp3._
 
 import scala.collection.JavaConversions._
 

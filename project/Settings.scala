@@ -19,12 +19,12 @@ object Settings {
         scalacOptions ++=
             "-deprecation" ::
             "-feature" ::
-            "-Xfatal-warnings" ::
-            "-Ywarn-dead-code" ::
-            "-Ywarn-infer-any" ::
-            "-Ywarn-numeric-widen" ::
-            "-Ywarn-unused-import" ::
-            "-Ywarn-value-discard" ::
+//            "-Xfatal-warnings" ::
+//            "-Ywarn-dead-code" ::
+//            "-Ywarn-infer-any" ::
+//            "-Ywarn-numeric-widen" ::
+//            "-Ywarn-unused-import" ::
+//            "-Ywarn-value-discard" ::
             Nil,
         scalaVersion := "2.11.8"
     )
@@ -45,7 +45,9 @@ object Settings {
 //    )
 
     object dependency {
-        val monix = "2.0-RC9"
+        val circe = "0.5.0-M3"
+
+        val monix = "2.0-RC11"
 
         val okhttp = "3.4.1"
     }

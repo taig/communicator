@@ -11,6 +11,8 @@ package object communicator {
         }
     }
 
+    type OkHttpRequest = okhttp3.Request
+
     type Client = OkHttpClient
 
     object Client {
