@@ -9,7 +9,7 @@ dependencies:
 
 test:
   override:
-    - docker run -v $(PWD):/communicator/ taig/communicator
+    - docker run taig/communicator
 
 #general:
 #  artifacts:
