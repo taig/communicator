@@ -31,4 +31,9 @@ RUN         rm -r ./$PHOENIX_ECHO.zip
 RUN         mix local.hex --force
 RUN         mix local.rebar --force
 RUN         cd ./phoenix_echo/ && mix deps.get
-RUN         cd ./phoenix_echo/ && mix server.phoenix &
+RUN         cd ./phoenix_echo/ && mix compile
+
+WORKDIR     /communicator/
+ADD         . .
+
+ENTRYPOINT  [ "/communicator/entrypoint.sh" ]
