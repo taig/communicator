@@ -18,16 +18,7 @@ import scala.language.postfixOps
 class PhoenixTest
         extends AsyncFlatSpec
         with Matchers
-        with SocketServer
         with PhoenixClient {
-    override def receive = {
-        case JsonMessage( json ) ⇒
-            val serialized = Serialization.write( json )( DefaultFormats )
-            val request = decode[Request]( serialized ).valueOr( throw _ )
-            val response = generateResponseFor( request )
-            send( response.spaces4 )
-    }
-
     def generateResponseFor( request: Request ): Json = {
         implicit val encoderStatus: Encoder[Status] = {
             Encoder[String].contramap( _.value )
