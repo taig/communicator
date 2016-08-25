@@ -33,7 +33,7 @@ ADD         ./build.sbt ./cache/
 ADD         ./project/build.properties ./cache/project/
 ADD         ./project/plugins.sbt ./cache/project/
 ADD         ./project/Settings.scala ./cache/project/
-RUN         cd ./cache/ && sbt test
+RUN         cd ./cache/ && sbt ";test;tut"
 RUN         rm -r ./cache
 
 WORKDIR     /communicator/
