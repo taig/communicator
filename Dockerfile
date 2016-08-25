@@ -30,5 +30,3 @@ RUN         cd ./phoenix_echo/ && mix compile
 
 WORKDIR     /communicator/
 ADD         . .
-
-ENTRYPOINT  [ "/communicator/entrypoint.sh" ]

@@ -3,13 +3,16 @@ machine:
     - docker
 
 dependencies:
+  pre:
+    - docker login -e $DOCKER_HUB_EMAIL -u $DOCKER_HUB_USER -p $DOCKER_HUB_PASSWORD
   override:
-    - docker info
-    - docker build -t taig/communicator .
+    - docker pull taig/communicator:latest || true
 
 test:
   override:
-    - docker run taig/communicator
+    - docker build -t taig/communicator:latest .
+    - docker push taig/communicator:latest
+    - docker run --entrypoint="./test.sh" taig/communicator
 
 #general:
 #  artifacts:
