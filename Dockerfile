@@ -1,14 +1,8 @@
-FROM        taig/scala:1.0.4
+FROM        taig/scala:1.0.5
 
 MAINTAINER  Niklas Klein "mail@taig.io"
 
 ENV         PHOENIX_ECHO 5055696fce8eed8780175bed64033480f19076e5
-
-# Please Elixir (which complains when not using UTF-8)
-RUN         locale-gen en_US.UTF-8  
-ENV         LANG en_US.UTF-8  
-ENV         LANGUAGE en_US:en  
-ENV         LC_ALL en_US.UTF-8 
 
 # Install Erlang & Elixir
 RUN         wget https://packages.erlang-solutions.com/erlang-solutions_1.0_all.deb
@@ -23,6 +17,7 @@ RUN         apt-get install -y --no-install-recommends \
                 unzip
 RUN         apt-get clean
 
+# Install Phoenix Echo application
 RUN         wget https://github.com/PragTob/phoenix_echo/archive/$PHOENIX_ECHO.zip
 RUN         unzip ./$PHOENIX_ECHO.zip
 RUN         mv ./phoenix_echo-$PHOENIX_ECHO/ ./phoenix_echo/
