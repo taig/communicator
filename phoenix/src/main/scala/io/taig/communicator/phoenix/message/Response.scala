@@ -33,6 +33,7 @@ object Response {
 
     object Status {
         object Ok extends Status( "ok" )
+        object Error extends Status( "error" )
 
         implicit val decoderStatus: Decoder[Status] = {
             Decoder[String].map {

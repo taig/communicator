@@ -17,4 +17,12 @@ class PhoenixTest
             channel.topic shouldBe topic
         }
     }
+    
+    it should "fail to join an invalid Channel" in {
+        val topic = Topic( "echo", "invalid" )
+
+        phoenix.join( topic ).runAsync.map { channel ⇒
+            channel.topic shouldBe topic
+        }
+    }
 }
