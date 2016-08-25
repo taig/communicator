@@ -1,5 +1,7 @@
 package io.taig.communicator.phoenix
 
+import cats.data.Xor
+import cats.syntax.xor._
 import io.circe.Json
 import io.taig.communicator._
 import io.taig.communicator.phoenix.message.Response.{ Payload, Status }
@@ -100,8 +102,19 @@ class Phoenix(
         val receive = reader.collect {
             case Response( `topic`, _, Some( Payload( Status.Ok, _ ) ), `ref` ) ⇒
                 logger.info( s"Successfully joined channel $topic" )
-                new Channel( this, topic )
-        }.firstL
+                new Channel( this, topic ).right
+            case Response( `topic`, _, Some( payload @ Payload( Status.Error, _ ) ), `ref` ) ⇒
+                logger.info( s"Failed to join channel $topic" )
+                payload.left
+        }.firstL.flatMap {
+            case Xor.Right( channel ) ⇒ Task.now( channel )
+            case Xor.Left( payload ) ⇒ Task.raiseError {
+                val error = Phoenix.error( payload ).getOrElse( "" )
+                new IllegalArgumentException {
+                    s"Failed to join channel $topic: $error"
+                }
+            }
+        }
 
         for {
             _ ← send
@@ -128,6 +141,19 @@ object Phoenix {
     ): Phoenix = {
         val channels = WebSocketChannels[Response, Request]( request, strategy )
         new Phoenix( channels, heartbeat )
+    }
+
+    /**
+     * Extract the error reason from a server response
+     */
+    private[phoenix] def error( payload: Payload ): Option[String] = {
+        payload.status match {
+            case Status.Error ⇒
+                payload.response.asObject
+                    .flatMap( _.apply( "reason" ) )
+                    .flatMap( _.asString )
+            case _ ⇒ None
+        }
     }
 }
 
