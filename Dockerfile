@@ -28,6 +28,13 @@ RUN         mix local.rebar --force
 RUN         cd ./phoenix_echo/ && mix deps.get
 RUN         cd ./phoenix_echo/ && mix compile
 
+# Install python & pip, necessary to submit test coverage
+RUN         apt-get install -y --no-install-recommends \
+                python-pip
+RUN         apt-get clean
+RUN         pip install --upgrade pip
+RUN         pip install codecov
+
 # Cache project dependencies
 ADD         ./build.sbt ./cache/
 ADD         ./project/build.properties ./cache/project/
