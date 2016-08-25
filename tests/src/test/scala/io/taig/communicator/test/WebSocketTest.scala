@@ -108,7 +108,7 @@ class WebSocketTest
                 writer.connect( socket )
                 writer.close( Close.Normal, Some( "Bye." ) )
 
-                messages should contain theSameElementsAs
+                messages.toList should contain theSameElementsAs
                     ( "0" :: "foo" :: "bar" :: Nil )
         }
     }
