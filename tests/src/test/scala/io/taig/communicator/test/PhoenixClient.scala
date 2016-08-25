@@ -11,7 +11,7 @@ trait PhoenixClient extends BeforeAndAfterEach { this: org.scalatest.Suite ⇒
     implicit val client = new OkHttpClient
 
     val request = Builder()
-        .url( s"ws://localhost:4000/" )
+        .url( s"ws://localhost:4000/socket/websocket" )
         .build()
 
     var phoenix: Phoenix = null
