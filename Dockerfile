@@ -28,5 +28,13 @@ RUN         mix local.rebar --force
 RUN         cd ./phoenix_echo/ && mix deps.get
 RUN         cd ./phoenix_echo/ && mix compile
 
+# Cache project dependencies
+ADD         ./build.sbt ./cache/
+ADD         ./project/build.properties ./cache/project/
+ADD         ./project/plugins.sbt ./cache/project/
+ADD         ./project/Settings.scala ./cache/project/
+RUN         cd ./cache/ && sbt test
+RUN         rm -r ./cache
+
 WORKDIR     /communicator/
 ADD         . .
