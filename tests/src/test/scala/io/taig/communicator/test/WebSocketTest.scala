@@ -82,34 +82,38 @@ class WebSocketTest
     }
 
     it should "buffer messages during an unexpected disconnect" in {
-        val writer = BufferedWebSocketWriter[String]()
+        Task.create[List[String]] { ( scheduler, callback ) =>
+            val writer = BufferedWebSocketWriter[String]()
 
-        val messages = collection.mutable.ListBuffer[String]()
+            val messages = collection.mutable.ListBuffer[String]()
 
-        val listener = new WebSocketListener[String] {
-            override def onMessage( message: String ) = {
-                messages += message
+            val listener = new WebSocketListener[String] {
+                override def onMessage( message: String ) = {
+                    messages += message
+                }
+
+                override def onPong( payload: Option[String] ) = {}
+
+                override def onClose( code: Int, reason: Option[String] ) = {
+                    callback.onSuccess( messages.toList )
+                }
+
+                override def onFailure( exception: IOException, response: Option[String] ) = {}
             }
 
-            override def onPong( payload: Option[String] ) = {}
+            writer.send( "foo" )
 
-            override def onClose( code: Int, reason: Option[String] ) = {}
-
-            override def onFailure( exception: IOException, response: Option[String] ) = {}
-        }
-
-        writer.send( "foo" )
-
-        WebSocket[String]( request )( listener ).runAsync.map {
-            case ( socket, _ ) ⇒
-                writer.connect( socket )
-                writer.disconnect()
-                writer.send( "bar" )
-                writer.connect( socket )
-                writer.close( Close.Normal, Some( "Bye." ) )
-
-                messages.toList should contain theSameElementsAs
-                    ( "0" :: "foo" :: "bar" :: Nil )
+            WebSocket[String]( request )( listener ).runAsync( scheduler ).map {
+                case ( socket, _ ) ⇒
+                    writer.connect( socket )
+                    writer.disconnect()
+                    writer.send( "bar" )
+                    writer.connect( socket )
+                    writer.close( Close.Normal, Some( "Bye." ) )
+            }
+            
+        }.runAsync.map {
+            _ should contain theSameElementsAs ( "0" :: "foo" :: "bar" :: Nil )
         }
     }
 
