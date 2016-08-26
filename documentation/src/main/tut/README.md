@@ -88,11 +88,6 @@ The `scala.concurrent.Future` predecessor of this library has been deprecated. Y
 
 The Java predecessor of this library has been deprecated. You can still [access][4] the source and documentation.
 
-## License
-
-The MIT License (MIT)  
-Copyright (c) 2016 Niklas Klein <mail@taig.io>
-
 [1]: https://monix.io/
 [2]: http://square.github.io/okhttp/
 [3]: https://github.com/Taig/Communicator/tree/2.3.2
