@@ -28,7 +28,7 @@ object Settings {
             Nil,
         scalaVersion := "2.11.8"
     )
-    
+
 //    val releaseSteps: Seq[ReleaseStep] = Seq(
 //        checkSnapshotDependencies,
 //        Release.inquireVersions,

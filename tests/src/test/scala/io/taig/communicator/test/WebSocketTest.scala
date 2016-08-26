@@ -82,7 +82,7 @@ class WebSocketTest
     }
 
     it should "buffer messages during an unexpected disconnect" in {
-        Task.create[List[String]] { ( scheduler, callback ) =>
+        Task.create[List[String]] { ( scheduler, callback ) ⇒
             val writer = BufferedWebSocketWriter[String]()
 
             val messages = collection.mutable.ListBuffer[String]()
@@ -111,7 +111,7 @@ class WebSocketTest
                     writer.connect( socket )
                     writer.close( Close.Normal, Some( "Bye." ) )
             }
-            
+
         }.runAsync.map {
             _ should contain theSameElementsAs ( "0" :: "foo" :: "bar" :: Nil )
         }
@@ -142,10 +142,11 @@ class WebSocketTest
             }.delayExecution( 1000 milliseconds )
         }
 
-        Task.both( read, write ).runAsync.map {
-            case ( result, _ ) ⇒
-                result should contain theSameElementsAs
-                    ( 0 :: 1 :: 0 :: 3 :: Nil )
+        Task.mapBoth( read, write ) {
+            case ( result, _ ) ⇒ result
+        }.runAsync.map {
+            _ should contain theSameElementsAs
+                ( 0 :: 1 :: 0 :: 3 :: Nil )
         }
     }
 
@@ -192,7 +193,7 @@ class WebSocketTest
             writer.send( "foobar" )
         }.delayExecution( 500 milliseconds ).materialize
 
-        Task.both( read, write ).runAsync.map {
+        Task.mapBoth( read, write ) { case result ⇒ result }.runAsync.map {
             case ( result, exception ) ⇒
                 result shouldBe "0"
                 exception.failed.get shouldBe a[IllegalStateException]
