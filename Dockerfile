@@ -33,6 +33,7 @@ RUN         apt-get install -y --no-install-recommends \
                 python-pip
 RUN         apt-get clean
 RUN         pip install --upgrade pip
+RUN         pip install setuptools
 RUN         pip install codecov
 
 # Cache project dependencies
