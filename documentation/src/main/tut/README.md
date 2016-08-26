@@ -73,10 +73,10 @@ Lorem Ipsum
 
 ## Testing
 
-In order to test all modules a background Phoenix Echo app has to be running. The easiest way to achieve that is via the included `docker` configuration:
+To run the Phoenix-module specific tests, the [phoenix_echo][5] app (thanks [@PragTob][6]) has to be running in the background. The easiest way to do so is via the included `docker` configuration.
 ```
-docker pull taig/communicator:latest
-docker build -t taig/communicator:latest .
+docker pull taig/communicator
+docker build -t taig/communicator .
 docker --entrypoint="./test.sh" taig/communicator
 ```
 
@@ -92,3 +92,5 @@ The Java predecessor of this library has been deprecated. You can still [access]
 [2]: http://square.github.io/okhttp/
 [3]: https://github.com/Taig/Communicator/tree/2.3.2
 [4]: https://github.com/Taig/Communicator/tree/f820d08b1cc4d77083e384568ce89223e53ab693
+[5]: https://github.com/PragTob/phoenix_echo
+[6]: https://github.com/PragTob

@@ -34,15 +34,15 @@ import monix.eval.Task
 
 scala> // To build request tasks, an implicit OkHttpClient should be in scope
      | implicit val client = Client()
-client: io.taig.communicator.Client = okhttp3.OkHttpClient@238d015b
+client: io.taig.communicator.Client = okhttp3.OkHttpClient@702e1c9c
 
 scala> // Simple OkHttp request builder
      | val builder = Request.Builder().url( "http://taig.io/" )
-builder: okhttp3.Request.Builder = okhttp3.Request$Builder@5d60187a
+builder: okhttp3.Request.Builder = okhttp3.Request$Builder@6ec199a0
 
 scala> // Construct a Task[Response]
      | val request: Request = Request( builder.build() )
-request: io.taig.communicator.request.Request = io.taig.communicator.request.Request@27d26c95
+request: io.taig.communicator.request.Request = io.taig.communicator.request.Request@72a93c0b
 
 scala> // Parse the response to a String
      | val requestContent: Task[Response.With[String]] = request.parse[String]
@@ -59,7 +59,7 @@ scala> requestContent.runAsync.andThen {
      |     case Success( content ) => "Success"
      |     case Failure( exception ) => "Failure"
      | }
-res5: monix.execution.CancelableFuture[io.taig.communicator.request.Response.With[String]] = monix.execution.CancelableFuture$Implementation@da1b015
+res5: monix.execution.CancelableFuture[io.taig.communicator.request.Response.With[String]] = monix.execution.CancelableFuture$Implementation@16a5d1fd
 ```
 
 ## Usage
@@ -84,10 +84,10 @@ Lorem Ipsum
 
 ## Testing
 
-In order to test all modules a background Phoenix Echo app has to be running. The easiest way to achieve that is via the included `docker` configuration:
+To run the Phoenix-module specific tests, the [phoenix_echo][5] app (thanks [@PragTob][6]) has to be running in the background. The easiest way to do so is via the included `docker` configuration.
 ```
-docker pull taig/communicator:latest
-docker build -t taig/communicator:latest .
+docker pull taig/communicator
+docker build -t taig/communicator .
 docker --entrypoint="./test.sh" taig/communicator
 ```
 
@@ -103,3 +103,5 @@ The Java predecessor of this library has been deprecated. You can still [access]
 [2]: http://square.github.io/okhttp/
 [3]: https://github.com/Taig/Communicator/tree/2.3.2
 [4]: https://github.com/Taig/Communicator/tree/f820d08b1cc4d77083e384568ce89223e53ab693
+[5]: https://github.com/PragTob/phoenix_echo
+[6]: https://github.com/PragTob
