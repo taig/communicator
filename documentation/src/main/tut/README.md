@@ -9,18 +9,6 @@
 
 Communicator provides a simple way to construct OkHttp requests as `monix.Task`s which is equipped with a beautiful functional interface and comes with first class support for cancellation.
 
-## Index
-
-1. [Installation](#installation)
-2. [Quickstart](#quickstart)
-3. [Usage](#usage)
-    1. [Building Requests](#building-requests)
-    2. [Parsing Content](#parsing-content)
-4. [Roadmap](#roadmap)
-5. [Communicator 2.x](#communicator-2x)
-6. [Communicator 1.x](#communicator-1x)
-7. [License](#license)
-
 ## Installation
 
 ```scala
@@ -82,6 +70,15 @@ Lorem Ipsum
 ### Phoenix Channels
 
 Lorem Ipsum
+
+## Testing
+
+In order to test all modules a background Phoenix Echo app has to be running. The easiest way to achieve that is via the included `docker` configuration:
+```
+docker pull taig/communicator:latest
+docker build -t taig/communicator:latest .
+docker --entrypoint="./test.sh" taig/communicator
+```
 
 ## Communicator 2.x
 

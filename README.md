@@ -9,18 +9,6 @@
 
 Communicator provides a simple way to construct OkHttp requests as `monix.Task`s which is equipped with a beautiful functional interface and comes with first class support for cancellation.
 
-## Index
-
-1. [Installation](#installation)
-2. [Quickstart](#quickstart)
-3. [Usage](#usage)
-    1. [Building Requests](#building-requests)
-    2. [Parsing Content](#parsing-content)
-4. [Roadmap](#roadmap)
-5. [Communicator 2.x](#communicator-2x)
-6. [Communicator 1.x](#communicator-1x)
-7. [License](#license)
-
 ## Installation
 
 ```scala
@@ -46,15 +34,15 @@ import monix.eval.Task
 
 scala> // To build request tasks, an implicit OkHttpClient should be in scope
      | implicit val client = Client()
-client: io.taig.communicator.Client = okhttp3.OkHttpClient@5e5945f
+client: io.taig.communicator.Client = okhttp3.OkHttpClient@524aea7b
 
 scala> // Simple OkHttp request builder
      | val builder = Request.Builder().url( "http://taig.io/" )
-builder: okhttp3.Request.Builder = okhttp3.Request$Builder@5f8d32be
+builder: okhttp3.Request.Builder = okhttp3.Request$Builder@b8e682c
 
 scala> // Construct a Task[Response]
      | val request: Request = Request( builder.build() )
-request: io.taig.communicator.request.Request = io.taig.communicator.request.Request@50b29e4a
+request: io.taig.communicator.request.Request = io.taig.communicator.request.Request@4a389883
 
 scala> // Parse the response to a String
      | val requestContent: Task[Response.With[String]] = request.parse[String]
@@ -71,7 +59,7 @@ scala> requestContent.runAsync.andThen {
      |     case Success( content ) => "Success"
      |     case Failure( exception ) => "Failure"
      | }
-res5: monix.execution.CancelableFuture[io.taig.communicator.request.Response.With[String]] = monix.execution.CancelableFuture$Implementation@22d306f1
+res5: monix.execution.CancelableFuture[io.taig.communicator.request.Response.With[String]] = monix.execution.CancelableFuture$Implementation@695ca885
 ```
 
 ## Usage
@@ -93,6 +81,15 @@ Lorem Ipsum
 ### Phoenix Channels
 
 Lorem Ipsum
+
+## Testing
+
+In order to test all modules a background Phoenix Echo app has to be running. The easiest way to achieve that is via the included `docker` configuration:
+```
+docker pull taig/communicator:latest
+docker build -t taig/communicator:latest .
+docker --entrypoint="./test.sh" taig/communicator
+```
 
 ## Communicator 2.x
 
