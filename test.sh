@@ -10,6 +10,6 @@ elixir --detached -S mix do phoenix.server
 cd /communicator/
 sbt ";coverage;test;coverageReport;coverageAggregate;tut"
 
-if [ -z "$CODECOV_TOKEN" ]; then
+if [ -n "$CODECOV_TOKEN" ]; then
     codecov
 fi
