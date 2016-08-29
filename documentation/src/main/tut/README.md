@@ -27,13 +27,13 @@ libraryDependencies += "io.taig" %% "communicator" % "3.0.0-RC3"
 ## Quickstart
 
 ```tut
-import io.taig.communicator._; import request._; import monix.eval.Task
+import io.taig.communicator._; import request._; import monix.eval.Task; import okhttp3.OkHttpClient
 
 // To build request tasks, an implicit OkHttpClient should be in scope
-implicit val client = Client()
+implicit val client = new OkHttpClient()
 
 // Simple OkHttp request builder
-val builder = Request.Builder().url( "http://taig.io/" )
+val builder = new OkHttpRequest.Builder().url( "http://taig.io/" )
 
 // Construct a Task[Response]
 val request: Request = Request( builder.build() )
