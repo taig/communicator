@@ -5,6 +5,7 @@ import java.io.IOException
 import io.taig.communicator._
 import monix.eval.Task
 import monix.execution.Cancelable
+import okhttp3.OkHttpClient
 
 import scala.language.implicitConversions
 
@@ -47,17 +48,13 @@ final class Request private ( task: Task[Response] ) {
 }
 
 object Request {
-    type Builder = okhttp3.Request.Builder
-
-    object Builder {
-        def apply(): Builder = new Builder()
+    implicit def requestToTask( request: Request ): Task[Response] = {
+        request.ignoreBody
     }
 
-    implicit def requestToTask( request: Request ): Task[Response] = request.ignoreBody
-
-    def apply( request: okhttp3.Request )( implicit c: Client ): Request = {
+    def apply( request: OkHttpRequest )( implicit ohc: OkHttpClient ): Request = {
         val task = Task.create[Response] { ( scheduler, callback ) ⇒
-            val call = c.newCall( request )
+            val call = ohc.newCall( request )
 
             scheduler.execute { () ⇒
                 try {

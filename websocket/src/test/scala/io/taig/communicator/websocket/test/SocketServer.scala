@@ -1,19 +1,17 @@
-package io.taig.communicator.test
+package io.taig.communicator.websocket.test
 
 import io.backchat.hookup.HookupClient.Receive
 import io.backchat.hookup._
-import io.taig.communicator.Client
-import io.taig.communicator.request.Request.Builder
+import io.taig.communicator.OkHttpRequest
+import io.taig.communicator.test.Suite
 import org.scalatest.BeforeAndAfterAll
 
 import scala.concurrent.Future
 
-trait SocketServer extends BeforeAndAfterAll { this: org.scalatest.Suite ⇒
-    implicit val client = Client()
-
+trait SocketServer extends BeforeAndAfterAll { this: Suite ⇒
     val port = SocketServer.synchronized( SocketServer.port.next() )
 
-    val request = Builder()
+    val request = new OkHttpRequest.Builder()
         .url( s"ws://localhost:$port/ws" )
         .build()
 

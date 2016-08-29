@@ -1,14 +1,12 @@
 lazy val communicator = project.in( file( "." ) )
     .settings( tutSettings ++ Settings.common )
     .settings(
-        aggregate in test := false,
         aggregate in tut := false,
         description := "An OkHttp wrapper for Scala",
         name := "communicator",
         normalizedName := name.value,
 //        releaseProcess := Settings.releaseSteps,
         startYear := Some( 2013 ),
-        test <<= test in tests in Test,
         tut <<= tut in documentation
     )
     .aggregate( common, request, websocket, phoenix )
@@ -21,6 +19,10 @@ lazy val common = project
             "com.squareup.okhttp3" % "okhttp" % Settings.dependency.okhttp ::
             "com.typesafe.scala-logging" %% "scala-logging" % "3.4.0" ::
             "io.monix" %% "monix-eval" % Settings.dependency.monix ::
+            "com.squareup.okhttp3" % "mockwebserver" % Settings.dependency.okhttp % "test" ::
+            "ch.qos.logback" %  "logback-classic" % "1.1.7" % "test" ::
+            "io.backchat.hookup" %% "hookup" % "0.4.2" % "test" ::
+            "org.scalatest" %% "scalatest" % "3.0.0" % "test" ::
             Nil,
         name := "common",
         startYear := Some( 2016 )
@@ -32,7 +34,7 @@ lazy val request = project
         name := "request",
         startYear := Some( 2016 )
     )
-    .dependsOn( common )
+    .dependsOn( common % "compile->compile;test->test" )
 
 lazy val websocket = project
     .settings( Settings.common )
@@ -44,7 +46,7 @@ lazy val websocket = project
         name := "websocket",
         startYear := Some( 2016 )
     )
-    .dependsOn( common )
+    .dependsOn( common % "compile->compile;test->test" )
 
 lazy val phoenix = project
     .settings( Settings.common )
@@ -57,7 +59,7 @@ lazy val phoenix = project
         name := "phoenix",
         startYear := Some( 2016 )
     )
-    .dependsOn( websocket )
+    .dependsOn( websocket % "compile->compile;test->test" )
 
 lazy val documentation = project
     .settings( tutSettings ++ Settings.common )
@@ -68,18 +70,5 @@ lazy val documentation = project
             "-Xfatal-warnings" ::
             Nil,
         tutTargetDirectory := file( "." )
-    )
-    .dependsOn( common, request, websocket, phoenix )
-
-lazy val tests = project
-    .settings( Settings.common )
-    .settings (
-        libraryDependencies ++=
-            "com.squareup.okhttp3" % "mockwebserver" % Settings.dependency.okhttp % "test" ::
-            "ch.qos.logback" %  "logback-classic" % "1.1.7" % "test" ::
-            "io.backchat.hookup" %% "hookup" % "0.4.2" % "test" ::
-            "org.scalatest" %% "scalatest" % "3.0.0" % "test" ::
-            Nil,
-        testOptions in Test += Tests.Argument( "-oFD" )
     )
     .dependsOn( common, request, websocket, phoenix )

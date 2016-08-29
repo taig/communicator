@@ -2,17 +2,17 @@ package io.taig.communicator.test
 
 import java.util.logging.LogManager
 
-import io.taig.communicator.Client
+import okhttp3.OkHttpClient
 import okhttp3.Request.Builder
 import okhttp3.mockwebserver.MockWebServer
-import org.scalatest.{ FlatSpec, Matchers }
+import org.scalatest.{ AsyncFlatSpec, Matchers }
 
 trait Suite
-        extends FlatSpec
+        extends AsyncFlatSpec
         with Matchers {
     LogManager.getLogManager.reset()
 
-    implicit val client = Client()
+    implicit val client = new OkHttpClient
 
     def http[U]( f: MockWebServer ⇒ U ): Builder = {
         val server = new MockWebServer

@@ -1,6 +1,7 @@
 import io.taig.sbt.sonatype.SonatypeHouserulePlugin.autoImport._
-import sbt.Def
+import sbt.{Def, Tests}
 import sbt.Keys._
+import sbt._
 //import sbtrelease.ReleasePlugin.autoImport.ReleaseStep._
 //import sbtrelease.ReleasePlugin.autoImport._
 //import sbtrelease.ReleaseStateTransformations._
@@ -26,7 +27,8 @@ object Settings {
 //            "-Ywarn-unused-import" ::
 //            "-Ywarn-value-discard" ::
             Nil,
-        scalaVersion := "2.11.8"
+        scalaVersion := "2.11.8",
+        testOptions in Test += Tests.Argument( "-oFD" )
     )
 
 //    val releaseSteps: Seq[ReleaseStep] = Seq(

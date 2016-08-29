@@ -10,6 +10,7 @@ import io.taig.communicator.websocket.{ WebSocketChannels, WebSocketWriter }
 import monix.eval.Task
 import monix.execution.{ Cancelable, Scheduler }
 import monix.reactive.OverflowStrategy
+import okhttp3.OkHttpClient
 
 import scala.concurrent.duration._
 import scala.language.postfixOps
@@ -136,7 +137,7 @@ object Phoenix {
         heartbeat: Option[FiniteDuration]                                  = Default.heartbeat
     )(
         implicit
-        client:    Client,
+        client:    OkHttpClient,
         scheduler: Scheduler
     ): Phoenix = {
         val channels = WebSocketChannels[Response, Request]( request, strategy )

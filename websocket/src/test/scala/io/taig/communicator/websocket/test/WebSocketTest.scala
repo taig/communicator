@@ -1,21 +1,21 @@
-package io.taig.communicator.test
+package io.taig.communicator.websocket.test
 
 import java.io.IOException
 
 import io.backchat.hookup.{ Connected, Disconnected, TextMessage }
-import io.taig.communicator.request.Request.Builder
+import io.taig.communicator.OkHttpRequest
+import io.taig.communicator.test.Suite
 import io.taig.communicator.websocket._
 import monix.eval.Task
 import monix.execution.Scheduler.Implicits.global
 import org.scalatest.{ AsyncFlatSpec, Matchers }
 
-import scala.language.postfixOps
 import scala.concurrent.duration._
+import scala.language.postfixOps
 import scala.util.Try
 
 class WebSocketTest
-        extends AsyncFlatSpec
-        with Matchers
+        extends Suite
         with SocketServer {
     override def receive = {
         case Connected           ⇒ send( "0" )
@@ -66,7 +66,7 @@ class WebSocketTest
 
     it should "fail with an unknown url" in {
         WebSocketWriter[String] {
-            Builder()
+            new OkHttpRequest.Builder()
                 .url( "ws://externalhost/ws" )
                 .build()
         }.runAsync.failed.map {
@@ -152,7 +152,7 @@ class WebSocketTest
 
     it should "fail with an unknown url" in {
         WebSocketReader[String] {
-            Builder()
+            new OkHttpRequest.Builder()
                 .url( "ws://externalhost/ws" )
                 .build()
         }.firstL.runAsync.failed.map {
@@ -193,7 +193,7 @@ class WebSocketTest
             writer.send( "foobar" )
         }.delayExecution( 500 milliseconds ).materialize
 
-        Task.mapBoth( read, write ) { case result ⇒ result }.runAsync.map {
+        Task.zip2( read, write ).runAsync.map {
             case ( result, exception ) ⇒
                 result shouldBe "0"
                 exception.failed.get shouldBe a[IllegalStateException]

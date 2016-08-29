@@ -1,14 +1,13 @@
-package io.taig.communicator.test
+package io.taig.communicator.phoenix.test
 
 import io.taig.communicator.phoenix.Topic
+import io.taig.communicator.test.Suite
 import monix.execution.Scheduler.Implicits.global
-import org.scalatest.{ AsyncFlatSpec, Matchers }
 
 import scala.language.postfixOps
 
 class PhoenixTest
-        extends AsyncFlatSpec
-        with Matchers
+        extends Suite
         with PhoenixClient {
     it should "be possible to join a Channel" in {
         val topic = Topic( "echo", "hello" )
