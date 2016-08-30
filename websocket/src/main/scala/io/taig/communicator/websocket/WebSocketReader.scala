@@ -98,7 +98,7 @@ private class ReconnectingSubscriberProxy[T](
         subscriber.onComplete()
 
         // TODO When the server closes the connection, we want to reconnect
-        logger.debug( s"Websocket closed, reconnecting in $delay" )
+        // logger.debug( s"Websocket closed, reconnecting in $delay" )
 
         //        observable
         //            .delaySubscription( delay )

@@ -5,7 +5,7 @@ import cats.syntax.xor._
 import io.circe.Json
 import io.taig.communicator._
 import io.taig.communicator.phoenix.message.Response.{ Payload, Status }
-import io.taig.communicator.phoenix.message.{ Request, Response }
+import io.taig.communicator.phoenix.message._
 import io.taig.communicator.websocket.{ WebSocketChannels, WebSocketWriter }
 import monix.eval.Task
 import monix.execution.{ Cancelable, Scheduler }
@@ -16,7 +16,7 @@ import scala.concurrent.duration._
 import scala.language.postfixOps
 
 class Phoenix(
-        channels:  WebSocketChannels[Response, Request],
+        channels:  WebSocketChannels[Inbound, Outbound],
         heartbeat: Option[FiniteDuration]
 )(
         implicit
@@ -33,7 +33,7 @@ class Phoenix(
     private[phoenix] def withRef[T]( f: Ref ⇒ T ): T = f( ref )
 
     /**
-     * A Reader that only cares about message events
+     * A Reader that only cares about response events
      *
      * Also the heartbeat is started with the first subscription.
      */
@@ -50,7 +50,7 @@ class Phoenix(
      * the heartbeat
      */
     private[phoenix] val writer = {
-        heartbeat.fold[WebSocketWriter[Request]]( channels.writer ) { heartbeat ⇒
+        heartbeat.fold[WebSocketWriter[Outbound]]( channels.writer ) { heartbeat ⇒
             new HeartbeatWebSocketWriterProxy(
                 channels.writer,
                 () ⇒ startHeartbeat( heartbeat ),
@@ -133,14 +133,17 @@ class Phoenix(
 object Phoenix {
     def apply(
         request:   OkHttpRequest,
-        strategy:  OverflowStrategy.Synchronous[websocket.Event[Response]] = websocket.Default.strategy,
-        heartbeat: Option[FiniteDuration]                                  = Default.heartbeat
+        strategy:  OverflowStrategy.Synchronous[websocket.Event[Inbound]] = websocket.Default.strategy,
+        heartbeat: Option[FiniteDuration]                                 = Default.heartbeat
     )(
         implicit
         client:    OkHttpClient,
         scheduler: Scheduler
     ): Phoenix = {
-        val channels = WebSocketChannels[Response, Request]( request, strategy )
+        val channels = WebSocketChannels[Inbound, Outbound](
+            request,
+            strategy
+        )
         new Phoenix( channels, heartbeat )
     }
 
@@ -159,17 +162,17 @@ object Phoenix {
 }
 
 private class HeartbeatWebSocketWriterProxy(
-        writer: WebSocketWriter[Request],
+        writer: WebSocketWriter[Outbound],
         start:  () ⇒ Unit,
         stop:   () ⇒ Unit
-) extends WebSocketWriter[Request] {
-    override def send( value: Request ) = {
+) extends WebSocketWriter[Outbound] {
+    override def send( value: Outbound ) = {
         stop()
         writer.send( value )
         start()
     }
 
-    override def ping( value: Option[Request] ) = {
+    override def ping( value: Option[Outbound] ) = {
         stop()
         writer.ping( value )
         start()
