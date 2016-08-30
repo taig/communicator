@@ -114,7 +114,7 @@ class PhoenixTest
         }
     }
 
-    it should "be able to handle server pushes" in {
+    ignore should "be able to handle server pushes" in {
         val topic = Topic( "echo", "foobar" )
         val payload = Json.obj( "foo" → Json.fromString( "bar" ) )
 
@@ -134,9 +134,22 @@ class PhoenixTest
         phoenix.join( topic ).flatMap { channel ⇒
             channel.writer.send( "push", payload )
             channel.reader.take( 2 ).toListL
-        }.runAsync.map { responses ⇒
-            responses should contain theSameElementsAs
-                ( response :: push :: Nil )
+        }.runAsync.map {
+            _ should contain theSameElementsAs ( response :: push :: Nil )
+        }
+    }
+
+    it should "make server errors accessable" in {
+        val topic = Topic( "echo", "foobar" )
+        val payload = Json.obj( "answer" → Json.fromInt( 42 ) )
+
+        phoenix.join( topic ).flatMap { channel ⇒
+            channel.writer.send( "nonexistant", payload )
+            channel.reader.collect {
+                case Response( _, event, _, _ ) ⇒ event
+            }.firstL
+        }.runAsync.map {
+            _ shouldBe Event.Error
         }
     }
 }
