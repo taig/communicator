@@ -122,7 +122,7 @@ class PhoenixTest
             topic,
             Event.Reply,
             Some( Response.Payload( Status.Ok, payload ) ),
-            Ref( 1 )
+            Ref( "1" )
         )
 
         val push = Push(
@@ -139,7 +139,7 @@ class PhoenixTest
         }
     }
 
-    it should "make server errors accessable" in {
+    it should "make server errors accessible" in {
         val topic = Topic( "echo", "foobar" )
         val payload = Json.obj( "answer" → Json.fromInt( 42 ) )
 

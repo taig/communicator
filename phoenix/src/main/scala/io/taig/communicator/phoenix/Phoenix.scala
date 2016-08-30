@@ -23,7 +23,7 @@ class Phoenix(
         scheduler: Scheduler
 ) {
     private val iterator: Iterator[Ref] = {
-        Stream.iterate( 0L )( _ + 1 ).map( Ref( _ ) ).iterator
+        Stream.iterate( 0L )( _ + 1 ).map( n ⇒ Ref( n.toString ) ).iterator
     }
 
     private var periodicHeartbeat: Option[Cancelable] = None
