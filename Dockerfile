@@ -45,4 +45,3 @@ RUN         cd ./cache/ && sbt ";test;tut"
 RUN         rm -r ./cache
 
 WORKDIR     /communicator/
-ADD         . .

@@ -87,9 +87,9 @@ Lorem Ipsum
 
 To run the Phoenix-module specific tests, the [phoenix_echo][5] app (thanks [@PragTob][6]) has to be running in the background. The easiest way to do so is via the included `docker` configuration.
 ```
-docker pull taig/communicator
-docker build -t taig/communicator .
-docker --entrypoint="./test.sh" taig/communicator
+docker pull taig/communicator:latest
+docker build -t taig/communicator:latest .
+docker --entrypoint="./test.sh" taig/communicator:latest
 ```
 
 ## Communicator 2.x

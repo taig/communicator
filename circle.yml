@@ -12,4 +12,8 @@ test:
   override:
     - docker build -t taig/communicator:latest .
     - docker push taig/communicator:latest
-    - docker run -e CODECOV_TOKEN=$CODECOV_TOKEN --entrypoint="./test.sh" taig/communicator
+    - docker run \
+        -e CODECOV_TOKEN=$CODECOV_TOKEN \
+        --entrypoint="./test.sh" \
+        -v "$PWD:/communicator/" \
+        taig/communicator:latest
