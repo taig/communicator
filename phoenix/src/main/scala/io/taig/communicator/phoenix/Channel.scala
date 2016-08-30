@@ -4,7 +4,7 @@ import io.circe.Json
 import io.taig.communicator.phoenix.message.{ Inbound, Request }
 import monix.reactive.Observable
 
-class Channel( phoenix: Phoenix, val topic: Topic ) { self ⇒
+class Channel( phoenix: Phoenix, val reader: Observable[Inbound], val topic: Topic ) { self ⇒
     private[phoenix] def send( request: Request ): Unit = {
         phoenix.writer.send( request )
     }
@@ -13,9 +13,11 @@ class Channel( phoenix: Phoenix, val topic: Topic ) { self ⇒
         send( Request( topic, event, payload, phoenix.ref ) )
     }
 
-    val reader: Observable[Inbound] = {
-        phoenix.reader.filter( _.topic == topic )
-    }
+    //    val reader: Observable[Inbound] = {
+    //        phoenix.reader.filter { inbound ⇒
+    //            topic isSubscribedTo inbound.topic
+    //        }
+    //    }
 
     val writer: ChannelWriter = new ChannelWriter {
         override def send( event: String, payload: Json ) = {
@@ -32,8 +34,4 @@ class Channel( phoenix: Phoenix, val topic: Topic ) { self ⇒
         leave()
         phoenix.close()
     }
-}
-
-object Channel {
-    type EventPayload = ( String, Json )
 }

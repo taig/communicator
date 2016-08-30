@@ -85,6 +85,8 @@ trait BufferedWebSocketWriter[T] extends WebSocketWriter[T] {
     def connect( socket: OkHttpWebSocket ): this.type
 
     def disconnect(): this.type
+
+    def isConnected: Boolean
 }
 
 object BufferedWebSocketWriter {
@@ -119,6 +121,10 @@ private class BufferedOkHttpWebSocketWriter[T: Encoder]
     override def disconnect(): this.type = synchronized {
         this.writer = None
         this
+    }
+
+    override def isConnected = synchronized {
+        writer.isDefined
     }
 
     override def sendNow( value: T ) = synchronized {

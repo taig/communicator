@@ -85,7 +85,9 @@ private class ReconnectingSubscriberProxy[T](
     override def onNext( value: T ) = subscriber.onNext( value )
 
     override def onError( exception: Throwable ) = {
-        logger.debug( s"Websocket failure, reconnecting in $delay", exception )
+        subscriber.onError( exception )
+
+        logger.debug( s"WebSocket failure, reconnecting in $delay", exception )
 
         onDisconnected()
 

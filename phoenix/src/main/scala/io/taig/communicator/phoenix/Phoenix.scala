@@ -6,7 +6,7 @@ import io.circe.Json
 import io.taig.communicator._
 import io.taig.communicator.phoenix.message.Response.{ Payload, Status }
 import io.taig.communicator.phoenix.message._
-import io.taig.communicator.websocket.{ WebSocketChannels, WebSocketWriter }
+import io.taig.communicator.websocket.{ BufferedWebSocketWriter, WebSocketChannels, WebSocketWriter }
 import monix.eval.Task
 import monix.execution.{ Cancelable, Scheduler }
 import monix.reactive.OverflowStrategy
@@ -32,23 +32,18 @@ class Phoenix(
 
     private[phoenix] def withRef[T]( f: Ref ⇒ T ): T = f( ref )
 
-    /**
-     * A Reader that only cares about response events
-     *
-     * Also the heartbeat is started with the first subscription.
-     */
     private[phoenix] val reader = {
-        channels.reader.collect {
-            case websocket.Event.Message( response ) ⇒ response
-        }.doOnStart { _ ⇒
-            heartbeat.foreach( startHeartbeat )
-        }.publish
+        channels.reader
+            .map { event ⇒
+                println( "Received " + event )
+                event
+            }
+            .collect {
+                case websocket.Event.Message( response ) ⇒ response
+            }
+            .publish
     }
 
-    /**
-     * A Writer that proxies the Channel Writer in order the reschedule
-     * the heartbeat
-     */
     private[phoenix] val writer = {
         heartbeat.fold[WebSocketWriter[Outbound]]( channels.writer ) { heartbeat ⇒
             new HeartbeatWebSocketWriterProxy(
@@ -86,9 +81,10 @@ class Phoenix(
     }
 
     private def stopHeartbeat(): Unit = synchronized {
-        logger.debug( "Stopping heartbeat" )
-
-        periodicHeartbeat.foreach( _.cancel() )
+        periodicHeartbeat.foreach { heartbeat ⇒
+            logger.debug( "Stopping heartbeat" )
+            heartbeat.cancel()
+        }
         periodicHeartbeat = None
     }
 
@@ -103,7 +99,11 @@ class Phoenix(
         val receive = reader.collect {
             case Response( `topic`, _, Some( Payload( Status.Ok, _ ) ), `ref` ) ⇒
                 logger.info( s"Successfully joined channel $topic" )
-                new Channel( this, topic ).right
+                val r = reader.filter { inbound ⇒
+                    topic isSubscribedTo inbound.topic
+                }.publish
+                r.connect()
+                new Channel( this, r, topic ).right
             case Response( `topic`, _, Some( payload @ Payload( Status.Error, _ ) ), `ref` ) ⇒
                 logger.info( s"Failed to join channel $topic" )
                 payload.left
@@ -162,20 +162,28 @@ object Phoenix {
 }
 
 private class HeartbeatWebSocketWriterProxy(
-        writer: WebSocketWriter[Outbound],
+        writer: BufferedWebSocketWriter[Outbound],
         start:  () ⇒ Unit,
         stop:   () ⇒ Unit
 ) extends WebSocketWriter[Outbound] {
     override def send( value: Outbound ) = {
         stop()
+
         writer.send( value )
-        start()
+
+        if ( writer.isConnected ) {
+            start()
+        }
     }
 
     override def ping( value: Option[Outbound] ) = {
         stop()
+
         writer.ping( value )
-        start()
+
+        if ( writer.isConnected ) {
+            start()
+        }
     }
 
     override def close( code: Int, reason: Option[String] ) = {

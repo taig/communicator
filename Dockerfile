@@ -2,7 +2,7 @@ FROM        taig/scala:1.0.6
 
 MAINTAINER  Niklas Klein "mail@taig.io"
 
-ENV         PHOENIX_ECHO d4e76204b96dbaa64c6800e8f0ca8fb41d1d1eac
+ENV         PHOENIX_ECHO 8c91a3d846e8d3f034d78d34c51decec7ccdf521
 
 # Install Erlang & Elixir
 RUN         wget https://packages.erlang-solutions.com/erlang-solutions_1.0_all.deb
