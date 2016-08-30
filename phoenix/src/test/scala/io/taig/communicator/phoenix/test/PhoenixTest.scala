@@ -13,7 +13,7 @@ import scala.language.postfixOps
 class PhoenixTest
         extends Suite
         with PhoenixClient {
-    ignore should "be possible to join a Channel" in {
+    it should "be possible to join a Channel" in {
         val topic = Topic( "echo", "foobar" )
 
         phoenix.join( topic ).runAsync.map {
@@ -21,7 +21,7 @@ class PhoenixTest
         }
     }
 
-    ignore should "fail to join an invalid Channel" in {
+    it should "fail to join an invalid Channel" in {
         val topic = Topic( "invalid", "topic" )
 
         phoenix.join( topic ).runAsync.failed.map {
@@ -29,7 +29,7 @@ class PhoenixTest
         }
     }
 
-    ignore should "handle failures when trying to join a Channel" in {
+    it should "handle failures when trying to join a Channel" in {
         val topic = Topic( "echo", "unauthorized" )
 
         phoenix
@@ -41,7 +41,7 @@ class PhoenixTest
             }
     }
 
-    ignore should "receive echo messages" in {
+    it should "receive echo messages" in {
         val topic = Topic( "echo", "foobar" )
         val payload = Json.obj( "foo" → Json.fromString( "bar" ) )
 
@@ -57,7 +57,7 @@ class PhoenixTest
         }
     }
 
-    ignore should "support sending JSON values (rather than objects)" in {
+    it should "support sending JSON values (rather than objects)" in {
         val topic = Topic( "echo", "foobar" )
         val payload = Json.fromString( "foo" )
 
@@ -73,7 +73,7 @@ class PhoenixTest
         }
     }
 
-    ignore should "be possible to disable the heartbeat" in {
+    it should "be possible to disable the heartbeat" in {
         val topic = Topic( "echo", "foobar" )
         val payload = Json.obj( "foo" → Json.fromString( "bar" ) )
 
@@ -97,7 +97,7 @@ class PhoenixTest
         }
     }
 
-    ignore should "not get disturbed when the server omits responses" in {
+    it should "not get disturbed when the server omits responses" in {
         val topic = Topic( "echo", "foobar" )
         val payload = Json.obj( "foo" → Json.fromString( "bar" ) )
 
@@ -114,7 +114,7 @@ class PhoenixTest
         }
     }
 
-    ignore should "be able to handle server pushes" in {
+    it should "be able to handle server pushes" in {
         val topic = Topic( "echo", "foobar" )
         val payload = Json.obj( "foo" → Json.fromString( "bar" ) )
 
