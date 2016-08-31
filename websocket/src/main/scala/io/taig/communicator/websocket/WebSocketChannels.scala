@@ -26,13 +26,14 @@ object WebSocketChannels {
     ): BufferedWebSocketChannels[I, O] = {
         val writer = BufferedWebSocketWriter()
 
-        val reader = WebSocketReader(
-            request,
-            strategy,
-            reconnect,
-            socket ⇒ writer.connect( socket ),
-            () ⇒ writer.disconnect()
-        )
+        val reader = ???
+        //        val reader = WebSocketReader(
+        //            request,
+        //            strategy,
+        //            reconnect,
+        //            socket ⇒ writer.connect( socket ),
+        //            () ⇒ writer.disconnect()
+        //        )
 
         new BufferedWebSocketChannels[I, O]( reader, writer )
     }

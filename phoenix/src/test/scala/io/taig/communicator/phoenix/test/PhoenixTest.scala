@@ -48,23 +48,23 @@ class PhoenixTest
             }
     }
 
-//    it should "receive echo messages" in {
-//        val topic = Topic( "echo", "foobar" )
-//        val payload = Json.obj( "foo" → Json.fromString( "bar" ) )
-//
-//        phoenix.connect()
-//
-//        phoenix.join( topic ).flatMap { channel ⇒
-//            channel.writer.send( Event( "echo" ), payload )
-//            channel.reader.collect {
-//                case Response( _, _, Some( payload ), _ ) ⇒ payload
-//            }.firstL
-//        }.runAsync.map {
-//            case Response.Payload( status, message ) ⇒
-//                status shouldBe Status.Ok
-//                message shouldBe payload
-//        }
-//    }
+    //    it should "receive echo messages" in {
+    //        val topic = Topic( "echo", "foobar" )
+    //        val payload = Json.obj( "foo" → Json.fromString( "bar" ) )
+    //
+    //        phoenix.connect()
+    //
+    //        phoenix.join( topic ).flatMap { channel ⇒
+    //            channel.writer.send( Event( "echo" ), payload )
+    //            channel.reader.collect {
+    //                case Response( _, _, Some( payload ), _ ) ⇒ payload
+    //            }.firstL
+    //        }.runAsync.map {
+    //            case Response.Payload( status, message ) ⇒
+    //                status shouldBe Status.Ok
+    //                message shouldBe payload
+    //        }
+    //    }
     //
     //    it should "support sending JSON values (rather than objects)" in {
     //        val topic = Topic( "echo", "foobar" )

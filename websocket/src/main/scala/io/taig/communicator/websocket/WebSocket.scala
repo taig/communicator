@@ -31,24 +31,6 @@ object WebSocket {
             Cancelable { () ⇒ call.cancel() }
         }
     }
-
-    def pure[T]( request: OkHttpRequest )(
-        implicit
-        client: OkHttpClient
-    ): Task[OkHttpWebSocket] = {
-        Task.create { ( _, callback ) ⇒
-            val call = WebSocketCall.create( client, request )
-
-            call.enqueue {
-                new NoopWebSocketListenerProxy(
-                    request.url(),
-                    callback
-                )
-            }
-
-            Cancelable { () ⇒ call.cancel() }
-        }
-    }
 }
 
 trait WebSocketListener[T] {
@@ -59,73 +41,6 @@ trait WebSocketListener[T] {
     def onClose( code: Int, reason: Option[String] ): Unit
 
     def onFailure( exception: IOException, response: Option[T] ): Unit
-}
-
-private class NoopWebSocketListenerProxy(
-        url:      HttpUrl,
-        callback: Callback[OkHttpWebSocket]
-) extends OkHttpWebSocketListener {
-    override def onOpen( socket: OkHttpWebSocket, response: Response ) = {
-        val message = Option( response )
-            .flatMap( response ⇒ Option( response.body() ) )
-            .map( _.string() )
-
-        logger.debug {
-            s"""
-               |onOpen
-               |  Payload (discarded): ${message.orNull}
-            """.stripMargin.trim
-        }
-
-        callback.onSuccess( socket )
-    }
-
-    override def onFailure( exception: IOException, response: Response ) = {
-        val message = Option( response )
-            .flatMap( response ⇒ Option( response.body() ) )
-            .map( _.string() )
-
-        logger.debug( {
-            s"""
-               |onFailure
-               |  Payload (discarded): $message
-            """.stripMargin.trim
-        }, exception )
-
-        callback.onError( exception )
-    }
-
-    override def onMessage( response: ResponseBody ) = {
-        val message = response.string()
-
-        logger.debug {
-            s"""
-               |onMessage
-               |  Payload (discarded): $message
-            """.stripMargin
-        }
-    }
-
-    override def onPong( payload: Buffer ) = {
-        val message = Option( payload ).map( _.readUtf8() )
-
-        logger.debug {
-            s"""
-               |onPing
-               |  Payload (discarded): ${message.orNull}
-            """.stripMargin.trim
-        }
-    }
-
-    override def onClose( code: Int, reason: String ) = {
-        logger.debug {
-            s"""
-               |onClose
-               |  Code:   $code
-               |  Reason: $reason
-            """.stripMargin.trim
-        }
-    }
 }
 
 private class WebSocketListenerProxy[I: Decoder](

@@ -18,7 +18,8 @@ object WebSocketWriter {
         implicit
         client: OkHttpClient
     ): Task[WebSocketWriter[T]] = {
-        WebSocket.pure[T]( request ).map( new OkHttpWebSocketWriter[T]( _ ) )
+        ???
+        //        WebSocket.pure[T]( request ).map( new OkHttpWebSocketWriter[T]( _ ) )
     }
 }
 

@@ -4,6 +4,7 @@ import io.backchat.hookup.HookupClient.Receive
 import io.backchat.hookup._
 import io.taig.communicator.OkHttpRequest
 import io.taig.communicator.test.Suite
+import monix.execution.{ Scheduler, UncaughtExceptionReporter }
 import org.scalatest.BeforeAndAfterAll
 
 import scala.concurrent.Future
@@ -15,6 +16,15 @@ trait SocketServer extends BeforeAndAfterAll { this: Suite ⇒
         .url( s"ws://localhost:$port/ws" )
         .build()
 
+    /**
+     * Scheduler that does not log exceptions to reduce noise. The library is
+     * already explicitly logging socket failures.
+     */
+    implicit val scheduler = Scheduler.singleThread(
+        "test",
+        reporter = UncaughtExceptionReporter( _ ⇒ {} )
+    )
+
     private val socketServerClient = new HookupServerClient {
         def receive = SocketServer.this.receive
     }
@@ -25,10 +35,6 @@ trait SocketServer extends BeforeAndAfterAll { this: Suite ⇒
 
     def send( message: String ): Future[OperationResult] = {
         socketServerClient.send( message )
-    }
-
-    def disconnect(): Future[OperationResult] = {
-        socketServerClient.disconnect()
     }
 
     override def beforeAll() = {
