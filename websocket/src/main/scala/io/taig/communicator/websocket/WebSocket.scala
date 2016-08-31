@@ -5,35 +5,26 @@ import java.io.IOException
 import io.taig.communicator.OkHttpRequest
 import monix.eval.{ Callback, Task }
 import monix.execution.Cancelable
-import monix.execution.atomic.AtomicBoolean
-import okhttp3.{ HttpUrl, OkHttpClient, Response, ResponseBody }
 import okhttp3.ws.WebSocketCall
+import okhttp3.{ OkHttpClient, Response, ResponseBody }
 import okio.Buffer
 
 import scala.util.{ Failure, Success }
 
 object WebSocket {
-    def apply[T: Decoder]( request: OkHttpRequest )( listener: WebSocketListener[T] )(
+    def apply[T: Decoder]( request: OkHttpRequest )(
+        listener: OkHttpWebSocket ⇒ WebSocketListener[T]
+    )(
         implicit
-        client: OkHttpClient
-    ): Task[( OkHttpWebSocket, Option[T] )] = {
-        Task.create { ( _, callback ) ⇒
-            val call = WebSocketCall.create( client, request )
-
-            call.enqueue(
-                new WebSocketListenerProxy(
-                    request.url(),
-                    callback,
-                    listener
-                )
-            )
-
-            Cancelable { () ⇒ call.cancel() }
-        }
+        c: OkHttpClient
+    ): Task[( OkHttpWebSocket, Option[T] )] = Task.create { ( _, callback ) ⇒
+        val call = WebSocketCall.create( c, request )
+        call.enqueue( new WebSocketListenerProxy( callback, listener ) )
+        Cancelable( call.cancel )
     }
 }
 
-trait WebSocketListener[T] {
+abstract class WebSocketListener[T]( val socket: OkHttpWebSocket ) {
     def onMessage( message: T ): Unit
 
     def onPong( payload: Option[T] ): Unit
@@ -43,20 +34,19 @@ trait WebSocketListener[T] {
     def onFailure( exception: IOException, response: Option[T] ): Unit
 }
 
-private class WebSocketListenerProxy[I: Decoder](
-        url:      HttpUrl,
-        callback: Callback[( OkHttpWebSocket, Option[I] )],
-        listener: WebSocketListener[I]
+private class WebSocketListenerProxy[T: Decoder](
+        callback: Callback[( OkHttpWebSocket, Option[T] )],
+        f:        OkHttpWebSocket ⇒ WebSocketListener[T]
 ) extends OkHttpWebSocketListener {
-    val initialized = AtomicBoolean( false )
+    var listener: WebSocketListener[T] = _
 
-    override def onOpen( socket: OkHttpWebSocket, response: Response ) = {
-        initialized.set( true )
+    override def onOpen( socket: OkHttpWebSocket, response: Response ) = synchronized {
+        listener = f( socket )
 
         val message = Option( response )
             .flatMap( response ⇒ Option( response.body() ) )
             .map( _.bytes() )
-            .flatMap( Decoder[I].decode( _ ).toOption )
+            .flatMap( Decoder[T].decode( _ ).toOption )
 
         logger.debug {
             s"""
@@ -68,11 +58,11 @@ private class WebSocketListenerProxy[I: Decoder](
         callback.onSuccess( ( socket, message ) )
     }
 
-    override def onFailure( exception: IOException, response: Response ) = {
+    override def onFailure( exception: IOException, response: Response ) = synchronized {
         val message = Option( response )
             .flatMap( response ⇒ Option( response.body() ) )
             .map( _.bytes() )
-            .flatMap( Decoder[I].decode( _ ).toOption )
+            .flatMap( Decoder[T].decode( _ ).toOption )
 
         logger.debug( {
             s"""
@@ -81,7 +71,7 @@ private class WebSocketListenerProxy[I: Decoder](
             """.stripMargin.trim
         }, exception )
 
-        if ( initialized.compareAndSet( false, true ) ) {
+        if ( listener == null ) {
             callback.onError( exception )
         } else {
             listener.onFailure( exception, message )
@@ -91,7 +81,7 @@ private class WebSocketListenerProxy[I: Decoder](
     override def onMessage( response: ResponseBody ) = {
         val bytes = response.bytes()
 
-        Decoder[I].decode( bytes ) match {
+        Decoder[T].decode( bytes ) match {
             case Success( message ) ⇒
                 logger.debug {
                     s"""
@@ -114,7 +104,7 @@ private class WebSocketListenerProxy[I: Decoder](
     override def onPong( payload: Buffer ) = {
         val message = Option( payload )
             .map( _.readByteArray() )
-            .flatMap( Decoder[I].decode( _ ).toOption )
+            .flatMap( Decoder[T].decode( _ ).toOption )
 
         logger.debug {
             s"""

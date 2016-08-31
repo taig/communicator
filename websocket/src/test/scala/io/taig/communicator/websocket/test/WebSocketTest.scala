@@ -21,19 +21,19 @@ class WebSocketTest
     }
 
     it should "complete when a socket connection is established" in {
-        WebSocket( request )( NoopWebSocketListener ).runAsync.map {
+        WebSocket( request )( NoopWebSocketListener[String] ).runAsync.map {
             case ( socket, _ ) ⇒
                 socket.close( Close.Normal, "Bye." )
                 socket shouldBe an[OkHttpWebSocket]
         }
     }
 
-    it should "fail when an error occurs while connecting" in {
+    it should "fail if an error occurs while connecting" in {
         val request = new OkHttpRequest.Builder()
             .url( "ws://foobar" )
             .build()
 
-        WebSocket( request )( NoopWebSocketListener ).runAsync.failed.map {
+        WebSocket( request )( NoopWebSocketListener[String] ).runAsync.failed.map {
             _ shouldBe an[UnknownHostException]
         }
     }
@@ -42,9 +42,11 @@ class WebSocketTest
         val promise = Promise[String]()
         val future = promise.future
 
-        val listener = new NoopWebSocketListener[String] {
-            override def onMessage( message: String ) = {
-                promise.success( message )
+        val listener: OkHttpWebSocket ⇒ NoopWebSocketListener[String] = {
+            new NoopWebSocketListener[String]( _ ) {
+                override def onMessage( message: String ) = {
+                    promise.success( message )
+                }
             }
         }
 
@@ -59,9 +61,11 @@ class WebSocketTest
         val promise = Promise[IOException]()
         val future = promise.future
 
-        val listener = new NoopWebSocketListener[String] {
-            override def onFailure( exception: IOException, response: Option[String] ) = {
-                promise.success( exception )
+        val listener: OkHttpWebSocket ⇒ NoopWebSocketListener[String] = {
+            new NoopWebSocketListener[String]( _ ) {
+                override def onFailure( exception: IOException, response: Option[String] ) = {
+                    promise.success( exception )
+                }
             }
         }
 

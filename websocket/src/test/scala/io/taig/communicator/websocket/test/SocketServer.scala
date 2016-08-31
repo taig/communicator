@@ -7,7 +7,8 @@ import io.taig.communicator.test.Suite
 import monix.execution.{ Scheduler, UncaughtExceptionReporter }
 import org.scalatest.BeforeAndAfterAll
 
-import scala.concurrent.Future
+import scala.concurrent.{ Await, Future }
+import scala.concurrent.duration.Duration.Inf
 
 trait SocketServer extends BeforeAndAfterAll { this: Suite ⇒
     val port = SocketServer.synchronized( SocketServer.port.next() )
@@ -20,8 +21,9 @@ trait SocketServer extends BeforeAndAfterAll { this: Suite ⇒
      * Scheduler that does not log exceptions to reduce noise. The library is
      * already explicitly logging socket failures.
      */
-    implicit val scheduler = Scheduler.singleThread(
-        "test",
+    implicit val scheduler = Scheduler.fixedPool(
+        "socket-test",
+        5,
         reporter = UncaughtExceptionReporter( _ ⇒ {} )
     )
 
@@ -37,16 +39,25 @@ trait SocketServer extends BeforeAndAfterAll { this: Suite ⇒
         socketServerClient.send( message )
     }
 
+    def disconnect() = Await.result( socketServerClient.disconnect(), Inf )
+
+    def start(): Unit = server.start
+
+    def stop(): Unit = {
+        server.stop
+        Thread.sleep( 500 )
+    }
+
     override def beforeAll() = {
         super.beforeAll()
 
-        server.start
+        start()
     }
 
     override def afterAll() = {
         super.afterAll()
 
-        server.stop
+        stop()
     }
 }
 
