@@ -15,33 +15,33 @@ import okhttp3.OkHttpClient
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
+trait Phoenix1 {
+    def join( topic: Topic, payload: Json = Json.Null ): Task[Channel]
+
+    def close(): Unit
+}
+
 class Phoenix(
         channels:  WebSocketChannels[Inbound, Outbound],
         heartbeat: Option[FiniteDuration]
 )(
         implicit
         scheduler: Scheduler
-) {
+) { self ⇒
     private val iterator: Iterator[Ref] = {
         Stream.iterate( 0L )( _ + 1 ).map( n ⇒ Ref( n.toString ) ).iterator
     }
 
     private var periodicHeartbeat: Option[Cancelable] = None
 
-    private[phoenix] def ref = synchronized( iterator.next() )
+    private def ref = synchronized( iterator.next() )
 
-    private[phoenix] def withRef[T]( f: Ref ⇒ T ): T = f( ref )
+    private def withRef[T]( f: Ref ⇒ T ): T = f( ref )
 
-    private[phoenix] val reader = {
-        channels.reader
-            .map { event ⇒
-                println( "Received " + event )
-                event
-            }
-            .collect {
-                case websocket.Event.Message( response ) ⇒ response
-            }
-            .publish
+    private val reader = {
+        channels.reader.collect {
+            case websocket.Event.Message( response ) ⇒ response
+        }.publish
     }
 
     private[phoenix] val writer = {
@@ -93,17 +93,12 @@ class Phoenix(
             logger.info( s"Requesting to join channel $topic" )
             val request = Request( topic, Event.Join, payload, ref )
             writer.send( request )
-            reader.connect()
         }
 
         val receive = reader.collect {
             case Response( `topic`, _, Some( Payload( Status.Ok, _ ) ), `ref` ) ⇒
                 logger.info( s"Successfully joined channel $topic" )
-                val r = reader.filter { inbound ⇒
-                    topic isSubscribedTo inbound.topic
-                }.publish
-                r.connect()
-                new Channel( this, r, topic ).right
+                channel( topic ).right
             case Response( `topic`, _, Some( payload @ Payload( Status.Error, _ ) ), `ref` ) ⇒
                 logger.info( s"Failed to join channel $topic" )
                 payload.left
@@ -115,12 +110,30 @@ class Phoenix(
                     s"Failed to join channel $topic: $error"
                 }
             }
-        }
+        }.timeout( 10 seconds )
 
         for {
             _ ← send
             receive ← receive
         } yield receive
+    }
+
+    private def channel( topic: Topic ): Channel = {
+        val reader = self.reader.filter { inbound ⇒
+            topic isSubscribedTo inbound.topic
+        }
+
+        val writer = new ChannelWriter {
+            override def send( event: Event, payload: Json ) = {
+                self.writer.send( Request( topic, event, payload, ref ) )
+            }
+        }
+
+        Channel( topic, reader, writer )
+    }
+
+    def connect(): Cancelable = {
+        reader.connect()
     }
 
     def close(): Unit = {

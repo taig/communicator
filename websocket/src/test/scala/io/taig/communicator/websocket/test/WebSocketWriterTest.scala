@@ -8,13 +8,11 @@ import io.taig.communicator.test.Suite
 import io.taig.communicator.websocket._
 import monix.eval.Task
 import monix.execution.Scheduler.Implicits.global
-import org.scalatest.{ AsyncFlatSpec, Matchers }
 
-import scala.concurrent.duration._
 import scala.language.postfixOps
 import scala.util.Try
 
-class WebSocketTest
+class WebSocketWriterTest
         extends Suite
         with SocketServer {
     override def receive = {
@@ -23,7 +21,7 @@ class WebSocketTest
         case Disconnected( _ )   ⇒ //
     }
 
-    "WebSocketWriter" should "connect to a websocket" in {
+    it should "connect to a websocket" in {
         WebSocketWriter[String]( request ).map { writer ⇒
             writer.close( Close.GoingAway, None )
             writer shouldBe a[WebSocketWriter[_]]
@@ -114,89 +112,6 @@ class WebSocketTest
 
         }.runAsync.map {
             _ should contain theSameElementsAs ( "0" :: "foo" :: "bar" :: Nil )
-        }
-    }
-
-    "WebSocketReader" should "receive String messages" in {
-        WebSocketReader[String]( request ).collect {
-            case Event.Message( value ) ⇒ value
-        }.firstL.runAsync.map {
-            _ shouldBe "0"
-        }
-    }
-
-    ignore should "be able to automatically reconnect" in {
-        val read = WebSocketReader[Int](
-            request,
-            reconnect = Some( 500 milliseconds )
-        ).collect { case Event.Message( value ) ⇒ value }.take( 4 ).toListL
-
-        val write = Task {
-            send( "1" )
-            // The parser will fail here and throw an exception,
-            // triggering the reconnect mechanism
-            send( "not a number" )
-        }.delayExecution( 500 milliseconds ).flatMap { _ ⇒
-            Task {
-                send( "3" )
-            }.delayExecution( 1000 milliseconds )
-        }
-
-        Task.mapBoth( read, write ) {
-            case ( result, _ ) ⇒ result
-        }.runAsync.map {
-            _ should contain theSameElementsAs
-                ( 0 :: 1 :: 0 :: 3 :: Nil )
-        }
-    }
-
-    it should "fail with an unknown url" in {
-        WebSocketReader[String] {
-            new OkHttpRequest.Builder()
-                .url( "ws://externalhost/ws" )
-                .build()
-        }.firstL.runAsync.failed.map {
-            _ shouldBe an[IOException]
-        }
-    }
-
-    "WebSocketChannels" should "support writing and reading to/from the socket" in {
-        val WebSocketChannels( reader, writer ) = {
-            WebSocketChannels.symmetric[String]( request )
-        }
-
-        writer.send( "foo" )
-        writer.send( "bar" )
-        writer.send( "foobar" )
-        writer.close( Close.Normal, None )
-
-        reader.collect {
-            case Event.Message( value ) ⇒ value
-        }.take( 4 ).toListL.runAsync.map {
-            _ should contain theSameElementsAs
-                ( "0" :: "foo" :: "bar" :: "foobar" :: Nil )
-        }
-    }
-
-    it should "be able to automatically close the socket" in {
-        val WebSocketChannels( reader, writer ) = {
-            WebSocketChannels.symmetric[String]( request )
-        }
-
-        // Share observable to auto-cancel after execution
-        val read = reader.share.collect {
-            case Event.Message( value ) ⇒ value
-        }.firstL
-
-        // Try to write something on the socket afterwards
-        val write = Task {
-            writer.send( "foobar" )
-        }.delayExecution( 500 milliseconds ).materialize
-
-        Task.zip2( read, write ).runAsync.map {
-            case ( result, exception ) ⇒
-                result shouldBe "0"
-                exception.failed.get shouldBe a[IllegalStateException]
         }
     }
 }

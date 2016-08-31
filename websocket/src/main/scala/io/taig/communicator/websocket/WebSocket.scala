@@ -72,7 +72,7 @@ private class NoopWebSocketListenerProxy(
 
         logger.debug {
             s"""
-               |[$url] onOpen
+               |onOpen
                |  Payload (discarded): ${message.orNull}
             """.stripMargin.trim
         }
@@ -87,7 +87,7 @@ private class NoopWebSocketListenerProxy(
 
         logger.debug( {
             s"""
-               |[$url] onFailure
+               |onFailure
                |  Payload (discarded): $message
             """.stripMargin.trim
         }, exception )
@@ -100,7 +100,7 @@ private class NoopWebSocketListenerProxy(
 
         logger.debug {
             s"""
-               |[$url] onMessage
+               |onMessage
                |  Payload (discarded): $message
             """.stripMargin
         }
@@ -111,7 +111,7 @@ private class NoopWebSocketListenerProxy(
 
         logger.debug {
             s"""
-               |[$url] onPing
+               |onPing
                |  Payload (discarded): ${message.orNull}
             """.stripMargin.trim
         }
@@ -120,7 +120,7 @@ private class NoopWebSocketListenerProxy(
     override def onClose( code: Int, reason: String ) = {
         logger.debug {
             s"""
-               |[$url] onClose
+               |onClose
                |  Code:   $code
                |  Reason: $reason
             """.stripMargin.trim
@@ -145,7 +145,7 @@ private class WebSocketListenerProxy[I: Decoder](
 
         logger.debug {
             s"""
-               |[$url] onOpen
+               |onOpen
                |  Payload: ${message.orNull}
             """.stripMargin.trim
         }
@@ -161,7 +161,7 @@ private class WebSocketListenerProxy[I: Decoder](
 
         logger.debug( {
             s"""
-               |[$url] onFailure
+               |onFailure
                |  Payload: $message
             """.stripMargin.trim
         }, exception )
@@ -180,7 +180,7 @@ private class WebSocketListenerProxy[I: Decoder](
             case Success( message ) ⇒
                 logger.debug {
                     s"""
-                       |[$url] onMessage
+                       |onMessage
                        |  Payload: $message
                     """.stripMargin.trim
                 }
@@ -203,7 +203,7 @@ private class WebSocketListenerProxy[I: Decoder](
 
         logger.debug {
             s"""
-               |[$url] onPing
+               |onPing
                |  Payload: ${message.orNull}
             """.stripMargin.trim
         }
@@ -216,7 +216,7 @@ private class WebSocketListenerProxy[I: Decoder](
 
         logger.debug {
             s"""
-               |[$url] onClose
+               |onClose
                |  Code:   $code
                |  Reason: ${optionalReason.orNull}
             """.stripMargin.trim
