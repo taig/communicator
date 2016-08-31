@@ -5,7 +5,7 @@ import monix.eval.Task
 import okhttp3.OkHttpClient
 import okio.Buffer
 
-trait WebSocketWriter[T] { self ⇒
+trait WebSocketWriter[T] {
     def send( value: T ): Unit
 
     def ping( value: Option[T] = None ): Unit

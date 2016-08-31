@@ -7,8 +7,6 @@ import io.taig.communicator.OkHttpRequest
 import io.taig.communicator.test.Suite
 import io.taig.communicator.websocket._
 import monix.eval.Task
-import okhttp3.RequestBody
-import okhttp3.ws.WebSocket._
 
 import scala.concurrent.Promise
 import scala.concurrent.duration._
@@ -19,23 +17,23 @@ class WebSocketReaderTest
         extends Suite
         with SocketServer {
     override def receive = {
-        case Connected           ⇒ send( "0" )
+        case Connected           ⇒ send( "hello" )
         case TextMessage( text ) ⇒ send( text )
         case Disconnected( _ )   ⇒ //
     }
 
-    ignore should "receive String messages" in {
+    it should "receive String messages" in {
         // Using share because it automatically cancels the connection after
         // receiving the message
         WebSocketReader[String]( request ).share.collect {
             case Event.Message( value ) ⇒ value
         }.firstL.runAsync.map {
-            _ shouldBe "0"
+            _ shouldBe "hello"
         }
     }
 
-    ignore should "close the socket connection when canceled" in {
-        val promise = Promise[OkHttpWebSocket]()
+    it should "close the socket connection when canceled" in {
+        val promise = Promise[WebSocket[String]]()
         val future = promise.future
 
         val cancelable = WebSocketReader[String]( request ).foreach {
@@ -46,11 +44,7 @@ class WebSocketReaderTest
         future.map { socket ⇒
             cancelable.cancel()
 
-            val send = Try {
-                socket.sendMessage(
-                    RequestBody.create( TEXT, "foobar" )
-                )
-            }
+            val send = Try( socket.send( "foobar" ) )
 
             send.isFailure shouldBe true
             send.failed.get shouldBe a[IllegalStateException]
@@ -61,7 +55,7 @@ class WebSocketReaderTest
     it should "automatically reconnect if an error occurs" in {
         var connected = false
 
-        val reader = WebSocketReader[Int](
+        val reader = WebSocketReader[String](
             request,
             reconnect = Some( 500 milliseconds )
         ).share
@@ -83,12 +77,43 @@ class WebSocketReaderTest
 
         Task.zip2( socket, messages ).runAsync.map {
             case ( sockets, messages ) ⇒
-                sockets.last.close( Close.Normal, "Bye." )
-                messages should contain theSameElementsAs ( 0 :: 0 :: Nil )
+                sockets.last.close( Close.Normal, Some( "Bye." ) )
+                messages should contain theSameElementsAs
+                    ( "hello" :: "hello" :: Nil )
         }
     }
 
-    ignore should "fail if an error occurs while connecting" in {
+    it should "automatically reconnect if the server closes the connection" in {
+        var connected = false
+
+        val reader = WebSocketReader[String](
+            request,
+            reconnect = Some( 500 milliseconds )
+        ).share
+
+        val socket = reader.collect {
+            case Event.Open( socket, _ ) ⇒
+                if ( !connected ) {
+                    disconnect()
+                }
+
+                connected = true
+                socket
+        }.take( 2 ).toListL
+
+        val messages = reader.collect {
+            case Event.Message( value ) ⇒ value
+        }.take( 2 ).toListL
+
+        Task.zip2( socket, messages ).runAsync.map {
+            case ( sockets, messages ) ⇒
+                sockets.last.close( Close.Normal, Some( "Bye." ) )
+                messages should contain theSameElementsAs
+                    ( "hello" :: "hello" :: Nil )
+        }
+    }
+
+    it should "fail if an error occurs while connecting" in {
         val request = new OkHttpRequest.Builder()
             .url( "ws://foobar" )
             .build()

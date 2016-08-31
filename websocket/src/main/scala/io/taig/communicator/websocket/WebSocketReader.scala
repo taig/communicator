@@ -11,6 +11,7 @@ import okhttp3.OkHttpClient
 
 import scala.concurrent.duration._
 import scala.language.postfixOps
+import scala.util.control.NonFatal
 import scala.util.{ Failure, Success }
 
 class WebSocketReader[T] private[websocket] (
@@ -21,37 +22,38 @@ class WebSocketReader[T] private[websocket] (
         implicit
         c: OkHttpClient,
         d: Decoder[T]
-) extends Observable[Event[T]] {
-    val channel: Observable[Event[T]] = Observable.unsafeCreate { subscriber ⇒
-        import subscriber.scheduler
+) extends Observable[Event[T]] { self ⇒
+    val channel: Observable[Event[T]] = {
+        Observable.create( strategy ) { subscriber ⇒
+            import subscriber.scheduler
 
-        val proxy = reconnect.fold( subscriber ) { reconnect ⇒
-            new ReconnectingSubscriberProxy[Event[T]](
-                subscriber,
-                this,
-                reconnect
-            )
-        }
-
-        val out = BufferedSubscriber.synchronous( proxy, strategy )
-
-        val cancelable = WebSocket( request ) { socket ⇒
-            new WebSocketReaderListener[T]( socket, out )
-        }.runAsync
-
-        cancelable.onComplete {
-            case Success( ( socket, message ) ) ⇒
-                WebSocketReader.handle(
-                    socket,
-                    out,
-                    Event.Open( socket, message )
+            val proxy = reconnect.fold[Subscriber[Event[T]]]( subscriber ) {
+                new ReconnectingSubscriberProxy[Event[T]](
+                    this,
+                    subscriber,
+                    _
                 )
-            case Failure( exception ) ⇒ out.onError( exception )
-        }
+            }
 
-        Cancelable { () ⇒
-            cancelable.onSuccess {
-                case ( socket, _ ) ⇒ socket.close( Close.GoingAway, "Bye." )
+            val cancelable = WebSocket[T]( request ) {
+                new WebSocketReaderListener[T]( _, proxy, subscriber )
+            }.runAsync
+
+            cancelable.onComplete {
+                case Success( ( socket, message ) ) ⇒
+                    WebSocketReader.handle(
+                        socket,
+                        proxy,
+                        Event.Open( socket, message )
+                    )
+                case Failure( exception ) ⇒ subscriber.onError( exception )
+            }
+
+            Cancelable { () ⇒
+                cancelable.onSuccess {
+                    case ( socket, _ ) ⇒
+                        socket.close( Close.GoingAway, Some( "Bye." ) )
+                }
             }
         }
     }
@@ -75,24 +77,25 @@ object WebSocketReader {
     }
 
     private[websocket] def handle[T](
-        socket:     OkHttpWebSocket,
-        downstream: Subscriber.Sync[Event[T]],
+        socket:     WebSocket[T],
+        subscriber: Subscriber[Event[T]],
         event:      Event[T]
     ): Unit = {
-        if ( downstream.onNext( event ) == Stop ) {
-            socket.close( Close.GoingAway, "Bye." )
+        if ( subscriber.onNext( event ) == Stop ) {
+            socket.close( Close.GoingAway, Some( "Bye." ) )
         }
     }
 }
 
 private class WebSocketReaderListener[T: Decoder](
-        socket:     OkHttpWebSocket,
-        downstream: Subscriber.Sync[Event[T]]
+        socket:     WebSocket[T],
+        proxy:      Subscriber[Event[T]],
+        subscriber: Subscriber[Event[T]]
 ) extends WebSocketListener[T]( socket ) {
     override def onMessage( message: T ) = {
         WebSocketReader.handle(
             socket,
-            downstream,
+            proxy,
             Event.Message( message )
         )
     }
@@ -100,7 +103,7 @@ private class WebSocketReaderListener[T: Decoder](
     override def onPong( payload: Option[T] ) = {
         WebSocketReader.handle(
             socket,
-            downstream,
+            proxy,
             Event.Pong( payload )
         )
     }
@@ -108,30 +111,34 @@ private class WebSocketReaderListener[T: Decoder](
     override def onFailure( exception: IOException, response: Option[T] ) = {
         WebSocketReader.handle(
             socket,
-            downstream,
+            proxy,
             Event.Failure( exception, response )
         )
 
-        downstream.onError( exception )
+        proxy.onError( exception )
     }
 
     override def onClose( code: Int, reason: Option[String] ) = {
         WebSocketReader.handle(
             socket,
-            downstream,
+            proxy,
             Event.Close( code, reason )
         )
 
-        downstream.onComplete()
+        if ( socket.isClosed ) {
+            subscriber.onComplete()
+        } else {
+            proxy.onComplete()
+        }
     }
 }
 
 private class ReconnectingSubscriberProxy[T](
-        subscriber: Subscriber[T],
         observable: Observable[T],
+        subscriber: Subscriber[T],
         delay:      FiniteDuration
 ) extends Subscriber[T] {
-    override implicit def scheduler = subscriber.scheduler
+    override implicit val scheduler = subscriber.scheduler
 
     override def onNext( value: T ) = subscriber.onNext( value )
 
@@ -144,13 +151,10 @@ private class ReconnectingSubscriberProxy[T](
     }
 
     override def onComplete() = {
-        subscriber.onComplete()
+        logger.debug( s"WebSocket closed, reconnecting in $delay" )
 
-        // TODO When the server closes the connection, we want to reconnect
-        //        logger.debug( s"Websocket closed, reconnecting in $delay" )
-
-        //        observable
-        //            .delaySubscription( delay )
-        //            .unsafeSubscribeFn( subscriber )
+        observable
+            .delaySubscription( delay )
+            .unsafeSubscribeFn( subscriber )
     }
 }

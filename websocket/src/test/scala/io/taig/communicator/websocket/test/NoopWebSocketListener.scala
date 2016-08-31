@@ -4,7 +4,7 @@ import java.io.IOException
 
 import io.taig.communicator.websocket._
 
-class NoopWebSocketListener[T]( socket: OkHttpWebSocket )
+class NoopWebSocketListener[T]( socket: WebSocket[T] )
         extends WebSocketListener[T]( socket ) {
     override def onMessage( message: T ) = {}
 
@@ -16,7 +16,7 @@ class NoopWebSocketListener[T]( socket: OkHttpWebSocket )
 }
 
 object NoopWebSocketListener {
-    def apply[T]: OkHttpWebSocket ⇒ NoopWebSocketListener[T] = {
+    def apply[T]: WebSocket[T] ⇒ NoopWebSocketListener[T] = {
         new NoopWebSocketListener[T]( _ )
     }
 }

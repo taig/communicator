@@ -7,8 +7,9 @@ import io.taig.communicator.test.Suite
 import monix.execution.{ Scheduler, UncaughtExceptionReporter }
 import org.scalatest.BeforeAndAfterAll
 
+import scala.concurrent.duration._
 import scala.concurrent.{ Await, Future }
-import scala.concurrent.duration.Duration.Inf
+import scala.language.postfixOps
 
 trait SocketServer extends BeforeAndAfterAll { this: Suite ⇒
     val port = SocketServer.synchronized( SocketServer.port.next() )
@@ -39,7 +40,9 @@ trait SocketServer extends BeforeAndAfterAll { this: Suite ⇒
         socketServerClient.send( message )
     }
 
-    def disconnect() = Await.result( socketServerClient.disconnect(), Inf )
+    def disconnect() = {
+        socketServerClient.disconnect()
+    }
 
     def start(): Unit = server.start
 

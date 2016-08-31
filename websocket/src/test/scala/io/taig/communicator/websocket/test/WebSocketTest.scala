@@ -23,7 +23,7 @@ class WebSocketTest
     it should "complete when a socket connection is established" in {
         WebSocket( request )( NoopWebSocketListener[String] ).runAsync.map {
             case ( socket, _ ) ⇒
-                socket.close( Close.Normal, "Bye." )
+                socket.close( Close.Normal, Some( "Bye." ) )
                 socket shouldBe an[OkHttpWebSocket]
         }
     }
@@ -42,7 +42,7 @@ class WebSocketTest
         val promise = Promise[String]()
         val future = promise.future
 
-        val listener: OkHttpWebSocket ⇒ NoopWebSocketListener[String] = {
+        val listener: WebSocket[String] ⇒ NoopWebSocketListener[String] = {
             new NoopWebSocketListener[String]( _ ) {
                 override def onMessage( message: String ) = {
                     promise.success( message )
@@ -53,7 +53,7 @@ class WebSocketTest
         for {
             ( socket, _ ) ← WebSocket( request )( listener ).runAsync
             assertion ← future.map { _ shouldBe "hello" }
-            _ = socket.close( Close.Normal, "Bye." )
+            _ = socket.close( Close.Normal, Some( "Bye." ) )
         } yield assertion
     }
 
@@ -61,7 +61,7 @@ class WebSocketTest
         val promise = Promise[IOException]()
         val future = promise.future
 
-        val listener: OkHttpWebSocket ⇒ NoopWebSocketListener[String] = {
+        val listener: WebSocket[String] ⇒ NoopWebSocketListener[String] = {
             new NoopWebSocketListener[String]( _ ) {
                 override def onFailure( exception: IOException, response: Option[String] ) = {
                     promise.success( exception )
