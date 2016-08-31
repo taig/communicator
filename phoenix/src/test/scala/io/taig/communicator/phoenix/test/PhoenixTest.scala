@@ -1,13 +1,13 @@
 package io.taig.communicator.phoenix.test
 
 import io.circe.Json
-import io.taig.communicator.phoenix.{ Event, Phoenix, Ref, Topic }
-import io.taig.communicator.phoenix.message.{ Push, Response }
+import io.taig.communicator.phoenix.{Event, Phoenix, Ref, Topic}
+import io.taig.communicator.phoenix.message.{Push, Response}
 import io.taig.communicator.phoenix.message.Response.Status
 import io.taig.communicator.test.Suite
 import monix.execution.Scheduler
 import monix.execution.Scheduler.Implicits.global
-import monix.reactive.OverflowStrategy
+import monix.reactive.{Observable, OverflowStrategy}
 
 import scala.language.postfixOps
 
@@ -97,7 +97,7 @@ class PhoenixTest
             case _ ⇒ phoenix.close()
         }
     }
-
+    
     it should "not get disturbed when the server omits responses" in {
         val topic = Topic( "echo", "foobar" )
         val payload = Json.obj( "foo" → Json.fromString( "bar" ) )
@@ -139,7 +139,7 @@ class PhoenixTest
             _ should contain theSameElementsAs ( response :: push :: Nil )
         }
     }
-
+    
     it should "make server errors accessible" in {
         val topic = Topic( "echo", "foobar" )
         val payload = Json.obj( "answer" → Json.fromInt( 42 ) )

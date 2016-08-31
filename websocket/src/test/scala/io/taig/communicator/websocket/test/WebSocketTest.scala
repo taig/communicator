@@ -125,7 +125,7 @@ class WebSocketTest
         }
     }
 
-    it should "be able to automatically reconnect" in {
+    ignore should "be able to automatically reconnect" in {
         val read = WebSocketReader[Int](
             request,
             reconnect = Some( 500 milliseconds )
