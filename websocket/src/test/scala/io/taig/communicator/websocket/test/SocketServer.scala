@@ -7,8 +7,8 @@ import io.taig.communicator.test.Suite
 import monix.execution.{ Scheduler, UncaughtExceptionReporter }
 import org.scalatest.BeforeAndAfterAll
 
+import scala.concurrent.{ Await, Future, Promise }
 import scala.concurrent.duration._
-import scala.concurrent.{ Await, Future }
 import scala.language.postfixOps
 
 trait SocketServer extends BeforeAndAfterAll { this: Suite ⇒
@@ -32,7 +32,14 @@ trait SocketServer extends BeforeAndAfterAll { this: Suite ⇒
         def receive = SocketServer.this.receive
     }
 
-    val server = HookupServer( port )( socketServerClient )
+    private val server = HookupServer( port )( socketServerClient )
+
+    private var stopped = Promise[Unit]()
+
+    server.onStop {
+        stopped.success( {} )
+        stopped = Promise[Unit]()
+    }
 
     def receive: Receive
 
@@ -48,7 +55,12 @@ trait SocketServer extends BeforeAndAfterAll { this: Suite ⇒
 
     def stop(): Unit = {
         server.stop
-        Thread.sleep( 500 )
+        Await.result( stopped.future, 1 second )
+    }
+
+    def restart(): Unit = {
+        stop()
+        start()
     }
 
     override def beforeAll() = {

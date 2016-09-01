@@ -63,8 +63,7 @@ class WebSocketReaderTest
         val socket = reader.collect {
             case Event.Open( socket, _ ) ⇒
                 if ( !connected ) {
-                    stop()
-                    start()
+                    restart()
                 }
 
                 connected = true

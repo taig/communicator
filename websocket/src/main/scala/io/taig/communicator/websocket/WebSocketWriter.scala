@@ -1,135 +1,95 @@
 package io.taig.communicator.websocket
 
 import io.taig.communicator.OkHttpRequest
-import monix.eval.Task
-import okhttp3.OkHttpClient
+import okhttp3.RequestBody
 import okio.Buffer
 
-trait WebSocketWriter[T] {
-    def send( value: T ): Unit
-
-    def ping( value: Option[T] = None ): Unit
-
-    def close( code: Int, reason: Option[String] ): Unit
-}
-
-object WebSocketWriter {
-    def apply[T: Encoder]( request: OkHttpRequest )(
-        implicit
-        client: OkHttpClient
-    ): Task[WebSocketWriter[T]] = {
-        ???
-        //        WebSocket.pure[T]( request ).map( new OkHttpWebSocketWriter[T]( _ ) )
-    }
-}
-
-private class OkHttpWebSocketWriter[T: Encoder]( socket: OkHttpWebSocket )
-        extends WebSocketWriter[T] {
-    override def send( value: T ) = {
-        logger.debug {
-            s"""
-               |Sending message
-               |  Payload: $value
-            """.stripMargin.trim
-        }
-
-        socket.sendMessage( Encoder[T].encode( value ) )
-    }
-
-    override def ping( value: Option[T] ) = {
-        logger.debug {
-            s"""
-               |Sending ping
-               |  Payload: $value
-            """.stripMargin.trim
-        }
-
-        val sink = value.map { value ⇒
-            val sink = new Buffer
-            val request = Encoder[T].encode( value )
-
-            try {
-                request.writeTo( sink )
-                sink
-            } finally {
-                sink.close()
-            }
-        }
-
-        socket.sendPing( sink.orNull )
-    }
-
-    override def close( code: Int, reason: Option[String] ) = {
-        logger.debug {
-            s"""
-               |Sending close
-               |  Code:   $code
-               |  Reason: $reason
-            """.stripMargin.trim
-        }
-
-        try {
-            socket.close( code, reason.orNull )
-        } catch {
-            case e: IllegalStateException if e.getMessage == "closed" ⇒
-                logger.debug( "Socket already closed" )
-        }
-    }
-}
-
-trait BufferedWebSocketWriter[T] extends WebSocketWriter[T] {
-    /**
-     * Send via websocket immediately or drop if unavailable
-     */
-    def sendNow( value: T ): Unit
-
-    def connect( socket: OkHttpWebSocket ): this.type
+trait WebSocketWriter[T] extends WebSocket[T] {
+    def connect( socket: WebSocket[T] ): this.type
 
     def disconnect(): this.type
 
     def isConnected: Boolean
+
+    def sendNow( value: T )( implicit e: Encoder[T] ): Unit
 }
 
-object BufferedWebSocketWriter {
-    def apply[T: Encoder](): BufferedWebSocketWriter[T] = {
-        new BufferedOkHttpWebSocketWriter[T]
+object WebSocketWriter {
+    def apply[T: Encoder]( request: OkHttpRequest ): WebSocketWriter[T] = {
+        new BufferedSocketWriter[T]
     }
 }
 
-private class BufferedOkHttpWebSocketWriter[T: Encoder]
-        extends BufferedWebSocketWriter[T] {
-    import BufferedOkHttpWebSocketWriter.Event
+private class BufferedSocketWriter[T] extends WebSocketWriter[T] {
+    import BufferedSocketWriter.Event
 
-    var writer: Option[WebSocketWriter[T]] = None
+    var socket: Option[WebSocket[T]] = None
 
-    val queue = collection.mutable.Queue[Event[T]]()
+    val queue = collection.mutable.Queue[Event]()
 
-    override def connect( socket: OkHttpWebSocket ): this.type = synchronized {
-        this.writer = Some( new OkHttpWebSocketWriter[T]( socket ) )
+    override private[websocket] def raw = socket.map( _.raw ).orNull
+
+    override def connect( socket: WebSocket[T] ): this.type = synchronized {
+        this.socket = Some( socket )
 
         while ( queue.nonEmpty ) {
             queue.dequeue() match {
-                case Event.Send( value )         ⇒ send( value )
-                case Event.Ping( value )         ⇒ ping( value )
-                case Event.Close( code, reason ) ⇒ close( code, reason )
+                case Event.Send( value, encoded ) ⇒
+                    logger.debug {
+                        s"""
+                           |Flushing message
+                           |  Payload: $value
+                        """.stripMargin.trim
+                    }
+
+                    socket.raw.sendMessage( encoded )
+                case Event.Ping( value, encoded ) ⇒
+                    logger.debug {
+                        s"""
+                           |Flushing ping
+                           |  Payload: $value
+                        """.stripMargin.trim
+                    }
+
+                    socket.raw.sendPing( encoded )
+                case Event.Close( code, reason ) ⇒
+                    logger.debug {
+                        s"""
+                           |Flushing close
+                           |  Code: $code
+                           |  Reason: $reason
+                        """.stripMargin.trim
+                    }
+
+                    socket.raw.close( code, reason )
             }
         }
 
-        queue.clear()
         this
     }
 
     override def disconnect(): this.type = synchronized {
-        this.writer = None
+        this.socket = None
         this
     }
 
-    override def isConnected = synchronized {
-        writer.isDefined
+    override def isConnected = synchronized( socket.isDefined )
+
+    override def send( value: T )( implicit e: Encoder[T] ): Unit = synchronized {
+        socket.fold[Unit] {
+            logger.debug {
+                s"""
+                   |Buffering message
+                   |  Payload: $value
+                """.stripMargin.trim
+            }
+
+            queue enqueue Event.Send( value, e.encode( value ) )
+        } { _.send( value ) }
     }
 
-    override def sendNow( value: T ) = synchronized {
-        writer.fold[Unit] {
+    override def sendNow( value: T )( implicit e: Encoder[T] ): Unit = synchronized {
+        socket.fold[Unit] {
             logger.debug {
                 s"""
                    |Dropping message (because socket is unavailable)
@@ -139,21 +99,8 @@ private class BufferedOkHttpWebSocketWriter[T: Encoder]
         } { _ ⇒ send( value ) }
     }
 
-    override def send( value: T ) = synchronized {
-        writer.fold[Unit] {
-            logger.debug {
-                s"""
-                   |Buffering message
-                   |  Payload: $value
-                """.stripMargin.trim
-            }
-
-            queue enqueue Event.Send( value )
-        } { _.send( value ) }
-    }
-
-    override def ping( value: Option[T] ) = synchronized {
-        writer.fold[Unit] {
+    override def ping( value: Option[T] )( implicit e: Encoder[T] ) = synchronized {
+        socket.fold[Unit] {
             logger.debug {
                 s"""
                    |Buffering ping
@@ -161,12 +108,12 @@ private class BufferedOkHttpWebSocketWriter[T: Encoder]
                 """.stripMargin.trim
             }
 
-            queue enqueue Event.Ping( value )
+            queue enqueue Event.Ping( value, value.map( e.buffer ).orNull )
         } { _.ping( value ) }
     }
 
-    override def close( code: Int, reason: Option[String] ) = {
-        writer.fold[Unit] {
+    override def close( code: Int, reason: Option[String] ) = synchronized {
+        socket.fold[Unit] {
             logger.debug {
                 s"""
                    |Buffering close
@@ -175,18 +122,19 @@ private class BufferedOkHttpWebSocketWriter[T: Encoder]
                 """.stripMargin.trim
             }
 
-            queue enqueue Event.Close( code, reason )
+            queue enqueue Event.Close( code, reason.getOrElse( "" ) )
         } { _.close( code, reason ) }
-
     }
+
+    override def isClosed = synchronized { socket.forall( _.isClosed ) }
 }
 
-private object BufferedOkHttpWebSocketWriter {
-    sealed trait Event[+T]
+private object BufferedSocketWriter {
+    sealed trait Event
 
     object Event {
-        case class Send[T]( value: T ) extends Event[T]
-        case class Ping[T]( value: Option[T] ) extends Event[T]
-        case class Close( code: Int, reason: Option[String] ) extends Event[Nothing]
+        case class Send[T]( value: T, encoded: RequestBody ) extends Event
+        case class Ping[T]( value: Option[T], encoded: Buffer ) extends Event
+        case class Close( code: Int, reason: String ) extends Event
     }
 }

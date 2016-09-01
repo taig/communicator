@@ -13,6 +13,8 @@ import okio.Buffer
 import scala.util.{ Failure, Success }
 
 trait WebSocket[T] {
+    private[websocket] def raw: OkHttpWebSocket
+
     def send( value: T )( implicit e: Encoder[T] ): Unit
 
     def ping( value: Option[T] = None )( implicit e: Encoder[T] ): Unit
@@ -147,6 +149,8 @@ private class OkHttpWebSocketWrapper[T]( socket: OkHttpWebSocket )
         extends WebSocket[T] {
     val closed = AtomicBoolean( false )
 
+    override private[websocket] val raw = socket
+
     override def send( value: T )( implicit e: Encoder[T] ) = {
         logger.debug {
             s"""
@@ -166,19 +170,7 @@ private class OkHttpWebSocketWrapper[T]( socket: OkHttpWebSocket )
             """.stripMargin.trim
         }
 
-        val sink = value.map { value ⇒
-            val sink = new Buffer
-            val request = e.encode( value )
-
-            try {
-                request.writeTo( sink )
-                sink
-            } finally {
-                sink.close()
-            }
-        }
-
-        socket.sendPing( sink.orNull )
+        socket.sendPing( value.map( e.buffer ).orNull )
     }
 
     override def close( code: Int, reason: Option[String] ) = {

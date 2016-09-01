@@ -5,13 +5,12 @@ import java.io.IOException
 import io.taig.communicator.OkHttpRequest
 import monix.execution.Ack.Stop
 import monix.execution.Cancelable
-import monix.reactive.observers.{ BufferedSubscriber, Subscriber }
+import monix.reactive.observers.Subscriber
 import monix.reactive.{ Observable, OverflowStrategy }
 import okhttp3.OkHttpClient
 
 import scala.concurrent.duration._
 import scala.language.postfixOps
-import scala.util.control.NonFatal
 import scala.util.{ Failure, Success }
 
 class WebSocketReader[T] private[websocket] (
@@ -72,9 +71,7 @@ object WebSocketReader {
         implicit
         c: OkHttpClient,
         d: Decoder[T]
-    ): WebSocketReader[T] = {
-        new WebSocketReader( request, strategy, reconnect )
-    }
+    ): WebSocketReader[T] = new WebSocketReader( request, strategy, reconnect )
 
     private[websocket] def handle[T](
         socket:     WebSocket[T],

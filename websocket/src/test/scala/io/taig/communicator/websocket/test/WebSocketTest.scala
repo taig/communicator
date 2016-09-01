@@ -24,7 +24,7 @@ class WebSocketTest
         WebSocket( request )( NoopWebSocketListener[String] ).runAsync.map {
             case ( socket, _ ) ⇒
                 socket.close( Close.Normal, Some( "Bye." ) )
-                socket shouldBe an[OkHttpWebSocket]
+                socket shouldBe an[WebSocket[_]]
         }
     }
 
@@ -71,9 +71,9 @@ class WebSocketTest
 
         for {
             ( socket, _ ) ← WebSocket( request )( listener ).runAsync
-            _ = server.stop
+            _ = stop()
             assertion ← future.map { _ shouldBe an[EOFException] }
-            _ = server.start
+            _ = start()
         } yield assertion
     }
 }
