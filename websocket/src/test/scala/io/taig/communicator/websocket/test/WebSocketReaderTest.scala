@@ -11,7 +11,6 @@ import monix.eval.Task
 import scala.concurrent.Promise
 import scala.concurrent.duration._
 import scala.language.postfixOps
-import scala.util.Try
 
 class WebSocketReaderTest
         extends Suite
@@ -33,22 +32,23 @@ class WebSocketReaderTest
     }
 
     it should "close the socket connection when canceled" in {
-        val promise = Promise[WebSocket[String]]()
-        val future = promise.future
+        val socket = Promise[WebSocket[String]]()
+        val close = Promise[Unit]()
 
         val cancelable = WebSocketReader[String]( request ).foreach {
-            case Event.Open( socket, _ ) ⇒ promise.success( socket )
-            case event                   ⇒ //
+            case Event.Open( s, _ )  ⇒ socket.success( s )
+            case Event.Close( _, _ ) ⇒ close.success( {} )
+            case event               ⇒ //
         }
 
-        future.map { socket ⇒
+        socket.future.map { socket ⇒
             cancelable.cancel()
+        }
 
-            val send = Try( socket.send( "foobar" ) )
-
-            send.isFailure shouldBe true
-            send.failed.get shouldBe a[IllegalStateException]
-            send.failed.get.getMessage shouldBe "closed"
+        socket.future.flatMap { socket ⇒
+            close.future.map { _ ⇒
+                socket.isClosed shouldBe true
+            }
         }
     }
 

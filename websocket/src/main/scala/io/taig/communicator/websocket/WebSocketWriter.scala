@@ -1,6 +1,5 @@
 package io.taig.communicator.websocket
 
-import io.taig.communicator.OkHttpRequest
 import okhttp3.RequestBody
 import okio.Buffer
 
@@ -15,9 +14,11 @@ trait WebSocketWriter[T] extends WebSocket[T] {
 }
 
 object WebSocketWriter {
-    def apply[T: Encoder]( request: OkHttpRequest ): WebSocketWriter[T] = {
-        new BufferedSocketWriter[T]
-    }
+    /**
+     * Create a simple `WebSocketWriter` instance that has to be connected to
+     * a socket by the called
+     */
+    def apply[T]: WebSocketWriter[T] = new BufferedSocketWriter[T]
 }
 
 private class BufferedSocketWriter[T] extends WebSocketWriter[T] {

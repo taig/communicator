@@ -55,7 +55,7 @@ trait SocketServer extends BeforeAndAfterAll { this: Suite ⇒
 
     def stop(): Unit = {
         server.stop
-        Await.result( stopped.future, 1 second )
+        Await.result( stopped.future, 3 seconds )
     }
 
     def restart(): Unit = {

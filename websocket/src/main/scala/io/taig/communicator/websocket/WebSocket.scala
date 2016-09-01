@@ -47,6 +47,17 @@ abstract class WebSocketListener[T]( val socket: WebSocket[T] ) {
     def onFailure( exception: IOException, response: Option[T] ): Unit
 }
 
+class SimpleWebSocketListener[T]( socket: WebSocket[T] )
+        extends WebSocketListener[T]( socket ) {
+    override def onMessage( message: T ) = {}
+
+    override def onPong( payload: Option[T] ) = {}
+
+    override def onClose( code: Int, reason: Option[String] ) = {}
+
+    override def onFailure( exception: IOException, response: Option[T] ) = {}
+}
+
 private class WebSocketListenerProxy[T: Decoder](
         callback: Callback[( WebSocket[T], Option[T] )],
         f:        WebSocket[T] ⇒ WebSocketListener[T]
@@ -147,34 +158,42 @@ private class WebSocketListenerProxy[T: Decoder](
 
 private class OkHttpWebSocketWrapper[T]( socket: OkHttpWebSocket )
         extends WebSocket[T] {
-    val closed = AtomicBoolean( false )
+    var closed = false
 
     override private[websocket] val raw = socket
 
-    override def send( value: T )( implicit e: Encoder[T] ) = {
-        logger.debug {
-            s"""
-               |Sending message
-               |  Payload: $value
-            """.stripMargin.trim
-        }
+    override def send( value: T )( implicit e: Encoder[T] ) = synchronized {
+        if ( !closed ) {
+            logger.debug {
+                s"""
+                   |Sending message
+                   |  Payload: $value
+                """.stripMargin.trim
+            }
 
-        socket.sendMessage( e.encode( value ) )
+            socket.sendMessage( e.encode( value ) )
+        } else {
+            logger.warn( "Trying to send message on a closed socket" )
+        }
     }
 
-    override def ping( value: Option[T] )( implicit e: Encoder[T] ) = {
-        logger.debug {
-            s"""
-               |Sending ping
-               |  Payload: ${value.orNull}
-            """.stripMargin.trim
-        }
+    override def ping( value: Option[T] )( implicit e: Encoder[T] ) = synchronized {
+        if ( !closed ) {
+            logger.debug {
+                s"""
+                   |Sending ping
+                   |  Payload: ${value.orNull}
+                """.stripMargin.trim
+            }
 
-        socket.sendPing( value.map( e.buffer ).orNull )
+            socket.sendPing( value.map( e.buffer ).orNull )
+        } else {
+            logger.warn( "Trying to send ping on a closed socket" )
+        }
     }
 
-    override def close( code: Int, reason: Option[String] ) = {
-        if ( closed.compareAndSet( expect = false, update = true ) ) {
+    override def close( code: Int, reason: Option[String] ) = synchronized {
+        if ( !closed ) {
             logger.debug {
                 s"""
                    |Sending close
@@ -183,9 +202,10 @@ private class OkHttpWebSocketWrapper[T]( socket: OkHttpWebSocket )
                 """.stripMargin.trim
             }
 
+            closed = true
             socket.close( code, reason.orNull )
         }
     }
 
-    override def isClosed = closed.get
+    override def isClosed = synchronized( closed )
 }
