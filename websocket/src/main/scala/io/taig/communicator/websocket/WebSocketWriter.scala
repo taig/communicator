@@ -31,6 +31,8 @@ private class BufferedSocketWriter[T] extends WebSocketWriter[T] {
     override private[websocket] def raw = socket.map( _.raw ).orNull
 
     override def connect( socket: WebSocket[T] ): this.type = synchronized {
+        logger.debug( s"Connecting and flushing (${queue.size})" )
+
         this.socket = Some( socket )
 
         while ( queue.nonEmpty ) {
@@ -70,6 +72,8 @@ private class BufferedSocketWriter[T] extends WebSocketWriter[T] {
     }
 
     override def disconnect(): this.type = synchronized {
+        logger.debug( "Disconnecting Writer" )
+
         this.socket = None
         this
     }

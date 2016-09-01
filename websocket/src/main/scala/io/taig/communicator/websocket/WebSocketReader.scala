@@ -13,7 +13,31 @@ import scala.concurrent.duration._
 import scala.language.postfixOps
 import scala.util.{ Failure, Success }
 
-class WebSocketReader[T] private[websocket] (
+object WebSocketReader {
+    def apply[T](
+        request:   OkHttpRequest,
+        strategy:  OverflowStrategy.Synchronous[Event[T]] = Default.strategy,
+        reconnect: Option[FiniteDuration]                 = Default.reconnect
+    )(
+        implicit
+        c: OkHttpClient,
+        d: Decoder[T]
+    ): WebSocketReader[T] = {
+        new ReconnectingWebSocketReader( request, strategy, reconnect )
+    }
+
+    private[websocket] def handle[T](
+        socket:     WebSocket[T],
+        subscriber: Subscriber[Event[T]],
+        event:      Event[T]
+    ): Unit = {
+        if ( subscriber.onNext( event ) == Stop ) {
+            socket.close( Close.GoingAway, Some( "Bye." ) )
+        }
+    }
+}
+
+private class ReconnectingWebSocketReader[T](
         request:   OkHttpRequest,
         strategy:  OverflowStrategy.Synchronous[Event[T]],
         reconnect: Option[FiniteDuration]
@@ -59,28 +83,6 @@ class WebSocketReader[T] private[websocket] (
 
     override def unsafeSubscribeFn( subscriber: Subscriber[Event[T]] ) = {
         channel.unsafeSubscribeFn( subscriber )
-    }
-}
-
-object WebSocketReader {
-    def apply[T](
-        request:   OkHttpRequest,
-        strategy:  OverflowStrategy.Synchronous[Event[T]] = Default.strategy,
-        reconnect: Option[FiniteDuration]                 = Default.reconnect
-    )(
-        implicit
-        c: OkHttpClient,
-        d: Decoder[T]
-    ): WebSocketReader[T] = new WebSocketReader( request, strategy, reconnect )
-
-    private[websocket] def handle[T](
-        socket:     WebSocket[T],
-        subscriber: Subscriber[Event[T]],
-        event:      Event[T]
-    ): Unit = {
-        if ( subscriber.onNext( event ) == Stop ) {
-            socket.close( Close.GoingAway, Some( "Bye." ) )
-        }
     }
 }
 

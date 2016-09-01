@@ -9,6 +9,8 @@ package object websocket {
 
     type OkHttpWebSocketListener = okhttp3.ws.WebSocketListener
 
+    type WebSocketReader[T] = Observable[Event[T]]
+
     private[websocket] val logger = {
         Logger( LoggerFactory.getLogger( "websocket" ) )
     }
