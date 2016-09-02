@@ -57,7 +57,7 @@ class WebSocketReaderTest
 
         val reader = WebSocketReader[String](
             request,
-            reconnect = Some( 500 milliseconds )
+            reconnect = Some( 1000 milliseconds )
         ).share
 
         val socket = reader.collect {
