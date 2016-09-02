@@ -147,96 +147,43 @@ private class PhoenixImpl(
 
     override def close() = {
         // TODO close phoenix style
+        stopHeartbeat()
         channels.close()
     }
 
-    //    private def startHeartbeat( heartbeat: FiniteDuration ): Unit = synchronized {
-    //        logger.debug( "Starting heartbeat" )
-    //
-    //        periodicHeartbeat.foreach { heartbeat ⇒
-    //            logger.warn( "Overriding existing heartbeat" )
-    //            heartbeat.cancel()
-    //        }
-    //
-    //        val scheduler = Scheduler.singleThread( "heartbeat" )
-    //
-    //        val cancelable = scheduler.scheduleWithFixedDelay( heartbeat, heartbeat ) {
-    //            logger.debug( "Sending heartbeat" )
-    //
-    //            channels.writer.sendNow {
-    //                Request(
-    //                    Topic( "phoenix" ),
-    //                    Event( "heartbeat" ),
-    //                    Json.Null,
-    //                    ref
-    //                )
-    //            }
-    //        }
-    //
-    //        periodicHeartbeat = Some( cancelable )
-    //    }
-    //
-    //    private def stopHeartbeat(): Unit = synchronized {
-    //        periodicHeartbeat.foreach { heartbeat ⇒
-    //            logger.debug( "Stopping heartbeat" )
-    //            heartbeat.cancel()
-    //        }
-    //        periodicHeartbeat = None
-    //    }
-    //
-    //    def join( topic: Topic, payload: Json = Json.Null ): Task[Channel] = withRef { ref ⇒
-    //        val send = Task {
-    //            logger.info( s"Requesting to join channel $topic" )
-    //            val request = Request( topic, Event.Join, payload, ref )
-    //            writer.send( request )
-    //        }
-    //
-    //        val receive = reader.collect {
-    //            case Response( `topic`, _, Some( Payload( Status.Ok, _ ) ), `ref` ) ⇒
-    //                logger.info( s"Successfully joined channel $topic" )
-    //                channel( topic ).right
-    //            case Response( `topic`, _, Some( payload @ Payload( Status.Error, _ ) ), `ref` ) ⇒
-    //                logger.info( s"Failed to join channel $topic" )
-    //                payload.left
-    //        }.firstL.flatMap {
-    //            case Xor.Right( channel ) ⇒ Task.now( channel )
-    //            case Xor.Left( payload ) ⇒ Task.raiseError {
-    //                val error = Phoenix.error( payload ).getOrElse( "" )
-    //                new IllegalArgumentException {
-    //                    s"Failed to join channel $topic: $error"
-    //                }
-    //            }
-    //        }.timeout( 10 seconds )
-    //
-    //        for {
-    //            _ ← send
-    //            receive ← receive
-    //        } yield receive
-    //    }
-    //
-    //    private def channel( topic: Topic ): Channel = {
-    //        val reader = self.reader.filter { inbound ⇒
-    //            topic isSubscribedTo inbound.topic
-    //        }
-    //
-    //        val writer = new ChannelWriter {
-    //            override def send( event: Event, payload: Json ) = {
-    //                self.writer.send( Request( topic, event, payload, ref ) )
-    //            }
-    //        }
-    //
-    //        Channel( topic, reader, writer )
-    //    }
-    //
-    //    def connect(): Cancelable = {
-    //        reader.connect()
-    //    }
-    //
-    //    def close(): Unit = {
-    //        logger.debug( "Closing" )
-    //        stopHeartbeat()
-    //        channels.close()
-    //    }
+    private def startHeartbeat( heartbeat: FiniteDuration ): Unit = synchronized {
+        logger.debug( "Starting heartbeat" )
+
+        periodicHeartbeat.foreach { heartbeat ⇒
+            logger.warn( "Overriding existing heartbeat" )
+            heartbeat.cancel()
+        }
+
+        val scheduler = Scheduler.singleThread( "heartbeat" )
+
+        val cancelable = scheduler.scheduleWithFixedDelay( heartbeat, heartbeat ) {
+            logger.debug( "Sending heartbeat" )
+
+            writer.sendNow {
+                Request(
+                    Topic( "phoenix" ),
+                    Event( "heartbeat" ),
+                    Json.Null,
+                    ref
+                )
+            }
+        }
+
+        periodicHeartbeat = Some( cancelable )
+    }
+
+    private def stopHeartbeat(): Unit = synchronized {
+        periodicHeartbeat.foreach { heartbeat ⇒
+            logger.debug( "Stopping heartbeat" )
+            heartbeat.cancel()
+        }
+        periodicHeartbeat = None
+    }
 }
 
 //private class HeartbeatWebSocketWriterProxy(

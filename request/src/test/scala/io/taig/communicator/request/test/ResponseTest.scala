@@ -60,7 +60,7 @@ class ResponseTest extends Suite {
         val request = builder.build()
 
         Request( request ).runAsync.map {
-            _.code shouldBe 404
+            case Response( code ) ⇒ code shouldBe 404
         }
     }
 

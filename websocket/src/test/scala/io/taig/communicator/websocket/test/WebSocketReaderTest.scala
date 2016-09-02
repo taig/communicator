@@ -52,7 +52,7 @@ class WebSocketReaderTest
         }
     }
 
-    ignore should "automatically reconnect if an error occurs" in {
+    it should "automatically reconnect if an error occurs" in {
         var connected = false
 
         val reader = WebSocketReader[String](
