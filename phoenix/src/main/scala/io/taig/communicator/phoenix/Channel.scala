@@ -13,9 +13,4 @@ case class Channel(
         logger.info( s"Leaving channel $topic" )
         writer.send( Event.Leave, Json.Null )
     }
-
-    def close(): Unit = {
-        leave()
-        //        phoenix.close()
-    }
 }
