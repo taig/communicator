@@ -16,7 +16,7 @@ trait PhoenixClient extends BeforeAndAfterEach { this: Suite ⇒
     override def beforeEach() = {
         super.beforeEach()
 
-        phoenix = Phoenix( request, OverflowStrategy.Unbounded, heartbeat = None )
+        phoenix = Phoenix( request, OverflowStrategy.Unbounded )
     }
 
     override def afterEach() = {

@@ -99,29 +99,38 @@ class PhoenixTest
         }
     }
 
-    //    it should "be possible to disable the heartbeat" in {
-    //        val topic = Topic( "echo", "foobar" )
-    //        val payload = Json.obj( "foo" → Json.fromString( "bar" ) )
-    //
-    //        val phoenix = Phoenix(
-    //            request,
-    //            OverflowStrategy.Unbounded,
-    //            heartbeat = None
-    //        )
-    //
-    //        phoenix.join( topic ).flatMap { channel ⇒
-    //            channel.writer.send( Event( "echo" ), payload )
-    //            channel.reader.collect {
-    //                case Response( _, _, Some( payload ), _ ) ⇒ payload
-    //            }.firstL
-    //        }.runAsync.map {
-    //            case Response.Payload( status, message ) ⇒
-    //                status shouldBe Status.Ok
-    //                message shouldBe payload
-    //        }.andThen {
-    //            case _ ⇒ phoenix.close()
-    //        }
-    //    }
+    it should "be possible to disable the heartbeat" in {
+        val topic = Topic( "echo", "foobar" )
+        val payload = Json.obj( "foo" → Json.fromString( "bar" ) )
+
+        val phoenix = Phoenix(
+            request,
+            OverflowStrategy.Unbounded,
+            heartbeat = None
+        )
+
+        val channel = phoenix.join( topic ).runAsync
+
+        channel.flatMap { channel ⇒
+            Task {
+                channel.writer.send( Event( "echo" ), payload )
+            }.delayExecution( 500 milliseconds ).runAsync
+        }
+
+        phoenix.connect()
+
+        channel.flatMap { channel ⇒
+            channel.reader.collect {
+                case Response( _, _, Some( payload ), _ ) ⇒ payload
+            }.firstL.runAsync
+        }.map {
+            case Response.Payload( status, message ) ⇒
+                status shouldBe Status.Ok
+                message shouldBe payload
+        }.andThen {
+            case _ ⇒ phoenix.close()
+        }
+    }
 
     it should "not get disturbed when the server omits responses" in {
         val topic = Topic( "echo", "foobar" )

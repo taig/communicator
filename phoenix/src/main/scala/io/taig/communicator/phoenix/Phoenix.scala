@@ -90,6 +90,7 @@ private class PhoenixImpl(
             .collect {
                 case Some( inbound ) ⇒ inbound
             }
+            .doOnStart( _ ⇒ heartbeat.foreach( startHeartbeat ) )
             .publish
     }
 
@@ -185,34 +186,3 @@ private class PhoenixImpl(
         periodicHeartbeat = None
     }
 }
-
-//private class HeartbeatWebSocketWriterProxy(
-//        writer: WebSocketWriter[Outbound],
-//        start:  () ⇒ Unit,
-//        stop:   () ⇒ Unit
-//) extends WebSocketWriter[Outbound] {
-//    override def send( value: Outbound ) = {
-//        stop()
-//
-//        writer.send( value )
-//
-//        if ( writer.isConnected ) {
-//            start()
-//        }
-//    }
-//
-//    override def ping( value: Option[Outbound] ) = {
-//        stop()
-//
-//        writer.ping( value )
-//
-//        if ( writer.isConnected ) {
-//            start()
-//        }
-//    }
-//
-//    override def close( code: Int, reason: Option[String] ) = {
-//        stop()
-//        writer.close( code, reason )
-//    }
-//}
