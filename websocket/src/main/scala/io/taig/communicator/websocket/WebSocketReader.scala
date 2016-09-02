@@ -14,14 +14,13 @@ import scala.language.postfixOps
 import scala.util.{ Failure, Success }
 
 object WebSocketReader {
-    def apply[T](
+    def apply[T: Encoder: Decoder](
         request:   OkHttpRequest,
         strategy:  OverflowStrategy.Synchronous[Event[T]] = Default.strategy,
         reconnect: Option[FiniteDuration]                 = Default.reconnect
     )(
         implicit
-        c: OkHttpClient,
-        d: Decoder[T]
+        c: OkHttpClient
     ): WebSocketReader[T] = {
         new ReconnectingWebSocketReader( request, strategy, reconnect )
     }
@@ -37,14 +36,13 @@ object WebSocketReader {
     }
 }
 
-private class ReconnectingWebSocketReader[T](
+private class ReconnectingWebSocketReader[T: Encoder: Decoder](
         request:   OkHttpRequest,
         strategy:  OverflowStrategy.Synchronous[Event[T]],
         reconnect: Option[FiniteDuration]
 )(
         implicit
-        c: OkHttpClient,
-        d: Decoder[T]
+        c: OkHttpClient
 ) extends Observable[Event[T]] { self ⇒
     val channel: Observable[Event[T]] = {
         Observable.create( strategy ) { subscriber ⇒

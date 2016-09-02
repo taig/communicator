@@ -3,7 +3,7 @@ package io.taig.communicator.phoenix.message
 import io.circe.Json
 import io.taig.communicator.phoenix.{ Event, Ref, Topic }
 
-sealed trait Outbound {
+sealed trait Outbound extends Product with Serializable {
     def topic: Topic
 
     def event: Event

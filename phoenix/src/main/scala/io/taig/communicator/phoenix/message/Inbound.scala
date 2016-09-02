@@ -4,7 +4,7 @@ import io.circe.{ Decoder, Json }
 import io.circe.generic.semiauto._
 import io.taig.communicator.phoenix.{ Event, Ref, Topic }
 
-sealed trait Inbound {
+sealed trait Inbound extends Product with Serializable {
     def topic: Topic
 
     def event: Event

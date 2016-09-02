@@ -1,5 +1,6 @@
 package io.taig.communicator.websocket
 
+import cats.functor.Contravariant
 import okhttp3.RequestBody
 import okhttp3.ws.WebSocket._
 import okio.Buffer
@@ -27,6 +28,18 @@ object Encoder {
     def instance[T]( e: T ⇒ RequestBody ): Encoder[T] = {
         new Encoder[T] {
             override def encode( value: T ) = e( value )
+        }
+    }
+
+    implicit val contravariant: Contravariant[Encoder] = {
+        new Contravariant[Encoder] {
+            override def contramap[A, B]( fa: Encoder[A] )( f: B ⇒ A ) = {
+                new Encoder[B] {
+                    override def encode( value: B ) = {
+                        fa.encode( f( value ) )
+                    }
+                }
+            }
         }
     }
 

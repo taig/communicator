@@ -2,7 +2,6 @@ package io.taig.communicator.request.test
 
 import io.taig.communicator.request.{ Request, Response }
 import io.taig.communicator.test.Suite
-import monix.execution.Scheduler.Implicits.global
 import okhttp3.mockwebserver.MockResponse
 
 import scala.language.postfixOps

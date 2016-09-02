@@ -18,16 +18,6 @@ trait SocketServer extends BeforeAndAfterAll { this: Suite ⇒
         .url( s"ws://localhost:$port/ws" )
         .build()
 
-    /**
-     * Scheduler that does not log exceptions to reduce noise. The library is
-     * already explicitly logging socket failures.
-     */
-    implicit val scheduler = Scheduler.fixedPool(
-        "socket-test",
-        5,
-        reporter = UncaughtExceptionReporter( _ ⇒ {} )
-    )
-
     private val socketServerClient = new HookupServerClient {
         def receive = SocketServer.this.receive
     }

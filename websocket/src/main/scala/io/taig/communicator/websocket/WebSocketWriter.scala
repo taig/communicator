@@ -1,5 +1,7 @@
 package io.taig.communicator.websocket
 
+import cats.functor.Contravariant
+import cats.syntax.contravariant._
 import okhttp3.RequestBody
 import okio.Buffer
 
@@ -10,7 +12,7 @@ trait WebSocketWriter[T] extends WebSocket[T] {
 
     def isConnected: Boolean
 
-    def sendNow( value: T )( implicit e: Encoder[T] ): Unit
+    def sendNow( value: T ): Unit
 }
 
 object WebSocketWriter {
@@ -18,11 +20,55 @@ object WebSocketWriter {
      * Create a simple `WebSocketWriter` instance that has to be connected to
      * a socket by the called
      */
-    def apply[T]: WebSocketWriter[T] = new BufferedSocketWriter[T]
+    def apply[T: Encoder]: WebSocketWriter[T] = new BufferedSocketWriter[T]
+
+    implicit val contravariant: Contravariant[WebSocketWriter] = {
+        new Contravariant[WebSocketWriter] {
+            override def contramap[A, B]( fa: WebSocketWriter[A] )( f: B ⇒ A ) = {
+                new WebSocketWriter[B] {
+                    override val raw = fa.raw
+
+                    override val encoder = fa.encoder.contramap( f )
+
+                    override def connect( socket: WebSocket[B] ) = {
+                        fa.connect( WebSocket[A]( raw )( fa.encoder ) )
+                        this
+                    }
+
+                    override def disconnect() = {
+                        fa.disconnect()
+                        this
+                    }
+
+                    override def isConnected = fa.isConnected
+
+                    override def sendNow( value: B ) = {
+                        fa.sendNow( f( value ) )
+                    }
+
+                    override def send( value: B ) = {
+                        fa.send( f( value ) )
+                    }
+
+                    override def close( code: Int, reason: Option[String] ) = {
+                        fa.close( code, reason )
+                    }
+
+                    override def ping( value: Option[B] ) = {
+                        fa.ping( value.map( f ) )
+                    }
+
+                    override def isClosed = fa.isClosed
+                }
+            }
+        }
+    }
 }
 
-private class BufferedSocketWriter[T] extends WebSocketWriter[T] {
+private class BufferedSocketWriter[T: Encoder] extends WebSocketWriter[T] {
     import BufferedSocketWriter.Event
+
+    override val encoder = Encoder[T]
 
     var socket: Option[WebSocket[T]] = None
 
@@ -80,7 +126,7 @@ private class BufferedSocketWriter[T] extends WebSocketWriter[T] {
 
     override def isConnected = synchronized( socket.isDefined )
 
-    override def send( value: T )( implicit e: Encoder[T] ): Unit = synchronized {
+    override def send( value: T ): Unit = synchronized {
         socket.fold[Unit] {
             logger.debug {
                 s"""
@@ -89,11 +135,11 @@ private class BufferedSocketWriter[T] extends WebSocketWriter[T] {
                 """.stripMargin.trim
             }
 
-            queue enqueue Event.Send( value, e.encode( value ) )
+            queue enqueue Event.Send( value, encoder.encode( value ) )
         } { _.send( value ) }
     }
 
-    override def sendNow( value: T )( implicit e: Encoder[T] ): Unit = synchronized {
+    override def sendNow( value: T ): Unit = synchronized {
         socket.fold[Unit] {
             logger.debug {
                 s"""
@@ -104,7 +150,7 @@ private class BufferedSocketWriter[T] extends WebSocketWriter[T] {
         } { _ ⇒ send( value ) }
     }
 
-    override def ping( value: Option[T] )( implicit e: Encoder[T] ) = synchronized {
+    override def ping( value: Option[T] ) = synchronized {
         socket.fold[Unit] {
             logger.debug {
                 s"""
@@ -113,7 +159,7 @@ private class BufferedSocketWriter[T] extends WebSocketWriter[T] {
                 """.stripMargin.trim
             }
 
-            queue enqueue Event.Ping( value, value.map( e.buffer ).orNull )
+            queue enqueue Event.Ping( value, value.map( encoder.buffer ).orNull )
         } { _.ping( value ) }
     }
 

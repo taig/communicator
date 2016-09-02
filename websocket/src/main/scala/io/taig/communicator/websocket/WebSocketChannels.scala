@@ -16,17 +16,17 @@ trait WebSocketChannels[T] {
 }
 
 object WebSocketChannels {
-    def apply[T: Decoder: Encoder](
+    def apply[T: Encoder: Decoder](
         request:   OkHttpRequest,
         strategy:  OverflowStrategy.Synchronous[Event[T]] = Default.strategy,
         reconnect: Option[FiniteDuration]                 = Default.reconnect
     )(
         implicit
-        client: OkHttpClient
+        c: OkHttpClient
     ): WebSocketChannels[T] = {
         val writer = WebSocketWriter[T]
 
-        val reader = WebSocketReader(
+        val reader = WebSocketReader[T](
             request,
             strategy,
             reconnect

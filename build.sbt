@@ -42,6 +42,9 @@ lazy val websocket = project
         libraryDependencies ++=
             "com.squareup.okhttp3" % "okhttp-ws" % Settings.dependency.okhttp ::
             "io.monix" %% "monix-reactive" % Settings.dependency.monix ::
+            "org.typelevel" %% "cats-core" % Settings.dependency.cats ::
+            "org.typelevel" %% "cats-kernel" % Settings.dependency.cats ::
+            "org.typelevel" %% "cats-macros" % Settings.dependency.cats ::
             Nil,
         name := "websocket",
         startYear := Some( 2016 )

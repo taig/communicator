@@ -2,7 +2,6 @@ package io.taig.communicator.request.test
 
 import io.taig.communicator.request.Request
 import io.taig.communicator.test.Suite
-import monix.execution.Scheduler.Implicits.global
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.{ MediaType, RequestBody }
 

@@ -2,10 +2,11 @@ package io.taig.communicator.websocket
 
 import java.io.IOException
 
+import cats.functor.Contravariant
+import cats.syntax.contravariant._
 import io.taig.communicator.OkHttpRequest
 import monix.eval.{ Callback, Task }
 import monix.execution.Cancelable
-import monix.execution.atomic.AtomicBoolean
 import okhttp3.ws.WebSocketCall
 import okhttp3.{ OkHttpClient, Response, ResponseBody }
 import okio.Buffer
@@ -15,9 +16,11 @@ import scala.util.{ Failure, Success }
 trait WebSocket[T] {
     private[websocket] def raw: OkHttpWebSocket
 
-    def send( value: T )( implicit e: Encoder[T] ): Unit
+    def encoder: Encoder[T]
 
-    def ping( value: Option[T] = None )( implicit e: Encoder[T] ): Unit
+    def send( value: T ): Unit
+
+    def ping( value: Option[T] = None ): Unit
 
     def close( code: Int, reason: Option[String] ): Unit
 
@@ -25,7 +28,7 @@ trait WebSocket[T] {
 }
 
 object WebSocket {
-    def apply[T: Decoder]( request: OkHttpRequest )(
+    def apply[T: Encoder: Decoder]( request: OkHttpRequest )(
         listener: WebSocket[T] ⇒ WebSocketListener[T]
     )(
         implicit
@@ -34,6 +37,34 @@ object WebSocket {
         val call = WebSocketCall.create( c, request )
         call.enqueue( new WebSocketListenerProxy( callback, listener ) )
         Cancelable( call.cancel )
+    }
+
+    def apply[T: Encoder]( socket: OkHttpWebSocket ): WebSocket[T] = {
+        new OkHttpWebSocketWrapper[T]( socket )
+    }
+
+    implicit val contravariant: Contravariant[WebSocket] = {
+        new Contravariant[WebSocket] {
+            override def contramap[A, B]( fa: WebSocket[A] )( f: B ⇒ A ) = {
+                new WebSocket[B] {
+                    override val raw = fa.raw
+
+                    override val encoder = fa.encoder.contramap( f )
+
+                    override def send( value: B ) = fa.send( f( value ) )
+
+                    override def close( code: Int, reason: Option[String] ) = {
+                        fa.close( code, reason )
+                    }
+
+                    override def ping( value: Option[B] ) = {
+                        fa.ping( value.map( f ) )
+                    }
+
+                    override def isClosed = fa.isClosed
+                }
+            }
+        }
     }
 }
 
@@ -58,7 +89,7 @@ class SimpleWebSocketListener[T]( socket: WebSocket[T] )
     override def onFailure( exception: IOException, response: Option[T] ) = {}
 }
 
-private class WebSocketListenerProxy[T: Decoder](
+private class WebSocketListenerProxy[T: Encoder: Decoder](
         callback: Callback[( WebSocket[T], Option[T] )],
         f:        WebSocket[T] ⇒ WebSocketListener[T]
 ) extends OkHttpWebSocketListener {
@@ -156,13 +187,15 @@ private class WebSocketListenerProxy[T: Decoder](
     }
 }
 
-private class OkHttpWebSocketWrapper[T]( socket: OkHttpWebSocket )
+private class OkHttpWebSocketWrapper[T: Encoder]( socket: OkHttpWebSocket )
         extends WebSocket[T] {
     var closed = false
 
     override private[websocket] val raw = socket
 
-    override def send( value: T )( implicit e: Encoder[T] ) = synchronized {
+    override val encoder = Encoder[T]
+
+    override def send( value: T ) = synchronized {
         if ( !closed ) {
             logger.debug {
                 s"""
@@ -171,13 +204,13 @@ private class OkHttpWebSocketWrapper[T]( socket: OkHttpWebSocket )
                 """.stripMargin.trim
             }
 
-            socket.sendMessage( e.encode( value ) )
+            socket.sendMessage( Encoder[T].encode( value ) )
         } else {
             logger.warn( "Trying to send message on a closed socket" )
         }
     }
 
-    override def ping( value: Option[T] )( implicit e: Encoder[T] ) = synchronized {
+    override def ping( value: Option[T] ) = synchronized {
         if ( !closed ) {
             logger.debug {
                 s"""
@@ -186,7 +219,7 @@ private class OkHttpWebSocketWrapper[T]( socket: OkHttpWebSocket )
                 """.stripMargin.trim
             }
 
-            socket.sendPing( value.map( e.buffer ).orNull )
+            socket.sendPing( value.map( Encoder[T].buffer ).orNull )
         } else {
             logger.warn( "Trying to send ping on a closed socket" )
         }
