@@ -1,5 +1,12 @@
 # Changelog
 
+## 3.0.0-RC4
+
+_2016-09-06_
+
+ * Improved `phoenix` module stability with blackbox tests
+ * Minor API changes in `websocket` and `phoenix` modules
+
 ## 3.0.0-RC3
 
 _2016-08-22_
