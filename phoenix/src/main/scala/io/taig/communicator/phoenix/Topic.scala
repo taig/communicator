@@ -4,6 +4,12 @@ import io.circe.{ Decoder, Encoder }
 import cats.syntax.xor._
 
 case class Topic( name: String, identifier: Option[String] ) {
+    def isSubscribedTo( topic: Topic ): Boolean = topic match {
+        case Topic( `name`, `identifier` ) ⇒ true
+        case Topic( `name`, None )         ⇒ true
+        case _                             ⇒ false
+    }
+
     override def toString = {
         name + identifier.map( ":" + _ ).getOrElse( "" )
     }

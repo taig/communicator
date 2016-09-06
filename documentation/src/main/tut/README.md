@@ -9,18 +9,6 @@
 
 Communicator provides a simple way to construct OkHttp requests as `monix.Task`s which is equipped with a beautiful functional interface and comes with first class support for cancellation.
 
-## Index
-
-1. [Installation](#installation)
-2. [Quickstart](#quickstart)
-3. [Usage](#usage)
-    1. [Building Requests](#building-requests)
-    2. [Parsing Content](#parsing-content)
-4. [Roadmap](#roadmap)
-5. [Communicator 2.x](#communicator-2x)
-6. [Communicator 1.x](#communicator-1x)
-7. [License](#license)
-
 ## Installation
 
 ```scala
@@ -39,13 +27,13 @@ libraryDependencies += "io.taig" %% "communicator" % "3.0.0-RC3"
 ## Quickstart
 
 ```tut
-import io.taig.communicator._; import request._; import monix.eval.Task
+import io.taig.communicator._; import request._; import monix.eval.Task; import okhttp3.OkHttpClient
 
 // To build request tasks, an implicit OkHttpClient should be in scope
-implicit val client = Client()
+implicit val client = new OkHttpClient()
 
 // Simple OkHttp request builder
-val builder = Request.Builder().url( "http://taig.io/" )
+val builder = new OkHttpRequest.Builder().url( "http://taig.io/" )
 
 // Construct a Task[Response]
 val request: Request = Request( builder.build() )
@@ -83,6 +71,15 @@ Lorem Ipsum
 
 Lorem Ipsum
 
+## Testing
+
+To run the Phoenix-module specific tests, the [phoenix_echo][5] app (thanks [@PragTob][6]) has to be running in the background. The easiest way to do so is via the included `docker` configuration.
+```
+docker pull taig/communicator:latest
+docker build -t taig/communicator:latest .
+docker -v "$PWD:/communicator/" --entrypoint="./test.sh" taig/communicator:latest
+```
+
 ## Communicator 2.x
 
 The `scala.concurrent.Future` predecessor of this library has been deprecated. You can still [access][3] the source and documentation.
@@ -91,12 +88,9 @@ The `scala.concurrent.Future` predecessor of this library has been deprecated. Y
 
 The Java predecessor of this library has been deprecated. You can still [access][4] the source and documentation.
 
-## License
-
-The MIT License (MIT)  
-Copyright (c) 2016 Niklas Klein <mail@taig.io>
-
 [1]: https://monix.io/
 [2]: http://square.github.io/okhttp/
 [3]: https://github.com/Taig/Communicator/tree/2.3.2
 [4]: https://github.com/Taig/Communicator/tree/f820d08b1cc4d77083e384568ce89223e53ab693
+[5]: https://github.com/PragTob/phoenix_echo
+[6]: https://github.com/PragTob

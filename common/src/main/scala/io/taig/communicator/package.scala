@@ -1,7 +1,5 @@
 package io.taig
 
-import okhttp3.OkHttpClient
-
 import scala.language.implicitConversions
 
 package object communicator {
@@ -13,15 +11,7 @@ package object communicator {
 
     type OkHttpRequest = okhttp3.Request
 
-    type Client = OkHttpClient
-
-    object Client {
-        type Builder = OkHttpClient.Builder
-
-        object Builder {
-            def apply(): Builder = new Builder()
-        }
-
-        def apply(): Client = new Client
+    object OkHttpRequest {
+        type Builder = okhttp3.Request.Builder
     }
 }

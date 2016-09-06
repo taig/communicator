@@ -1,6 +1,5 @@
 package io.taig.communicator.phoenix
 
-import cats.data.Xor
 import io.circe.{ Decoder, Encoder }
 
 sealed case class Event( name: String )
@@ -14,14 +13,13 @@ object Event {
 
     val all = Close :: Error :: Join :: Reply :: Leave :: Nil
 
-    implicit val encoderEvent: Encoder[Event] = Encoder[String].contramap( _.name )
+    implicit val encoderEvent: Encoder[Event] = {
+        Encoder[String].contramap( _.name )
+    }
 
     implicit val decoderEvent: Decoder[Event] = {
-        Decoder[String].emap { name ⇒
-            Xor.fromOption(
-                all.find( _.name == name ),
-                s"Event $name does not exist"
-            )
+        Decoder[String].map { name ⇒
+            all.find( _.name == name ).getOrElse( Event( name ) )
         }
     }
 }

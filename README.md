@@ -9,18 +9,6 @@
 
 Communicator provides a simple way to construct OkHttp requests as `monix.Task`s which is equipped with a beautiful functional interface and comes with first class support for cancellation.
 
-## Index
-
-1. [Installation](#installation)
-2. [Quickstart](#quickstart)
-3. [Usage](#usage)
-    1. [Building Requests](#building-requests)
-    2. [Parsing Content](#parsing-content)
-4. [Roadmap](#roadmap)
-5. [Communicator 2.x](#communicator-2x)
-6. [Communicator 1.x](#communicator-1x)
-7. [License](#license)
-
 ## Installation
 
 ```scala
@@ -39,22 +27,23 @@ libraryDependencies += "io.taig" %% "communicator" % "3.0.0-RC3"
 ## Quickstart
 
 ```scala
-scala> import io.taig.communicator._; import request._; import monix.eval.Task
+scala> import io.taig.communicator._; import request._; import monix.eval.Task; import okhttp3.OkHttpClient
 import io.taig.communicator._
 import request._
 import monix.eval.Task
+import okhttp3.OkHttpClient
 
 scala> // To build request tasks, an implicit OkHttpClient should be in scope
-     | implicit val client = Client()
-client: io.taig.communicator.Client = okhttp3.OkHttpClient@5e5945f
+     | implicit val client = new OkHttpClient()
+client: okhttp3.OkHttpClient = okhttp3.OkHttpClient@584e4832
 
 scala> // Simple OkHttp request builder
-     | val builder = Request.Builder().url( "http://taig.io/" )
-builder: okhttp3.Request.Builder = okhttp3.Request$Builder@5f8d32be
+     | val builder = new OkHttpRequest.Builder().url( "http://taig.io/" )
+builder: okhttp3.Request.Builder = okhttp3.Request$Builder@1aa9c2ed
 
 scala> // Construct a Task[Response]
      | val request: Request = Request( builder.build() )
-request: io.taig.communicator.request.Request = io.taig.communicator.request.Request@50b29e4a
+request: io.taig.communicator.request.Request = io.taig.communicator.request.Request@3176ffce
 
 scala> // Parse the response to a String
      | val requestContent: Task[Response.With[String]] = request.parse[String]
@@ -71,7 +60,7 @@ scala> requestContent.runAsync.andThen {
      |     case Success( content ) => "Success"
      |     case Failure( exception ) => "Failure"
      | }
-res5: monix.execution.CancelableFuture[io.taig.communicator.request.Response.With[String]] = monix.execution.CancelableFuture$Implementation@22d306f1
+res5: monix.execution.CancelableFuture[io.taig.communicator.request.Response.With[String]] = monix.execution.CancelableFuture$Implementation@6f104ef9
 ```
 
 ## Usage
@@ -94,6 +83,15 @@ Lorem Ipsum
 
 Lorem Ipsum
 
+## Testing
+
+To run the Phoenix-module specific tests, the [phoenix_echo][5] app (thanks [@PragTob][6]) has to be running in the background. The easiest way to do so is via the included `docker` configuration.
+```
+docker pull taig/communicator:latest
+docker build -t taig/communicator:latest .
+docker --entrypoint="./test.sh" taig/communicator:latest
+```
+
 ## Communicator 2.x
 
 The `scala.concurrent.Future` predecessor of this library has been deprecated. You can still [access][3] the source and documentation.
@@ -102,12 +100,9 @@ The `scala.concurrent.Future` predecessor of this library has been deprecated. Y
 
 The Java predecessor of this library has been deprecated. You can still [access][4] the source and documentation.
 
-## License
-
-The MIT License (MIT)  
-Copyright (c) 2016 Niklas Klein <mail@taig.io>
-
 [1]: https://monix.io/
 [2]: http://square.github.io/okhttp/
 [3]: https://github.com/Taig/Communicator/tree/2.3.2
 [4]: https://github.com/Taig/Communicator/tree/f820d08b1cc4d77083e384568ce89223e53ab693
+[5]: https://github.com/PragTob/phoenix_echo
+[6]: https://github.com/PragTob

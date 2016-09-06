@@ -1,23 +1,15 @@
 machine:
-  java:
-    version: oraclejdk8
+  services:
+    - docker
 
 dependencies:
   pre:
-    - wget -q https://dl.bintray.com/sbt/debian/sbt-0.13.12.deb
-    - sudo dpkg -i sbt-0.13.12.deb
-  cache_directories:
-    - "~/.ivy2/"
-    - "~/.sbt/"
+    - docker login -e $DOCKER_HUB_EMAIL -u $DOCKER_HUB_USER -p $DOCKER_HUB_PASSWORD
   override:
-    - sbt test:compile
-
-general:
-  artifacts:
-    - target/scala-2.11/coverage-report
+    - docker pull taig/communicator:latest || true
 
 test:
   override:
-    - sbt ";clean;coverage;test;coverageReport;tut;coverageAggregate"
-  post:
-    - pip install --user codecov && codecov
+    - docker build -t taig/communicator:latest .
+    - docker push taig/communicator:latest
+    - docker run -e CODECOV_TOKEN=$CODECOV_TOKEN --entrypoint="./test.sh" -v "$PWD:/communicator/" taig/communicator:latest

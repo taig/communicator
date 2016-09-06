@@ -7,57 +7,52 @@ import okhttp3.OkHttpClient
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
-trait WebSocketChannels[I, O] { self ⇒
-    def reader: WebSocketReader[I]
+trait WebSocketChannels[T] {
+    def reader: WebSocketReader[T]
 
-    def writer: BufferedWebSocketWriter[O]
+    def writer: WebSocketWriter[T]
 
     def close(): Unit
 }
 
 object WebSocketChannels {
-    def apply[I: Decoder, O: Encoder](
+    def apply[T: Encoder: Decoder](
         request:   OkHttpRequest,
-        strategy:  OverflowStrategy.Synchronous[Event[I]] = Default.strategy,
+        strategy:  OverflowStrategy.Synchronous[Event[T]] = Default.strategy,
         reconnect: Option[FiniteDuration]                 = Default.reconnect
     )(
         implicit
-        client: OkHttpClient
-    ): BufferedWebSocketChannels[I, O] = {
-        val writer = BufferedWebSocketWriter()
+        c: OkHttpClient
+    ): WebSocketChannels[T] = {
+        val writer = WebSocketWriter[T]
 
-        val reader = WebSocketReader(
+        val reader = WebSocketReader[T](
             request,
             strategy,
-            reconnect,
-            socket ⇒ writer.connect( socket ),
-            () ⇒ writer.disconnect()
-        )
+            reconnect
+        ).map {
+            case open @ Event.Open( socket, _ ) ⇒
+                writer.connect( socket )
+                open
+            case close @ Event.Close( _, _ ) ⇒
+                writer.disconnect()
+                close
+            case event ⇒ event
+        }
 
-        new BufferedWebSocketChannels[I, O]( reader, writer )
+        new WebSocketChannelsImpl[T]( reader, writer )
     }
 
-    def symmetric[T: Encoder: Decoder](
-        request:   OkHttpRequest,
-        strategy:  OverflowStrategy.Synchronous[Event[T]] = OverflowStrategy.Unbounded,
-        reconnect: Option[FiniteDuration]                 = Some( 3 seconds )
-    )(
-        implicit
-        client: OkHttpClient
-    ): WebSocketChannels[T, T] = {
-        WebSocketChannels[T, T]( request, strategy, reconnect )
-    }
-
-    def unapply[I, O](
-        channels: WebSocketChannels[I, O]
-    ): Option[( WebSocketReader[I], WebSocketWriter[O] )] = {
+    def unapply[T](
+        channels: WebSocketChannels[T]
+    ): Option[( WebSocketReader[T], WebSocketWriter[T] )] = {
         Some( channels.reader, channels.writer )
     }
 }
 
-class BufferedWebSocketChannels[I, O](
-        val reader: WebSocketReader[I],
-        val writer: BufferedWebSocketWriter[O]
-) extends WebSocketChannels[I, O] {
+private class WebSocketChannelsImpl[T](
+        val reader: WebSocketReader[T],
+        val writer: WebSocketWriter[T]
+) extends WebSocketChannels[T] {
     override def close() = writer.close( Close.Normal, None )
 }

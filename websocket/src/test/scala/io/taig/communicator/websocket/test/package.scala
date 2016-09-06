@@ -1,6 +1,4 @@
-package io.taig.communicator
-
-import io.taig.communicator.websocket._
+package io.taig.communicator.websocket
 
 import scala.util.Try
 
