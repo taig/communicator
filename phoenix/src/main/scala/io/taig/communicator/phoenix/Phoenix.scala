@@ -4,15 +4,15 @@ import cats.data.Xor
 import cats.syntax.contravariant._
 import cats.syntax.xor._
 import io.circe.Json
-import io.circe.syntax._
 import io.circe.generic.auto._
+import io.circe.syntax._
 import io.taig.communicator._
 import io.taig.communicator.phoenix.message.Response.{ Payload, Status }
 import io.taig.communicator.phoenix.message._
 import io.taig.communicator.websocket._
 import monix.eval.Task
 import monix.execution.{ Cancelable, Scheduler }
-import monix.reactive.{ Observable, OverflowStrategy }
+import monix.reactive.OverflowStrategy
 import monix.reactive.observables.ConnectableObservable
 import okhttp3.OkHttpClient
 
@@ -122,7 +122,7 @@ private class PhoenixImpl(
                     s"Failed to join channel $topic: $error"
                 }
             }
-        }.timeout( 10 seconds )
+        }
 
         for {
             _ ← send
@@ -147,7 +147,6 @@ private class PhoenixImpl(
     override def connect() = reader.connect()
 
     override def close() = {
-        // TODO close phoenix style
         stopHeartbeat()
         channels.close()
     }
