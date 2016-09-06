@@ -13,15 +13,15 @@ Communicator provides a simple way to construct OkHttp requests as `monix.Task`s
 
 ```scala
 libraryDependencies ++=
-    "io.taig" %% "communicator-common" % "3.0.0-RC3" ::
-    "io.taig" %% "communicator-request" % "3.0.0-RC3" ::
-    "io.taig" %% "communicator-websocket" % "3.0.0-RC3" ::
-    "io.taig" %% "communicator-phoenix" % "3.0.0-RC3" ::
+    "io.taig" %% "communicator-common" % "3.0.0-RC4" ::
+    "io.taig" %% "communicator-request" % "3.0.0-RC4" ::
+    "io.taig" %% "communicator-websocket" % "3.0.0-RC4" ::
+    "io.taig" %% "communicator-phoenix" % "3.0.0-RC4" ::
     Nil
 ```
 
 ```scala
-libraryDependencies += "io.taig" %% "communicator" % "3.0.0-RC3"
+libraryDependencies += "io.taig" %% "communicator" % "3.0.0-RC4"
 ```
 
 ## Quickstart
@@ -35,15 +35,15 @@ import okhttp3.OkHttpClient
 
 scala> // To build request tasks, an implicit OkHttpClient should be in scope
      | implicit val client = new OkHttpClient()
-client: okhttp3.OkHttpClient = okhttp3.OkHttpClient@584e4832
+client: okhttp3.OkHttpClient = okhttp3.OkHttpClient@664059ba
 
 scala> // Simple OkHttp request builder
      | val builder = new OkHttpRequest.Builder().url( "http://taig.io/" )
-builder: okhttp3.Request.Builder = okhttp3.Request$Builder@1aa9c2ed
+builder: okhttp3.Request.Builder = okhttp3.Request$Builder@72236cd1
 
 scala> // Construct a Task[Response]
      | val request: Request = Request( builder.build() )
-request: io.taig.communicator.request.Request = io.taig.communicator.request.Request@3176ffce
+request: io.taig.communicator.request.Request = io.taig.communicator.request.Request@140ae10b
 
 scala> // Parse the response to a String
      | val requestContent: Task[Response.With[String]] = request.parse[String]
@@ -60,7 +60,7 @@ scala> requestContent.runAsync.andThen {
      |     case Success( content ) => "Success"
      |     case Failure( exception ) => "Failure"
      | }
-res5: monix.execution.CancelableFuture[io.taig.communicator.request.Response.With[String]] = monix.execution.CancelableFuture$Implementation@6f104ef9
+res5: monix.execution.CancelableFuture[io.taig.communicator.request.Response.With[String]] = monix.execution.CancelableFuture$Implementation@90de485
 ```
 
 ## Usage
@@ -89,7 +89,7 @@ To run the Phoenix-module specific tests, the [phoenix_echo][5] app (thanks [@Pr
 ```
 docker pull taig/communicator:latest
 docker build -t taig/communicator:latest .
-docker --entrypoint="./test.sh" taig/communicator:latest
+docker -v "$PWD:/communicator/" --entrypoint="./test.sh" taig/communicator:latest
 ```
 
 ## Communicator 2.x
