@@ -51,7 +51,7 @@ object Settings {
         
         val circe = "0.5.0-M3"
 
-        val monix = "2.0.0"
+        val monix = "2.0.1"
 
         val okhttp = "3.4.1"
     }
