@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.0.0-RC5
+
+_2016-09-12_
+
+ * Upgrade to cats 0.7.2
+ * Upgrade to monix 2.0.1
+ * Upgrade to circe 0.5.1
+
 ## 3.0.0-RC4
 
 _2016-09-06_
