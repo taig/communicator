@@ -9,7 +9,7 @@ import io.circe.syntax._
 import io.taig.communicator._
 import io.taig.communicator.phoenix.message.Response.{ Payload, Status }
 import io.taig.communicator.phoenix.message._
-import io.taig.communicator.websocket._
+import io.taig.communicator.websocket.{ WebSocketChannels, WebSocketWriter }
 import monix.eval.Task
 import monix.execution.{ Cancelable, Scheduler }
 import monix.reactive.OverflowStrategy
@@ -31,6 +31,7 @@ object Phoenix {
     def apply(
         request:   OkHttpRequest,
         strategy:  OverflowStrategy.Synchronous[websocket.Event[Json]] = websocket.Default.strategy,
+        reconnect: Option[FiniteDuration]                              = websocket.Default.reconnect,
         heartbeat: Option[FiniteDuration]                              = Default.heartbeat
     )(
         implicit
@@ -39,7 +40,8 @@ object Phoenix {
     ): Phoenix = {
         val channels = WebSocketChannels[Json](
             request,
-            strategy
+            strategy,
+            reconnect
         )
 
         new PhoenixImpl( channels, heartbeat )
