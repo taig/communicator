@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.0.0-RC6
+
+_2016-09-19_
+
+ * Add reconnect parameter to phoenix constructor
+
 ## 3.0.0-RC5
 
 _2016-09-12_
