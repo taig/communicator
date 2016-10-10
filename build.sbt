@@ -9,8 +9,8 @@ lazy val communicator = project.in( file( "." ) )
         startYear := Some( 2013 ),
         tut <<= tut in documentation
     )
-    .aggregate( common, request, websocket, phoenix )
-    .dependsOn( common, request, websocket, phoenix )
+    .aggregate( common, builder, request, websocket, phoenix )
+    .dependsOn( common, builder, request, websocket, phoenix )
 
 lazy val common = project
     .settings( Settings.common )
@@ -27,6 +27,19 @@ lazy val common = project
         name := "common",
         startYear := Some( 2016 )
     )
+
+lazy val builder = project
+    .settings( Settings.common )
+    .settings(
+        libraryDependencies ++=
+            "org.typelevel" %% "cats-core" % Settings.dependency.cats ::
+            "org.typelevel" %% "cats-kernel" % Settings.dependency.cats ::
+            "org.typelevel" %% "cats-macros" % Settings.dependency.cats ::
+            Nil,
+        name := "builder",
+        startYear := Some( 2016 )
+    )
+    .dependsOn( common % "compile->compile;test->test" )
 
 lazy val request = project
     .settings( Settings.common )
