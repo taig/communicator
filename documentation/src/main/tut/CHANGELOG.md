@@ -1,5 +1,17 @@
 # Changelog
 
+## 3.0.0-RC7
+
+_2016-10-18_
+
+ * Introduce builder module
+ * Upgrade to scala-logging 3.5.0
+ * Upgrade to sbt-scoverage 1.4.0
+ * Upgrade to tut 0.4.4
+ * Upgrade to monix 2.0.3
+ * Upgrade to circe 0.5.3
+ * Upgrade to monix 2.0.4
+
 ## 3.0.0-RC6
 
 _2016-09-19_
