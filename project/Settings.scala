@@ -49,9 +49,9 @@ object Settings {
     object dependency {
         val cats = "0.7.2"
         
-        val circe = "0.5.1"
+        val circe = "0.5.3"
 
-        val monix = "2.0.1"
+        val monix = "2.0.4"
 
         val okhttp = "3.4.1"
     }

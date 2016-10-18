@@ -14,4 +14,27 @@ package object communicator {
     object OkHttpRequest {
         type Builder = okhttp3.Request.Builder
     }
+
+    type OkHttpRequestBody = okhttp3.RequestBody
+
+    type OkHttpMultipartBody = okhttp3.MultipartBody
+
+    object OkHttpMultipartBody {
+        type Builder = okhttp3.MultipartBody.Builder
+    }
+
+    type OkHttpPart = okhttp3.MultipartBody.Part
+
+    type MediaType = okhttp3.MediaType
+
+    object MediaType {
+        val Jpeg = parse( "image/jpeg" )
+        
+        val Json = parse( "application/json" )
+
+        val Png = parse( "image/png" )
+
+        @inline
+        def parse( value: String ): MediaType = okhttp3.MediaType.parse( value )
+    }
 }

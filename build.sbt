@@ -9,15 +9,15 @@ lazy val communicator = project.in( file( "." ) )
         startYear := Some( 2013 ),
         tut <<= tut in documentation
     )
-    .aggregate( common, request, websocket, phoenix )
-    .dependsOn( common, request, websocket, phoenix )
+    .aggregate( common, builder, request, websocket, phoenix )
+    .dependsOn( common, builder, request, websocket, phoenix )
 
 lazy val common = project
     .settings( Settings.common )
     .settings(
         libraryDependencies ++=
             "com.squareup.okhttp3" % "okhttp" % Settings.dependency.okhttp ::
-            "com.typesafe.scala-logging" %% "scala-logging" % "3.4.0" ::
+            "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0" ::
             "io.monix" %% "monix-eval" % Settings.dependency.monix ::
             "com.squareup.okhttp3" % "mockwebserver" % Settings.dependency.okhttp % "test" ::
             "ch.qos.logback" %  "logback-classic" % "1.1.7" % "test" ::
@@ -27,6 +27,19 @@ lazy val common = project
         name := "common",
         startYear := Some( 2016 )
     )
+
+lazy val builder = project
+    .settings( Settings.common )
+    .settings(
+        libraryDependencies ++=
+            "org.typelevel" %% "cats-core" % Settings.dependency.cats ::
+            "org.typelevel" %% "cats-kernel" % Settings.dependency.cats ::
+            "org.typelevel" %% "cats-macros" % Settings.dependency.cats ::
+            Nil,
+        name := "builder",
+        startYear := Some( 2016 )
+    )
+    .dependsOn( common % "compile->compile;test->test" )
 
 lazy val request = project
     .settings( Settings.common )
