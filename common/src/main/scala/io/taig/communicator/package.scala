@@ -29,7 +29,7 @@ package object communicator {
 
     object MediaType {
         val Jpeg = parse( "image/jpeg" )
-        
+
         val Json = parse( "application/json" )
 
         val Png = parse( "image/png" )
