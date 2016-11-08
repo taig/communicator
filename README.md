@@ -13,16 +13,16 @@ Communicator provides a simple way to construct OkHttp requests as `monix.Task`s
 
 ```scala
 libraryDependencies ++=
-    "io.taig" %% "communicator-common" % "3.0.0-RC7" ::
-    "io.taig" %% "communicator-builder" % "3.0.0-RC7" ::
-    "io.taig" %% "communicator-request" % "3.0.0-RC7" ::
-    "io.taig" %% "communicator-websocket" % "3.0.0-RC7" ::
-    "io.taig" %% "communicator-phoenix" % "3.0.0-RC7" ::
+    "io.taig" %% "communicator-common" % "3.0.0-RC8" ::
+    "io.taig" %% "communicator-builder" % "3.0.0-RC8" ::
+    "io.taig" %% "communicator-request" % "3.0.0-RC8" ::
+    "io.taig" %% "communicator-websocket" % "3.0.0-RC8" ::
+    "io.taig" %% "communicator-phoenix" % "3.0.0-RC8" ::
     Nil
 ```
 
 ```scala
-libraryDependencies += "io.taig" %% "communicator" % "3.0.0-RC7"
+libraryDependencies += "io.taig" %% "communicator" % "3.0.0-RC8"
 ```
 
 ## Quickstart
@@ -36,15 +36,15 @@ import okhttp3.OkHttpClient
 
 scala> // To build request tasks, an implicit OkHttpClient should be in scope
      | implicit val client = new OkHttpClient()
-client: okhttp3.OkHttpClient = okhttp3.OkHttpClient@7fda3b48
+client: okhttp3.OkHttpClient = okhttp3.OkHttpClient@3302cfb7
 
 scala> // Simple OkHttp request builder
      | val builder = new OkHttpRequest.Builder().url( "http://taig.io/" )
-builder: okhttp3.Request.Builder = okhttp3.Request$Builder@77337a63
+builder: okhttp3.Request.Builder = okhttp3.Request$Builder@2ab16f77
 
 scala> // Construct a Task[Response]
      | val request: Request = Request( builder.build() )
-request: io.taig.communicator.request.Request = io.taig.communicator.request.Request@1100014e
+request: io.taig.communicator.request.Request = io.taig.communicator.request.Request@276e702d
 
 scala> // Parse the response to a String
      | val requestContent: Task[Response.With[String]] = request.parse[String]
@@ -61,7 +61,7 @@ scala> requestContent.runAsync.andThen {
      |     case Success( content ) => "Success"
      |     case Failure( exception ) => "Failure"
      | }
-res5: monix.execution.CancelableFuture[io.taig.communicator.request.Response.With[String]] = monix.execution.CancelableFuture$Implementation@44fce6d7
+res5: monix.execution.CancelableFuture[io.taig.communicator.request.Response.With[String]] = monix.execution.CancelableFuture$Implementation@6cd2d498
 ```
 
 ## Usage
