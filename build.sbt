@@ -7,7 +7,7 @@ lazy val communicator = project.in( file( "." ) )
         normalizedName := name.value,
 //        releaseProcess := Settings.releaseSteps,
         startYear := Some( 2013 ),
-        tut <<= tut in documentation
+        tut := ( tut in documentation ).value
     )
     .aggregate( common, builder, request, websocket, phoenix )
     .dependsOn( common, builder, request, websocket, phoenix )

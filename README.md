@@ -36,15 +36,15 @@ import okhttp3.OkHttpClient
 
 scala> // To build request tasks, an implicit OkHttpClient should be in scope
      | implicit val client = new OkHttpClient()
-client: okhttp3.OkHttpClient = okhttp3.OkHttpClient@27ad7211
+client: okhttp3.OkHttpClient = okhttp3.OkHttpClient@7fda3b48
 
 scala> // Simple OkHttp request builder
      | val builder = new OkHttpRequest.Builder().url( "http://taig.io/" )
-builder: okhttp3.Request.Builder = okhttp3.Request$Builder@516ac843
+builder: okhttp3.Request.Builder = okhttp3.Request$Builder@77337a63
 
 scala> // Construct a Task[Response]
      | val request: Request = Request( builder.build() )
-request: io.taig.communicator.request.Request = io.taig.communicator.request.Request@454cd26b
+request: io.taig.communicator.request.Request = io.taig.communicator.request.Request@1100014e
 
 scala> // Parse the response to a String
      | val requestContent: Task[Response.With[String]] = request.parse[String]
@@ -61,7 +61,7 @@ scala> requestContent.runAsync.andThen {
      |     case Success( content ) => "Success"
      |     case Failure( exception ) => "Failure"
      | }
-res5: monix.execution.CancelableFuture[io.taig.communicator.request.Response.With[String]] = monix.execution.CancelableFuture$Implementation@403ed66f
+res5: monix.execution.CancelableFuture[io.taig.communicator.request.Response.With[String]] = monix.execution.CancelableFuture$Implementation@44fce6d7
 ```
 
 ## Usage
