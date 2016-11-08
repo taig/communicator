@@ -1,5 +1,16 @@
 # Changelog
 
+## 3.0.0-RC8
+
+_2016-11-08_
+
+ * Upgrade to okhttp 3.4.2
+ * Upgrade to circe 0.5.4
+ * Upgrade to monix 2.0.6
+ * Upgrade to tut 0.4.6
+ * Upgrade to sbt-scalariform 1.7.1
+ * Upgrade to sbt 0.13.13
+
 ## 3.0.0-RC7
 
 _2016-10-18_
