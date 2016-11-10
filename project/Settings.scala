@@ -47,7 +47,7 @@ object Settings {
 //    )
 
     object dependency {
-        val cats = "0.7.2"
+        val cats = "0.8.1"
         
         val circe = "0.6.0"
 
