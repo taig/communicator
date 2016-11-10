@@ -22,7 +22,7 @@ lazy val common = project
             "com.squareup.okhttp3" % "mockwebserver" % Settings.dependency.okhttp % "test" ::
             "ch.qos.logback" %  "logback-classic" % "1.1.7" % "test" ::
             "io.backchat.hookup" %% "hookup" % "0.4.2" % "test" ::
-            "org.scalatest" %% "scalatest" % "3.0.0" % "test" ::
+            "org.scalatest" %% "scalatest" % "3.0.1" % "test" ::
             Nil,
         name := "common",
         startYear := Some( 2016 )
