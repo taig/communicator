@@ -1,5 +1,15 @@
 # Changelog
 
+## 3.0.0-RC9
+
+_2016-11-10_
+
+ * Flag websocket & phoenix modules as experimental
+ * Upgrade to monix 2.1.0
+ * Upgrade to circe 0.6.0
+ * Upgrade to cats 0.8.1
+ * Upgrade to scalatest 3.0.1
+
 ## 3.0.0-RC8
 
 _2016-11-08_

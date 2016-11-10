@@ -8,7 +8,7 @@ cd ~/phoenix_echo/
 elixir --detached -S mix do phoenix.server
 
 cd /communicator/
-sbt ";coverage;test;coverageReport;coverageAggregate;tut"
+sbt ";coverage;test;tut;coverageReport;coverageAggregate"
 
 if [ -n "$CODECOV_TOKEN" ]; then
     codecov
