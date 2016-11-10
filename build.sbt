@@ -22,7 +22,7 @@ lazy val common = project
             "com.squareup.okhttp3" % "mockwebserver" % Settings.dependency.okhttp % "test" ::
             "ch.qos.logback" %  "logback-classic" % "1.1.7" % "test" ::
             "io.backchat.hookup" %% "hookup" % "0.4.2" % "test" ::
-            "org.scalatest" %% "scalatest" % "3.0.0" % "test" ::
+            "org.scalatest" %% "scalatest" % "3.0.1" % "test" ::
             Nil,
         name := "common",
         startYear := Some( 2016 )
@@ -59,7 +59,7 @@ lazy val websocket = project
             "org.typelevel" %% "cats-kernel" % Settings.dependency.cats ::
             "org.typelevel" %% "cats-macros" % Settings.dependency.cats ::
             Nil,
-        name := "websocket",
+        name := "websocket-experimental",
         startYear := Some( 2016 )
     )
     .dependsOn( common % "compile->compile;test->test" )
@@ -72,7 +72,7 @@ lazy val phoenix = project
             "io.circe" %% "circe-generic" % Settings.dependency.circe ::
             "io.circe" %% "circe-parser" % Settings.dependency.circe ::
             Nil,
-        name := "phoenix",
+        name := "phoenix-experimental",
         startYear := Some( 2016 )
     )
     .dependsOn( websocket % "compile->compile;test->test" )

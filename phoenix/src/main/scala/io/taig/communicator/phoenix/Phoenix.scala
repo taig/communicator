@@ -1,8 +1,8 @@
 package io.taig.communicator.phoenix
 
-import cats.data.Xor
 import cats.syntax.contravariant._
-import cats.syntax.xor._
+import cats.syntax.either._
+import io.circe.Decoder.Result
 import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.syntax._
@@ -82,12 +82,16 @@ private class PhoenixImpl(
         channels.reader
             .collect {
                 case websocket.Event.Message( response ) ⇒
-                    response.as[Response].orElse( response.as[Push] ) match {
-                        case Xor.Right( inbound ) ⇒ Some( inbound )
-                        case Xor.Left( exception ) ⇒
-                            logger.error( "Failed to decode message", exception )
-                            None
-                    }
+                    ( response.as[Response]: Result[Inbound] )
+                        .orElse( response.as[Push] ) match {
+                            case Right( inbound ) ⇒ Some( inbound )
+                            case Left( exception ) ⇒
+                                logger.error(
+                                    "Failed to decode message",
+                                    exception
+                                )
+                                None
+                        }
             }
             .collect {
                 case Some( inbound ) ⇒ inbound
@@ -112,13 +116,13 @@ private class PhoenixImpl(
         val receive = reader.collect {
             case Response( `topic`, _, Some( Payload( Status.Ok, _ ) ), `ref` ) ⇒
                 logger.info( s"Successfully joined channel $topic" )
-                channel( topic ).right
+                Right( channel( topic ) )
             case Response( `topic`, _, Some( payload @ Payload( Status.Error, _ ) ), `ref` ) ⇒
                 logger.info( s"Failed to join channel $topic" )
-                payload.left
+                Left( payload )
         }.firstL.flatMap {
-            case Xor.Right( channel ) ⇒ Task.now( channel )
-            case Xor.Left( payload ) ⇒ Task.raiseError {
+            case Right( channel ) ⇒ Task.now( channel )
+            case Left( payload ) ⇒ Task.raiseError {
                 val error = Phoenix.error( payload ).getOrElse( "" )
                 new IllegalArgumentException {
                     s"Failed to join channel $topic: $error"

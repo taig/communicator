@@ -1,7 +1,6 @@
 package io.taig.communicator.phoenix
 
 import io.circe.{ Decoder, Encoder }
-import cats.syntax.xor._
 
 case class Topic( name: String, identifier: Option[String] ) {
     def isSubscribedTo( topic: Topic ): Boolean = topic match {
@@ -31,11 +30,10 @@ object Topic {
     implicit val decoderTopic: Decoder[Topic] = {
         Decoder[String].emap { topic ⇒
             topic.split( ":" ) match {
-                case Array( name ) ⇒ Topic( name ).right
+                case Array( name ) ⇒ Right( Topic( name ) )
                 case Array( name, identifier ) ⇒
-                    Topic( name, identifier ).right
-                case _ ⇒
-                    s"Invalid topic format '$topic'".left
+                    Right( Topic( name, identifier ) )
+                case _ ⇒ Left( s"Invalid topic format '$topic'" )
             }
         }
     }

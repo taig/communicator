@@ -1,6 +1,7 @@
 package io.taig.communicator
 
 import cats.syntax.contravariant._
+import cats.syntax.either._
 import com.typesafe.scalalogging.Logger
 import io.circe.Json
 import io.circe.parser._
