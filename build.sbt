@@ -59,7 +59,7 @@ lazy val websocket = project
             "org.typelevel" %% "cats-kernel" % Settings.dependency.cats ::
             "org.typelevel" %% "cats-macros" % Settings.dependency.cats ::
             Nil,
-        name := "websocket",
+        name := "websocket-experimental",
         startYear := Some( 2016 )
     )
     .dependsOn( common % "compile->compile;test->test" )
@@ -72,7 +72,7 @@ lazy val phoenix = project
             "io.circe" %% "circe-generic" % Settings.dependency.circe ::
             "io.circe" %% "circe-parser" % Settings.dependency.circe ::
             Nil,
-        name := "phoenix",
+        name := "phoenix-experimental",
         startYear := Some( 2016 )
     )
     .dependsOn( websocket % "compile->compile;test->test" )
