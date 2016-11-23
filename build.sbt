@@ -4,6 +4,7 @@ lazy val communicator = project.in( file( "." ) )
         aggregate in tut := false,
         description := "An OkHttp wrapper for Scala",
         name := "communicator",
+        normalizedName := name.value,
 //        releaseProcess := Settings.releaseSteps,
         startYear := Some( 2013 ),
         tutTargetDirectory := file( "." )
@@ -75,15 +76,3 @@ lazy val phoenix = project
         startYear := Some( 2016 )
     )
     .dependsOn( websocket % "compile->compile;test->test" )
-
-//lazy val documentation = project
-//    .settings( tutSettings ++ Settings.common )
-//    .settings(
-//        tutScalacOptions :=
-//            "-deprecation" ::
-//            "-feature" ::
-//            "-Xfatal-warnings" ::
-//            Nil,
-//        tutTargetDirectory := file( "." )
-//    )
-//    .dependsOn( common, request, websocket, phoenix )
