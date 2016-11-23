@@ -1,5 +1,14 @@
 # Changelog
 
+## 3.0.0-RC10
+
+_2016-11-12_
+
+ * Move tut documentation into root project
+ * Upgrade to monix 2.1.1
+ * Upgrade to circe 0.6.1
+ * Upgrade to tut 0.4.7
+
 ## 3.0.0-RC9
 
 _2016-11-10_
