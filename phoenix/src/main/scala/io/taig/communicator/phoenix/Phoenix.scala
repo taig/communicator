@@ -1,9 +1,11 @@
 package io.taig.communicator.phoenix
 
+import java.util.concurrent.TimeUnit
+
 import cats.syntax.either._
-import io.circe.Json
 import io.circe.parser._
 import io.circe.syntax._
+import io.circe.{ Json, Error ⇒ CirceError }
 import io.taig.communicator.phoenix.message.{ Inbound, Push, Request, Response }
 import io.taig.communicator.{ OkHttpRequest, OkHttpWebSocket }
 import monix.eval.Task
@@ -11,30 +13,33 @@ import monix.execution.{ Cancelable, Scheduler }
 import monix.reactive.{ Observable, OverflowStrategy }
 import okhttp3.OkHttpClient
 
+import scala.concurrent.TimeoutException
 import scala.concurrent.duration._
+import scala.concurrent.duration.Duration.{ Inf, Infinite }
 import scala.language.postfixOps
 
 class Phoenix(
         socket:     OkHttpWebSocket,
         observable: Observable[WebSocket.Event],
         connection: Cancelable,
-        heartbeat:  Cancelable
+        heartbeat:  Cancelable,
+        timeout:    Duration
 ) {
     val stream: Observable[Inbound] = observable.collect {
         case WebSocket.Event.Message( Right( message ) ) ⇒
-            ( decode[Response]( message ): Either[io.circe.Error, Inbound] )
+            ( decode[Response]( message ): Either[CirceError, Inbound] )
                 .orElse( decode[Push]( message ) )
                 .valueOr( throw _ )
     }
 
     def join(
         topic:   Topic,
-        payload: Json     = Json.Null,
-        timeout: Duration = Default.timeout
+        payload: Json  = Json.Null
     ): Task[Either[Error, Channel]] = {
         Channel.join( topic, payload )(
             socket,
-            stream.filter( topic isSubscribedTo _.topic )
+            stream.filter( topic isSubscribedTo _.topic ),
+            timeout
         )
     }
 
@@ -62,6 +67,11 @@ object Phoenix {
         val observable = WebSocket( request, strategy ).publish
         val connection = observable.connect()
 
+        val timeout = ohc.readTimeoutMillis() match {
+            case 0            ⇒ Inf
+            case milliseconds ⇒ Duration( milliseconds, TimeUnit.MILLISECONDS )
+        }
+
         observable.collect {
             case WebSocket.Event.Open( socket, _ ) ⇒
                 val heartbeats = heartbeat match {
@@ -70,8 +80,52 @@ object Phoenix {
                     case None ⇒ Cancelable.empty
                 }
 
-                new Phoenix( socket, observable, connection, heartbeats )
+                new Phoenix(
+                    socket,
+                    observable,
+                    connection,
+                    heartbeats,
+                    timeout
+                )
         }.firstL
+    }
+
+    def send(
+        topic:   Topic,
+        event:   Event,
+        payload: Json  = Json.Null,
+        ref:     Ref   = Ref.unique()
+    )(
+        socket:  OkHttpWebSocket,
+        stream:  Observable[Inbound],
+        timeout: Duration
+    ): Task[Result] = {
+        val request = Request( topic, event, payload, ref )
+
+        val channel = stream
+            .collect { case response: Response ⇒ response }
+            .filter( _.ref == request.ref )
+            .headOptionL
+            .map {
+                case Some( response ) if response.isOk ⇒
+                    Result.Success( response )
+                case Some( response ) ⇒ Result.Failure( response )
+                case None             ⇒ Result.None
+            }
+
+        val withTimeout = timeout match {
+            case _: Infinite ⇒ channel
+            case timeout: FiniteDuration ⇒
+                channel.timeout( timeout ).onErrorRecover {
+                    case _: TimeoutException ⇒ Result.None
+                }
+        }
+
+        val send = Task {
+            socket.send( request.asJson.noSpaces )
+        }
+
+        Task.mapBoth( withTimeout, send )( ( left, _ ) ⇒ left )
     }
 
     def heartbeat( delay: FiniteDuration ): Observable[String] = {

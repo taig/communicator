@@ -27,9 +27,7 @@ class PhoenixTest extends Suite {
                 .timeout( 10 seconds )
                 .onErrorRecover { case _: TimeoutException ⇒ None }
             _ = phoenix.close()
-        } yield {
-            response shouldBe None
-        }
+        } yield response shouldBe None
     }
 
     it should "allow to close the connection" in {
@@ -57,15 +55,13 @@ class PhoenixTest extends Suite {
             phoenix ← Phoenix( request )
             channel ← phoenix.join( topic )
             _ = phoenix.close()
-        } yield {
-            channel match {
-                case Left( Result.Failure( response ) ) ⇒
-                    response.isError shouldBe true
-                    response.event shouldBe Event.Reply
-                    response.topic shouldBe topic
-                    response.error shouldBe Some( "unmatched topic" )
-                case _ ⇒ fail()
-            }
+        } yield channel match {
+            case Left( Result.Failure( response ) ) ⇒
+                response.isError shouldBe true
+                response.event shouldBe Event.Reply
+                response.topic shouldBe topic
+                response.error shouldBe Some( "unmatched topic" )
+            case _ ⇒ fail()
         }
     }
 }
