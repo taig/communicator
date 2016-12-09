@@ -44,6 +44,4 @@ RUN         echo "object Foobar" > ./cache/phoenix/src/test/scala/Foobar.scala
 RUN         cd ./cache/ && sbt ";coverage;test;tut"
 RUN         rm -r ./cache
 
-RUN         cd ~/.sbt/0.13/ && echo "skip in update := true" > offline.sbt
-
 WORKDIR     /communicator/
