@@ -2,11 +2,15 @@ package io.taig.communicator.test
 
 import java.util.logging.LogManager
 
+import monix.eval.Task
 import monix.execution.{ Scheduler, UncaughtExceptionReporter }
 import okhttp3.OkHttpClient
 import okhttp3.Request.Builder
 import okhttp3.mockwebserver.MockWebServer
-import org.scalatest.{ AsyncFlatSpec, Matchers }
+import org.scalatest.{ Assertion, AsyncFlatSpec, Matchers }
+
+import scala.concurrent.Future
+import scala.language.implicitConversions
 
 trait Suite
         extends AsyncFlatSpec
@@ -31,4 +35,8 @@ trait Suite
         server.start()
         new okhttp3.Request.Builder().url( server.url( "/" ) )
     }
+
+    implicit def taskToFuture(
+        task: Task[Assertion]
+    ): Future[Assertion] = task.runAsync
 }

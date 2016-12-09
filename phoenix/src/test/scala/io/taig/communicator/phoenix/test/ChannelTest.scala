@@ -1,54 +1,79 @@
 package io.taig.communicator.phoenix.test
 
-import io.circe.Json
-import io.taig.communicator.phoenix.message.Response
-import io.taig.communicator.phoenix.message.Response.Payload
-import io.taig.communicator.phoenix.{ Event, Ref, Topic }
-import io.taig.communicator.test.Suite
-import monix.eval.Task
+import cats.data.EitherT
+import io.circe.syntax._
+import io.taig.communicator.phoenix._
+import monix.cats._
 
-import scala.concurrent.Promise
-import scala.concurrent.duration._
-import scala.language.postfixOps
+import scala.language.{ implicitConversions, postfixOps }
 
-class ChannelTest
-        extends Suite
-        with PhoenixClient {
-    it should "be possible to leave a Channel" in {
-        val topic = Topic( "echo", "foobar" )
-        val payload = Json.obj( "foo" → Json.fromString( "bar" ) )
+class ChannelTest extends Suite {
+    val topic = Topic( "echo", "foobar" )
 
-        val channel = phoenix.join( topic ).runAsync
-        val hello = Promise[Unit]()
+    val payload = "foobar".asJson
 
-        channel.flatMap { channel ⇒
-            Task {
-                channel.writer.send( Event( "echo" ), payload )
-            }.delayExecution( 500 millis ).runAsync
-        }
-
-        channel.flatMap { channel ⇒
-            channel.reader.foreach {
-                case Response( _, Event.Reply, Some( Payload( _, `payload` ) ), _ ) ⇒
-                    hello.success( {} )
-                case _ ⇒ //
+    it should "allow to leave the Channel" in {
+        for {
+            phoenix ← EitherT.right( Phoenix( request ) )
+            channel ← EitherT( phoenix.join( topic ) )
+            response ← EitherT.right( channel.leave )
+            _ = phoenix.close()
+        } yield {
+            response match {
+                case Result.Success( response ) ⇒
+                    response.isOk shouldBe true
+                    response.event shouldBe Event.Reply
+                    response.topic shouldBe topic
+                    response.error shouldBe None
+                case _ ⇒ fail()
             }
-        }
-
-        hello.future.flatMap { _ ⇒
-            channel.map { channel ⇒
-                channel.leave()
-            }
-        }
-
-        phoenix.connect()
-
-        channel.flatMap { channel ⇒
-            channel.reader.collect {
-                case Response( _, Event.Close, _, ref ) ⇒ ref
-            }.firstL.runAsync
-        }.map {
-            _ shouldBe Ref( "0" )
         }
     }
+
+    //    it should "receive echo messages" in {
+    //        for {
+    //            phoenix ← Phoenix( request )
+    //            Right( channel ) ← phoenix.join( topic )
+    //            Result.Success( response ) ← channel.send( Event( "echo" ), payload )
+    //            _ = phoenix.close()
+    //        } yield {
+    //            response.event shouldBe Event.Reply
+    //            response.topic shouldBe topic
+    //        }
+    //    }
+    //
+    //    it should "timeout when the server omits a response" in {
+    //        for {
+    //            phoenix ← Phoenix( request )
+    //            Right( channel ) ← phoenix.join( topic )
+    //            result ← channel.send( Event( "no_reply" ), Json.Null )
+    //            _ = phoenix.close()
+    //        } yield {
+    //            result shouldBe Result.None
+    //        }
+    //    }
+    //
+    //    it should "handle server pushes" in {
+    //        val payload = Json.obj( "foo" → "bar".asJson )
+    //
+    //        for {
+    //            phoenix ← Phoenix( request )
+    //            Right( channel ) ← phoenix.join( topic )
+    //            push ← {
+    //                val push = Source.empty[( Event, Json, Ref )]
+    //                    .via( channel.flow )
+    //                    .collect { case push: Push ⇒ push }
+    //                    .toMat( Sink.head[Push] )( Keep.right )
+    //                    .run()
+    //                val send = channel.send( Event( "push" ), payload )
+    //
+    //                send.flatMap( _ ⇒ push )
+    //            }
+    //            _ = phoenix.close()
+    //        } yield {
+    //            push.topic shouldBe topic
+    //            push.event shouldBe Event( "answer" )
+    //            push.payload shouldBe payload
+    //        }
+    //    }
 }

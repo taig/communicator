@@ -1,5 +1,6 @@
 package io.taig.communicator.phoenix
 
+import cats.implicits._
 import io.circe.{ Decoder, Encoder }
 
 case class Topic( name: String, identifier: Option[String] ) {
@@ -9,32 +10,37 @@ case class Topic( name: String, identifier: Option[String] ) {
         case _                             ⇒ false
     }
 
-    override def toString = {
-        name + identifier.map( ":" + _ ).getOrElse( "" )
-    }
+    def serialize = name + identifier.map( ":" + _ ).getOrElse( "" )
+
+    override def toString = s"Topic($serialize)"
 }
 
 object Topic {
-    def apply( name: String, identifier: String ): Topic = {
-        new Topic( name, Some( identifier ) )
-    }
-
-    def apply( name: String ): Topic = {
-        new Topic( name, None )
-    }
-
     implicit val encoderTopic: Encoder[Topic] = {
-        Encoder[String].contramap( _.toString )
+        Encoder[String].contramap( _.serialize )
     }
 
     implicit val decoderTopic: Decoder[Topic] = {
         Decoder[String].emap { topic ⇒
-            topic.split( ":" ) match {
-                case Array( name ) ⇒ Right( Topic( name ) )
-                case Array( name, identifier ) ⇒
-                    Right( Topic( name, identifier ) )
-                case _ ⇒ Left( s"Invalid topic format '$topic'" )
-            }
+            Either.fromOption( parse( topic ), "Invalid format" )
+        }
+    }
+
+    val Phoenix = Topic( "phoenix" )
+
+    val Pattern = "(\\w+)(?::(\\w+))?".r
+
+    def apply( name: String, identifier: String ): Topic = {
+        Topic( name, Some( identifier ) )
+    }
+
+    def apply( name: String ): Topic = Topic( name, None )
+
+    def parse( topic: String ): Option[Topic] = {
+        topic match {
+            case Pattern( name, identifier ) ⇒
+                Some( Topic( name, Option( identifier ) ) )
+            case _ ⇒ None
         }
     }
 }

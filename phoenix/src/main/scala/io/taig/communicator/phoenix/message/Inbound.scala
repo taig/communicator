@@ -1,7 +1,9 @@
 package io.taig.communicator.phoenix.message
 
-import io.circe.{ Decoder, Json }
+import cats.syntax.either._
+import io.circe.generic.JsonCodec
 import io.circe.generic.semiauto._
+import io.circe.{ Decoder, Json }
 import io.taig.communicator.phoenix.{ Event, Ref, Topic }
 
 sealed trait Inbound extends Product with Serializable {
@@ -17,13 +19,23 @@ object Inbound {
 }
 
 case class Response(
-    topic:   Topic,
-    event:   Event,
-    payload: Option[Response.Payload],
-    ref:     Ref
-) extends Inbound
+        topic:   Topic,
+        event:   Event,
+        payload: Option[Response.Payload],
+        ref:     Ref
+) extends Inbound {
+    def isOk: Boolean = payload.exists( _.status == Response.Status.Ok )
+
+    def isError: Boolean = payload.exists( _.status == Response.Status.Error )
+
+    def error: Option[String] = {
+        payload.flatMap( _.response.cursor.get[String]( "reason" ).toOption )
+    }
+}
 
 object Response {
+    implicit val decoder: Decoder[Response] = deriveDecoder
+
     case class Payload( status: Status, response: Json )
 
     object Payload {
@@ -48,15 +60,16 @@ object Response {
         object Ok extends Status( "ok" )
 
         implicit val decoderStatus: Decoder[Status] = {
-            Decoder[String].map {
-                case "error" ⇒ Error
-                case "ok"    ⇒ Ok
-                case value   ⇒ Status( value )
+            Decoder[String].emap {
+                case Error.value ⇒ Right( Error )
+                case Ok.value    ⇒ Right( Ok )
+                case status      ⇒ Left( s"Invalid status '$status'" )
             }
         }
     }
 }
 
+@JsonCodec
 case class Push(
     topic:   Topic,
     event:   Event,

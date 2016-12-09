@@ -37,11 +37,13 @@ RUN         pip install setuptools
 RUN         pip install codecov
 
 # Cache project dependencies
+RUN         mkdir -p ./cache/phoenix/src/test/scala/
+ADD         ./project/ ./cache/project/
 ADD         ./build.sbt ./cache/
-ADD         ./project/build.properties ./cache/project/
-ADD         ./project/plugins.sbt ./cache/project/
-ADD         ./project/Settings.scala ./cache/project/
-RUN         cd ./cache/ && sbt ";test;tut"
+RUN         echo "object Foobar" > ./cache/phoenix/src/test/scala/Foobar.scala
+RUN         cd ./cache/ && sbt ";coverage;test;tut"
 RUN         rm -r ./cache
+
+RUN         cd ~/.sbt/0.13/ && echo "skip in update := true" > offline.sbt
 
 WORKDIR     /communicator/

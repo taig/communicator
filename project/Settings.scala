@@ -53,6 +53,6 @@ object Settings {
 
         val monix = "2.1.1"
 
-        val okhttp = "3.4.2"
+        val okhttp = "3.5.0"
     }
 }
