@@ -10,10 +10,15 @@ import tut.Plugin._
 object Settings {
     val common = Def.settings(
         githubProject := "communicator",
-        javacOptions ++=
-            "-source" :: "1.7" ::
-            "-target" :: "1.7" ::
-            Nil,
+        javacOptions ++= {
+            scalaVersion.value match {
+                case "2.11.8" =>
+                    "-source" :: "1.7" ::
+                    "-target" :: "1.7" ::
+                    Nil
+                case _ => Nil
+            }
+        },
         normalizedName := s"communicator-${normalizedName.value}",
         organization := "io.taig",
 //        releaseTagName := releaseTagName.value drop 1,
@@ -27,7 +32,15 @@ object Settings {
 //            "-Ywarn-unused-import" ::
 //            "-Ywarn-value-discard" ::
             Nil,
-        scalaVersion := "2.11.8",
+        scalacOptions ++= {
+            scalaVersion.value match {
+                case "2.11.8" =>
+                    "-target:jvm-1.7" ::
+                    Nil
+                case _ => Nil
+            }
+        },
+        scalaVersion := "2.12.1",
         testOptions in Test += Tests.Argument( "-oFD" )
     )
 
