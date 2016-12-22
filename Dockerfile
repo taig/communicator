@@ -1,4 +1,4 @@
-FROM        taig/scala:1.0.8
+FROM        taig/scala:1.0.9
 
 MAINTAINER  Niklas Klein "mail@taig.io"
 
@@ -29,8 +29,7 @@ RUN         cd ./phoenix_echo/ && mix deps.get
 RUN         cd ./phoenix_echo/ && mix compile
 
 # Install python & pip, necessary to submit test coverage
-RUN         apt-get install -y --no-install-recommends \
-                python-pip
+RUN         apt-get install -y --no-install-recommends python-pip
 RUN         apt-get clean
 RUN         pip install --upgrade pip
 RUN         pip install setuptools
@@ -41,7 +40,7 @@ RUN         mkdir -p ./cache/phoenix/src/test/scala/
 ADD         ./project/ ./cache/project/
 ADD         ./build.sbt ./cache/
 RUN         echo "object Foobar" > ./cache/phoenix/src/test/scala/Foobar.scala
-RUN         cd ./cache/ && sbt ";coverage;test;tut"
+RUN         cd ./cache/ && sbt ";coverage;+test;+tut"
 RUN         rm -r ./cache
 
 WORKDIR     /communicator/
