@@ -20,7 +20,7 @@ lazy val common = project
             "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0" ::
             "io.monix" %% "monix-eval" % Settings.dependency.monix ::
             "com.squareup.okhttp3" % "mockwebserver" % Settings.dependency.okhttp % "test" ::
-            "ch.qos.logback" %  "logback-classic" % "1.1.7" % "test" ::
+            "ch.qos.logback" %  "logback-classic" % "1.1.8" % "test" ::
             "org.scalatest" %% "scalatest" % "3.0.1" % "test" ::
             Nil,
         name := "common",
