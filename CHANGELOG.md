@@ -1,5 +1,15 @@
 # Changelog
 
+## 3.0.0-RC11
+
+_2016-12-22_
+
+ * Revisit phoenix module
+ * Delete builder module
+ * Delete websocket module
+ * Upgrade to monix 2.1.2
+ * Upgrade to tut 0.4.8
+
 ## 3.0.0-RC10
 
 _2016-11-12_
