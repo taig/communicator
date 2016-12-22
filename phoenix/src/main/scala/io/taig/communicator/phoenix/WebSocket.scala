@@ -69,7 +69,7 @@ object WebSocket {
             }
 
             val socket = ohc.newWebSocket( request, listener )
-            Cancelable( socket.cancel )
+            Cancelable( () ⇒ socket.cancel() )
         }
     }
 
