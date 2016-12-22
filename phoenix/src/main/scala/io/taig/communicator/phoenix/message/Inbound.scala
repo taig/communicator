@@ -2,69 +2,54 @@ package io.taig.communicator.phoenix.message
 
 import cats.syntax.either._
 import io.circe.generic.JsonCodec
-import io.circe.generic.semiauto._
-import io.circe.{ Decoder, Json }
+import io.circe.{ Decoder, DecodingFailure, Json }
 import io.taig.communicator.phoenix.{ Event, Ref, Topic }
 
 sealed trait Inbound extends Product with Serializable {
     def topic: Topic
-
-    def event: Event
 }
 
 object Inbound {
-    def unapply( inbound: Inbound ): Option[( Topic, Event )] = {
-        Some( inbound.topic, inbound.event )
+    def unapply( inbound: Inbound ): Option[Topic] = {
+        Some( inbound.topic )
     }
 }
 
-case class Response(
-        topic:   Topic,
-        event:   Event,
-        payload: Option[Response.Payload],
-        ref:     Ref
-) extends Inbound {
-    def isOk: Boolean = payload.exists( _.status == Response.Status.Ok )
-
-    def isError: Boolean = payload.exists( _.status == Response.Status.Error )
-
-    def error: Option[String] = {
-        payload.flatMap( _.response.cursor.get[String]( "reason" ).toOption )
-    }
+sealed trait Response extends Inbound {
+    def ref: Ref
 }
 
 object Response {
-    implicit val decoder: Decoder[Response] = deriveDecoder
+    case class Confirmation(
+        topic:   Topic,
+        payload: Json,
+        ref:     Ref
+    ) extends Response
 
-    case class Payload( status: Status, response: Json )
+    case class Error(
+        topic:   Topic,
+        message: String,
+        ref:     Ref
+    ) extends Response
 
-    object Payload {
-        implicit val decoderPayload: Decoder[Option[Payload]] = {
-            Decoder.instance { cursor ⇒
-                val patched = cursor.withFocus {
-                    case json if json.asObject.exists( _.size == 0 ) ⇒
-                        Json.Null
-                    case json ⇒ json
-                }
-
-                Decoder.decodeOption( deriveDecoder[Payload] )
-                    .decodeJson( patched.focus )
-            }
-        }
-    }
-
-    sealed case class Status( value: String )
-
-    object Status {
-        object Error extends Status( "error" )
-        object Ok extends Status( "ok" )
-
-        implicit val decoderStatus: Decoder[Status] = {
-            Decoder[String].emap {
-                case Error.value ⇒ Right( Error )
-                case Ok.value    ⇒ Right( Ok )
-                case status      ⇒ Left( s"Invalid status '$status'" )
-            }
+    implicit val decoder: Decoder[Response] = Decoder.instance { cursor ⇒
+        ( for {
+            event ← cursor.downField( "event" ).get[Event]( "event" )
+            status ← cursor.downField( "payload" ).get[String]( "status" )
+            topic ← cursor.get[Topic]( "topic" )
+            response = cursor.downField( "payload" ).downField( "response" )
+            ref ← cursor.get[Ref]( "ref" )
+        } yield ( event, status, topic, response, ref ) ).flatMap {
+            case ( Event.Reply, "ok", topic, response, ref ) ⇒
+                response.as[Json].map( Confirmation( topic, _, ref ) )
+            case ( Event.Reply, "error", topic, response, ref ) ⇒
+                response.get[String]( "reason" ).map( Error( topic, _, ref ) )
+            case ( Event.Reply, status, _, _, _ ) ⇒
+                val message = s"Invalid status: $status"
+                Left( DecodingFailure( message, cursor.history ) )
+            case ( event, _, _, _, _ ) ⇒
+                val message = s"Invalid event: $event"
+                Left( DecodingFailure( message, cursor.history ) )
         }
     }
 }

@@ -1,6 +1,7 @@
 package io.taig.communicator.phoenix.test
 
 import io.taig.communicator.phoenix.{ Event, Phoenix, Result, Topic }
+import io.taig.communicator.phoenix.message._
 import cats.syntax.either._
 
 import scala.concurrent.TimeoutException
@@ -13,9 +14,11 @@ class PhoenixTest extends Suite {
             phoenix ← Phoenix( request )
             response ← phoenix.stream.firstL
             _ = phoenix.close()
-        } yield {
-            response.topic shouldBe Topic.Phoenix
-            response.event shouldBe Event.Reply
+        } yield response match {
+            case Response.Confirmation( topic, _, _ ) ⇒
+                topic shouldBe Topic.Phoenix
+            //                event shouldBe Event.Reply
+            case _ ⇒ fail()
         }
     }
 
@@ -56,11 +59,10 @@ class PhoenixTest extends Suite {
             channel ← phoenix.join( topic )
             _ = phoenix.close()
         } yield channel match {
-            case Left( Result.Failure( response ) ) ⇒
-                response.isError shouldBe true
-                response.event shouldBe Event.Reply
-                response.topic shouldBe topic
-                response.error shouldBe Some( "unmatched topic" )
+            case Left( Result.Failure( Response.Error( topic, message, _ ) ) ) ⇒
+                // event shouldBe Event.Reply
+                topic shouldBe topic
+                message shouldBe "unmatched topic"
             case _ ⇒ fail()
         }
     }

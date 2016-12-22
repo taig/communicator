@@ -107,10 +107,10 @@ object Phoenix {
             .filter( _.ref == request.ref )
             .headOptionL
             .map {
-                case Some( response ) if response.isOk ⇒
-                    Result.Success( response )
-                case Some( response ) ⇒ Result.Failure( response )
-                case None             ⇒ Result.None
+                case Some( confirmation: Response.Confirmation ) ⇒
+                    Result.Success( confirmation )
+                case Some( error: Response.Error ) ⇒ Result.Failure( error )
+                case None                          ⇒ Result.None
             }
 
         val withTimeout = timeout match {

@@ -4,7 +4,7 @@ import cats.data.EitherT
 import io.circe.Json
 import io.circe.syntax._
 import io.taig.communicator.phoenix._
-import io.taig.communicator.phoenix.message.Push
+import io.taig.communicator.phoenix.message._
 import monix.cats._
 import monix.eval.Task
 
@@ -22,11 +22,9 @@ class ChannelTest extends Suite {
             response ← EitherT.right( channel.leave )
             _ = phoenix.close()
         } yield response match {
-            case Result.Success( response ) ⇒
-                response.isOk shouldBe true
-                response.event shouldBe Event.Reply
-                response.topic shouldBe topic
-                response.error shouldBe None
+            case Result.Success( Response.Confirmation( topic, _, _ ) ) ⇒
+                //                event shouldBe Event.Reply
+                topic shouldBe this.topic
             case _ ⇒ fail()
         }
     }
@@ -38,10 +36,10 @@ class ChannelTest extends Suite {
             response ← EitherT.right( channel.send( Event( "echo" ), payload ) )
             _ = phoenix.close()
         } yield response match {
-            case Result.Success( response ) ⇒
-                response.event shouldBe Event.Reply
-                response.topic shouldBe topic
-            case _ ⇒ fail()
+            case Result.Success( Response.Confirmation( topic, _, _ ) ) ⇒
+                //                event shouldBe Event.Reply
+                topic shouldBe this.topic
+            case _ ⇒ fail( s"Received $response" )
         }
     }
 
