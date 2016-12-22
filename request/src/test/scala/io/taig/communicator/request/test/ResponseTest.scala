@@ -29,7 +29,7 @@ class ResponseTest extends Suite {
             server.enqueue( new MockResponse().setBody( "foobar" ) )
         }
 
-        import collection.JavaConversions._
+        import collection.JavaConverters._
 
         val request = builder.build()
 
@@ -42,7 +42,7 @@ class ResponseTest extends Suite {
             response.handshake.orNull shouldBe response.wrapped.handshake()
             response.isSuccessful shouldBe response.wrapped.isSuccessful
             response.isRedirect shouldBe response.wrapped.isRedirect
-            seqAsJavaList( response.challenges ) shouldBe response.wrapped.challenges()
+            response.challenges shouldBe iterableAsScalaIterableConverter( response.wrapped.challenges() ).asScala.toList
             response.cacheControl shouldBe response.wrapped.cacheControl()
             response.sentRequestAtMillis shouldBe response.wrapped.sentRequestAtMillis()
             response.receivedResponseAtMillis shouldBe response.wrapped.receivedResponseAtMillis()
