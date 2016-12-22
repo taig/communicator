@@ -8,11 +8,16 @@ import sbt._
 import tut.Plugin._
 
 object Settings {
+    val Scala211 = "2.11.8"
+    
+    val Scala212 = "2.12.1"
+    
     val common = Def.settings(
+        crossScalaVersions := Scala211 :: Scala212 :: Nil,
         githubProject := "communicator",
         javacOptions ++= {
             scalaVersion.value match {
-                case "2.11.8" =>
+                case Scala211 =>
                     "-source" :: "1.7" ::
                     "-target" :: "1.7" ::
                     Nil
@@ -34,13 +39,13 @@ object Settings {
             Nil,
         scalacOptions ++= {
             scalaVersion.value match {
-                case "2.11.8" =>
+                case Scala211 =>
                     "-target:jvm-1.7" ::
                     Nil
                 case _ => Nil
             }
         },
-        scalaVersion := "2.12.1",
+        scalaVersion := Scala212,
         testOptions in Test += Tests.Argument( "-oFD" )
     )
 
