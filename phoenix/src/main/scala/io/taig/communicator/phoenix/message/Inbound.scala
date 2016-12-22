@@ -1,60 +1,60 @@
 package io.taig.communicator.phoenix.message
 
-import io.circe.{ Decoder, Json }
-import io.circe.generic.semiauto._
+import cats.syntax.either._
+import io.circe.generic.JsonCodec
+import io.circe.{ Decoder, DecodingFailure, Json }
 import io.taig.communicator.phoenix.{ Event, Ref, Topic }
 
 sealed trait Inbound extends Product with Serializable {
     def topic: Topic
-
-    def event: Event
 }
 
 object Inbound {
-    def unapply( inbound: Inbound ): Option[( Topic, Event )] = {
-        Some( inbound.topic, inbound.event )
+    implicit val decoder: Decoder[Inbound] = Decoder.instance { cursor ⇒
+        ( for {
+            event ← cursor.get[Event]( "event" )
+            topic ← cursor.get[Topic]( "topic" )
+            payload = cursor.downField( "payload" )
+            status ← payload.get[Option[String]]( "status" )
+            ref ← cursor.get[Option[Ref]]( "ref" )
+        } yield ( event, status, topic, payload, ref ) ).flatMap {
+            case ( Event.Reply, Some( "ok" ), topic, payload, Some( ref ) ) ⇒
+                payload
+                    .get[Json]( "response" )
+                    .map( Response.Confirmation( topic, _, ref ) )
+            case ( Event.Reply, Some( "error" ), topic, payload, Some( ref ) ) ⇒
+                payload
+                    .downField( "response" )
+                    .get[String]( "reason" )
+                    .map( Response.Error( topic, _, ref ) )
+            case ( Event.Reply, Some( status ), _, _, _ ) ⇒
+                val message = s"Invalid status: $status"
+                Left( DecodingFailure( message, cursor.history ) )
+            case ( event, None, topic, payload, None ) ⇒
+                payload.as[Json].map( Push( topic, event, _ ) )
+            case ( event, _, _, _, _ ) ⇒
+                val message = s"Invalid event: $event"
+                Left( DecodingFailure( message, cursor.history ) )
+        }
     }
 }
 
-case class Response(
-    topic:   Topic,
-    event:   Event,
-    payload: Option[Response.Payload],
-    ref:     Ref
-) extends Inbound
+sealed trait Response extends Inbound {
+    def ref: Ref
+}
 
 object Response {
-    case class Payload( status: Status, response: Json )
+    case class Confirmation(
+        topic:   Topic,
+        payload: Json,
+        ref:     Ref
+    ) extends Response
 
-    object Payload {
-        implicit val decoderPayload: Decoder[Option[Payload]] = {
-            Decoder.instance { cursor ⇒
-                val patched = cursor.withFocus {
-                    case json if json.asObject.exists( _.size == 0 ) ⇒
-                        Json.Null
-                    case json ⇒ json
-                }
-
-                Decoder.decodeOption( deriveDecoder[Payload] )
-                    .decodeJson( patched.focus )
-            }
-        }
-    }
-
-    sealed case class Status( value: String )
-
-    object Status {
-        object Error extends Status( "error" )
-        object Ok extends Status( "ok" )
-
-        implicit val decoderStatus: Decoder[Status] = {
-            Decoder[String].map {
-                case "error" ⇒ Error
-                case "ok"    ⇒ Ok
-                case value   ⇒ Status( value )
-            }
-        }
-    }
+    case class Error(
+        topic:   Topic,
+        message: String,
+        ref:     Ref
+    ) extends Response
 }
 
 case class Push(

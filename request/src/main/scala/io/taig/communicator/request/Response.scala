@@ -2,7 +2,7 @@ package io.taig.communicator.request
 
 import okhttp3._
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 sealed trait Response {
     def wrapped: okhttp3.Response
@@ -32,7 +32,8 @@ sealed trait Response {
     def isRedirect: Boolean = wrapped.isRedirect
 
     @inline
-    def challenges: List[Challenge] = wrapped.challenges.toList
+    def challenges: List[Challenge] =
+        iterableAsScalaIterableConverter( wrapped.challenges ).asScala.toList
 
     @inline
     def cacheControl: CacheControl = wrapped.cacheControl
@@ -77,12 +78,12 @@ object Response {
     }
 
     object With {
-        def unapply[T]( response: Response.With[T] ): Option[( Int, T )] = Some( response.code, response.body )
+        def unapply[T]( response: Response.With[T] ): Option[( Int, T )] =
+            Some( response.code, response.body )
     }
 
-    private[communicator] def apply( response: okhttp3.Response ): Response = new Response {
-        override def wrapped = response
-    }
+    private[communicator] def apply( response: okhttp3.Response ): Response =
+        new Response { override def wrapped = response }
 
     def unapply( response: Response ): Option[Int] = Some( response.code )
 }

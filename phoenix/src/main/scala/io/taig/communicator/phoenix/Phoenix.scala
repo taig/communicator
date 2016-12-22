@@ -1,193 +1,135 @@
 package io.taig.communicator.phoenix
 
-import cats.syntax.contravariant._
+import java.util.concurrent.TimeUnit
+
 import cats.syntax.either._
-import io.circe.Decoder.Result
-import io.circe.Json
-import io.circe.generic.auto._
+import io.circe.parser._
 import io.circe.syntax._
-import io.taig.communicator._
-import io.taig.communicator.phoenix.message.Response.{ Payload, Status }
-import io.taig.communicator.phoenix.message._
-import io.taig.communicator.websocket.{ WebSocketChannels, WebSocketWriter }
+import io.circe.{ Json, Error ⇒ CirceError }
+import io.taig.communicator.phoenix.message.{ Inbound, Push, Request, Response }
+import io.taig.communicator.{ OkHttpRequest, OkHttpWebSocket }
 import monix.eval.Task
 import monix.execution.{ Cancelable, Scheduler }
-import monix.reactive.OverflowStrategy
-import monix.reactive.observables.ConnectableObservable
+import monix.reactive.{ Observable, OverflowStrategy }
 import okhttp3.OkHttpClient
 
+import scala.concurrent.TimeoutException
 import scala.concurrent.duration._
+import scala.concurrent.duration.Duration.{ Inf, Infinite }
 import scala.language.postfixOps
 
-trait Phoenix {
-    def join( topic: Topic, payload: Json = Json.Null ): Task[Channel]
+class Phoenix(
+        socket:     OkHttpWebSocket,
+        observable: Observable[WebSocket.Event],
+        connection: Cancelable,
+        heartbeat:  Cancelable,
+        timeout:    Duration
+) {
+    val stream: Observable[Inbound] = observable.collect {
+        case WebSocket.Event.Message( Right( message ) ) ⇒
+            decode[Inbound]( message ).valueOr( throw _ )
+    }
 
-    def connect(): Unit
+    def join(
+        topic:   Topic,
+        payload: Json  = Json.Null
+    ): Task[Either[Error, Channel]] = {
+        Channel.join( topic, payload )(
+            socket,
+            stream.filter( topic isSubscribedTo _.topic ),
+            timeout
+        )
+    }
 
-    def close(): Unit
+    def close(): Unit = {
+        heartbeat.cancel()
+
+        val close = socket.close( 1000, null )
+
+        if ( !close ) {
+            connection.cancel()
+        }
+    }
 }
 
 object Phoenix {
     def apply(
         request:   OkHttpRequest,
-        strategy:  OverflowStrategy.Synchronous[websocket.Event[Json]] = websocket.Default.strategy,
-        reconnect: Option[FiniteDuration]                              = websocket.Default.reconnect,
-        heartbeat: Option[FiniteDuration]                              = Default.heartbeat
+        strategy:  OverflowStrategy.Synchronous[WebSocket.Event] = OverflowStrategy.Unbounded,
+        heartbeat: Option[FiniteDuration]                        = Some( 7 seconds )
     )(
         implicit
-        c: OkHttpClient,
-        s: Scheduler
-    ): Phoenix = {
-        val channels = WebSocketChannels[Json](
-            request,
-            strategy,
-            reconnect
-        )
+        ohc: OkHttpClient,
+        s:   Scheduler
+    ): Task[Phoenix] = Task.defer {
+        val observable = WebSocket( request, strategy ).publish
+        val connection = observable.connect()
 
-        new PhoenixImpl( channels, heartbeat )
-    }
-
-    /**
-     * Extract the error reason from a server response
-     */
-    private[phoenix] def error( payload: Payload ): Option[String] = {
-        payload.status match {
-            case Status.Error ⇒
-                payload.response.asObject
-                    .flatMap( _.apply( "reason" ) )
-                    .flatMap( _.asString )
-            case _ ⇒ None
-        }
-    }
-}
-
-private class PhoenixImpl(
-        channels:  WebSocketChannels[Json],
-        heartbeat: Option[FiniteDuration]
-)(
-        implicit
-        s: Scheduler
-) extends Phoenix { self ⇒
-    private val iterator: Iterator[Ref] = {
-        Stream.iterate( 0L )( _ + 1 ).map( n ⇒ Ref( n.toString ) ).iterator
-    }
-
-    private var periodicHeartbeat: Option[Cancelable] = None
-
-    private def ref = synchronized( iterator.next() )
-
-    private def withRef[T]( f: Ref ⇒ T ): T = f( ref )
-
-    private val reader: ConnectableObservable[Inbound] = {
-        channels.reader
-            .collect {
-                case websocket.Event.Message( response ) ⇒
-                    ( response.as[Response]: Result[Inbound] )
-                        .orElse( response.as[Push] ) match {
-                            case Right( inbound ) ⇒ Some( inbound )
-                            case Left( exception ) ⇒
-                                logger.error(
-                                    "Failed to decode message",
-                                    exception
-                                )
-                                None
-                        }
-            }
-            .collect {
-                case Some( inbound ) ⇒ inbound
-            }
-            .doOnStart( _ ⇒ heartbeat.foreach( startHeartbeat ) )
-            .publish
-    }
-
-    private val writer: WebSocketWriter[Outbound] = {
-        channels.writer.contramap {
-            case request: Request ⇒ request.asJson
-        }
-    }
-
-    override def join( topic: Topic, payload: Json ) = withRef { ref ⇒
-        val send = Task {
-            logger.info( s"Requesting to join channel $topic" )
-            val request = Request( topic, Event.Join, payload, ref )
-            writer.send( request )
+        val timeout = ohc.readTimeoutMillis() match {
+            case 0            ⇒ Inf
+            case milliseconds ⇒ Duration( milliseconds, TimeUnit.MILLISECONDS )
         }
 
-        val receive = reader.collect {
-            case Response( `topic`, _, Some( Payload( Status.Ok, _ ) ), `ref` ) ⇒
-                logger.info( s"Successfully joined channel $topic" )
-                Right( channel( topic ) )
-            case Response( `topic`, _, Some( payload @ Payload( Status.Error, _ ) ), `ref` ) ⇒
-                logger.info( s"Failed to join channel $topic" )
-                Left( payload )
-        }.firstL.flatMap {
-            case Right( channel ) ⇒ Task.now( channel )
-            case Left( payload ) ⇒ Task.raiseError {
-                val error = Phoenix.error( payload ).getOrElse( "" )
-                new IllegalArgumentException {
-                    s"Failed to join channel $topic: $error"
+        observable.collect {
+            case WebSocket.Event.Open( socket, _ ) ⇒
+                val heartbeats = heartbeat match {
+                    case Some( delay ) ⇒
+                        this.heartbeat( delay ).foreach( socket.send( _ ) )
+                    case None ⇒ Cancelable.empty
                 }
-            }
-        }
 
-        for {
-            _ ← send
-            receive ← receive
-        } yield receive
-    }
-
-    private def channel( topic: Topic ): Channel = {
-        val reader = self.reader.filter { inbound ⇒
-            topic isSubscribedTo inbound.topic
-        }
-
-        val writer = new ChannelWriter {
-            override def send( event: Event, payload: Json ) = {
-                self.writer.send( Request( topic, event, payload, ref ) )
-            }
-        }
-
-        Channel( topic, reader, writer )
-    }
-
-    override def connect() = reader.connect()
-
-    override def close() = {
-        stopHeartbeat()
-        channels.close()
-    }
-
-    private def startHeartbeat( heartbeat: FiniteDuration ): Unit = synchronized {
-        logger.debug( "Starting heartbeat" )
-
-        periodicHeartbeat.foreach { heartbeat ⇒
-            logger.warn( "Overriding existing heartbeat" )
-            heartbeat.cancel()
-        }
-
-        val scheduler = Scheduler.singleThread( "heartbeat" )
-
-        val cancelable = scheduler.scheduleWithFixedDelay( heartbeat, heartbeat ) {
-            logger.debug( "Sending heartbeat" )
-
-            writer.sendNow {
-                Request(
-                    Topic( "phoenix" ),
-                    Event( "heartbeat" ),
-                    Json.Null,
-                    ref
+                new Phoenix(
+                    socket,
+                    observable,
+                    connection,
+                    heartbeats,
+                    timeout
                 )
-            }
-        }
-
-        periodicHeartbeat = Some( cancelable )
+        }.firstL
     }
 
-    private def stopHeartbeat(): Unit = synchronized {
-        periodicHeartbeat.foreach { heartbeat ⇒
-            logger.debug( "Stopping heartbeat" )
-            heartbeat.cancel()
+    def send(
+        topic:   Topic,
+        event:   Event,
+        payload: Json  = Json.Null,
+        ref:     Ref   = Ref.unique()
+    )(
+        socket:  OkHttpWebSocket,
+        stream:  Observable[Inbound],
+        timeout: Duration
+    ): Task[Result] = {
+        val request = Request( topic, event, payload, ref )
+
+        val channel = stream
+            .collect { case response: Response ⇒ response }
+            .filter( _.ref == request.ref )
+            .headOptionL
+            .map {
+                case Some( confirmation: Response.Confirmation ) ⇒
+                    Result.Success( confirmation )
+                case Some( error: Response.Error ) ⇒ Result.Failure( error )
+                case None                          ⇒ Result.None
+            }
+
+        val withTimeout = timeout match {
+            case _: Infinite ⇒ channel
+            case timeout: FiniteDuration ⇒
+                channel.timeout( timeout ).onErrorRecover {
+                    case _: TimeoutException ⇒ Result.None
+                }
         }
-        periodicHeartbeat = None
+
+        val send = Task {
+            socket.send( request.asJson.noSpaces )
+        }
+
+        Task.mapBoth( withTimeout, send )( ( left, _ ) ⇒ left )
+    }
+
+    def heartbeat( delay: FiniteDuration ): Observable[String] = {
+        Observable.interval( delay ).map { _ ⇒
+            val request = Request( Topic.Phoenix, Event( "heartbeat" ) )
+            request.asJson.noSpaces
+        }
     }
 }

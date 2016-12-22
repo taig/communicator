@@ -6,10 +6,10 @@ addSbtPlugin( "io.taig" % "sbt-scalariform" % "1.7.1" )
 
 addSbtPlugin( "io.taig" % "sbt-sonatype" % "1.1.0" )
 
-addSbtPlugin( "org.scoverage" % "sbt-scoverage" % "1.4.0" )
+addSbtPlugin( "org.scoverage" % "sbt-scoverage" % "1.5.0" )
 
-addSbtPlugin( "org.tpolecat" % "tut-plugin" % "0.4.7" )
+addSbtPlugin( "org.tpolecat" % "tut-plugin" % "0.4.8" )
 
 libraryDependencies ++=
-    "ch.qos.logback" %  "logback-classic" % "1.1.7" ::
+    "ch.qos.logback" %  "logback-classic" % "1.1.8" ::
     Nil

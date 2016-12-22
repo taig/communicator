@@ -8,12 +8,22 @@ import sbt._
 import tut.Plugin._
 
 object Settings {
+    val Scala211 = "2.11.8"
+    
+    val Scala212 = "2.12.1"
+    
     val common = Def.settings(
+        crossScalaVersions := Scala211 :: Scala212 :: Nil,
         githubProject := "communicator",
-        javacOptions ++=
-            "-source" :: "1.7" ::
-            "-target" :: "1.7" ::
-            Nil,
+        javacOptions ++= {
+            scalaVersion.value match {
+                case Scala211 =>
+                    "-source" :: "1.7" ::
+                    "-target" :: "1.7" ::
+                    Nil
+                case _ => Nil
+            }
+        },
         normalizedName := s"communicator-${normalizedName.value}",
         organization := "io.taig",
 //        releaseTagName := releaseTagName.value drop 1,
@@ -27,7 +37,15 @@ object Settings {
 //            "-Ywarn-unused-import" ::
 //            "-Ywarn-value-discard" ::
             Nil,
-        scalaVersion := "2.11.8",
+        scalacOptions ++= {
+            scalaVersion.value match {
+                case Scala211 =>
+                    "-target:jvm-1.7" ::
+                    Nil
+                case _ => Nil
+            }
+        },
+        scalaVersion := Scala212,
         testOptions in Test += Tests.Argument( "-oFD" )
     )
 
@@ -51,8 +69,8 @@ object Settings {
         
         val circe = "0.6.1"
 
-        val monix = "2.1.1"
+        val monix = "2.1.2"
 
-        val okhttp = "3.4.2"
+        val okhttp = "3.5.0"
     }
 }

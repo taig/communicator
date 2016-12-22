@@ -15,6 +15,8 @@ package object communicator {
         type Builder = okhttp3.Request.Builder
     }
 
+    type OkHttpResponse = okhttp3.Response
+
     type OkHttpRequestBody = okhttp3.RequestBody
 
     type OkHttpMultipartBody = okhttp3.MultipartBody
@@ -24,6 +26,10 @@ package object communicator {
     }
 
     type OkHttpPart = okhttp3.MultipartBody.Part
+
+    type OkHttpWebSocket = okhttp3.WebSocket
+
+    type OkHttpWebSocketListener = okhttp3.WebSocketListener
 
     type MediaType = okhttp3.MediaType
 
