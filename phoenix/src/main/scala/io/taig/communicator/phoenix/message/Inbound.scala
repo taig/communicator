@@ -10,8 +10,32 @@ sealed trait Inbound extends Product with Serializable {
 }
 
 object Inbound {
-    def unapply( inbound: Inbound ): Option[Topic] = {
-        Some( inbound.topic )
+    implicit val decoder: Decoder[Inbound] = Decoder.instance { cursor ⇒
+        ( for {
+            event ← cursor.get[Event]( "event" )
+            topic ← cursor.get[Topic]( "topic" )
+            payload = cursor.downField( "payload" )
+            status ← payload.get[Option[String]]( "status" )
+            ref ← cursor.get[Option[Ref]]( "ref" )
+        } yield ( event, status, topic, payload, ref ) ).flatMap {
+            case ( Event.Reply, Some( "ok" ), topic, payload, Some( ref ) ) ⇒
+                payload
+                    .get[Json]( "response" )
+                    .map( Response.Confirmation( topic, _, ref ) )
+            case ( Event.Reply, Some( "error" ), topic, payload, Some( ref ) ) ⇒
+                payload
+                    .downField( "response" )
+                    .get[String]( "reason" )
+                    .map( Response.Error( topic, _, ref ) )
+            case ( Event.Reply, Some( status ), _, _, _ ) ⇒
+                val message = s"Invalid status: $status"
+                Left( DecodingFailure( message, cursor.history ) )
+            case ( event, None, topic, payload, None ) ⇒
+                payload.as[Json].map( Push( topic, event, _ ) )
+            case ( event, _, _, _, _ ) ⇒
+                val message = s"Invalid event: $event"
+                Left( DecodingFailure( message, cursor.history ) )
+        }
     }
 }
 
@@ -31,30 +55,8 @@ object Response {
         message: String,
         ref:     Ref
     ) extends Response
-
-    implicit val decoder: Decoder[Response] = Decoder.instance { cursor ⇒
-        ( for {
-            event ← cursor.downField( "event" ).get[Event]( "event" )
-            status ← cursor.downField( "payload" ).get[String]( "status" )
-            topic ← cursor.get[Topic]( "topic" )
-            response = cursor.downField( "payload" ).downField( "response" )
-            ref ← cursor.get[Ref]( "ref" )
-        } yield ( event, status, topic, response, ref ) ).flatMap {
-            case ( Event.Reply, "ok", topic, response, ref ) ⇒
-                response.as[Json].map( Confirmation( topic, _, ref ) )
-            case ( Event.Reply, "error", topic, response, ref ) ⇒
-                response.get[String]( "reason" ).map( Error( topic, _, ref ) )
-            case ( Event.Reply, status, _, _, _ ) ⇒
-                val message = s"Invalid status: $status"
-                Left( DecodingFailure( message, cursor.history ) )
-            case ( event, _, _, _, _ ) ⇒
-                val message = s"Invalid event: $event"
-                Left( DecodingFailure( message, cursor.history ) )
-        }
-    }
 }
 
-@JsonCodec
 case class Push(
     topic:   Topic,
     event:   Event,

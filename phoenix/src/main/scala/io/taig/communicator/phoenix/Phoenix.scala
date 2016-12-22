@@ -27,9 +27,7 @@ class Phoenix(
 ) {
     val stream: Observable[Inbound] = observable.collect {
         case WebSocket.Event.Message( Right( message ) ) ⇒
-            ( decode[Response]( message ): Either[CirceError, Inbound] )
-                .orElse( decode[Push]( message ) )
-                .valueOr( throw _ )
+            decode[Inbound]( message ).valueOr( throw _ )
     }
 
     def join(
