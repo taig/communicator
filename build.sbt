@@ -46,7 +46,6 @@ lazy val phoenix = project
             "io.monix" %% "monix-reactive" % Settings.dependency.monix ::
             "io.monix" %% "monix-cats" % Settings.dependency.monix % "test" ::
             Nil,
-        name := "phoenix-experimental",
         startYear := Some( 2016 )
     )
     .dependsOn( common % "compile->compile;test->test" )
