@@ -1,7 +1,7 @@
 # Communicator
 
 [![CircleCI](https://circleci.com/gh/Taig/communicator/tree/master.svg?style=shield)](https://circleci.com/gh/Taig/communicator/tree/master)
-[![codecov](https://codecov.io/github/Taig/communicator/coverage.svg?branch=master)](https://codecov.io/github/Taig/communicator?branch=master)
+[![codecov](https://codecov.io/github/Taig/Communicator/coverage.svg?branch=master)](https://codecov.io/github/Taig/communicator?branch=master)
 [![Maven](https://img.shields.io/maven-central/v/io.taig/communicator_2.11.svg)](http://search.maven.org/#artifactdetails%7Cio.taig%7Ccommunicator_2.11%7C3.0.0%7Cjar)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/Taig/Communicator/master/LICENSE)
 
@@ -13,14 +13,14 @@ Communicator provides a simple way to construct OkHttp requests as `monix.Task`s
 
 ```scala
 libraryDependencies ++=
-    "io.taig" %% "communicator-common" % "3.0.0-RC11" ::
-    "io.taig" %% "communicator-request" % "3.0.0-RC11" ::
-    "io.taig" %% "communicator-phoenix" % "3.0.0-RC11" ::
+    "io.taig" %% "communicator-common" % "3.0.0-RC12" ::
+    "io.taig" %% "communicator-request" % "3.0.0-RC12" ::
+    "io.taig" %% "communicator-phoenix" % "3.0.0-RC12" ::
     Nil
 ```
 
 ```scala
-libraryDependencies += "io.taig" %% "communicator" % "3.0.0-RC11"
+libraryDependencies += "io.taig" %% "communicator" % "3.0.0-RC12"
 ```
 
 ## Quickstart
@@ -34,19 +34,19 @@ import okhttp3.OkHttpClient
 
 scala> // To build request tasks, an implicit OkHttpClient should be in scope
      | implicit val client = new OkHttpClient()
-client: okhttp3.OkHttpClient = okhttp3.OkHttpClient@7373ed64
+client: okhttp3.OkHttpClient = okhttp3.OkHttpClient@59057210
 
 scala> // Simple OkHttp request builder
      | val builder = new OkHttpRequest.Builder().url( "http://taig.io/" )
-builder: okhttp3.Request.Builder = okhttp3.Request$Builder@7b1ac55f
+builder: okhttp3.Request.Builder = okhttp3.Request$Builder@4bf3d1c0
 
 scala> // Construct a Task[Response]
      | val request: Request = Request( builder.build() )
-request: io.taig.communicator.request.Request = io.taig.communicator.request.Request@5268e65d
+request: io.taig.communicator.request.Request = io.taig.communicator.request.Request@238f4bef
 
 scala> // Parse the response to a String
      | val requestContent: Task[Response.With[String]] = request.parse[String]
-requestContent: monix.eval.Task[io.taig.communicator.request.Response.With[String]] = BindAsync(monix.eval.internal.TaskCreate$$$Lambda$2044/721303438@543ea364,monix.eval.Task$$Lambda$2050/2080507287@5c835a63)
+requestContent: monix.eval.Task[io.taig.communicator.request.Response.With[String]] = BindAsync(monix.eval.internal.TaskCreate$$$Lambda$3699/890636445@2d7e07fa,monix.eval.Task$$Lambda$3705/1827360228@1b4cebdc)
 
 scala> // Kick off the actual request
      | import monix.execution.Scheduler.Implicits.global
@@ -59,7 +59,7 @@ scala> requestContent.runAsync.andThen {
      |     case Success( content ) => "Success"
      |     case Failure( exception ) => "Failure"
      | }
-res5: monix.execution.CancelableFuture[io.taig.communicator.request.Response.With[String]] = monix.execution.CancelableFuture$Implementation@50ea04a3
+res5: monix.execution.CancelableFuture[io.taig.communicator.request.Response.With[String]] = monix.execution.CancelableFuture$Implementation@5eb9abb2
 ```
 
 ## Usage
