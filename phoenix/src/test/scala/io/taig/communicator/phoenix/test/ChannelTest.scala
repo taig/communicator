@@ -22,8 +22,7 @@ class ChannelTest extends Suite {
             response ← EitherT.right( channel.leave )
             _ = phoenix.close()
         } yield response match {
-            case Result.Success( Response.Confirmation( topic, _, _ ) ) ⇒
-                //                event shouldBe Event.Reply
+            case Some( Response.Confirmation( topic, _, _ ) ) ⇒
                 topic shouldBe this.topic
             case _ ⇒ fail()
         }
@@ -36,8 +35,7 @@ class ChannelTest extends Suite {
             response ← EitherT.right( channel.send( Event( "echo" ), payload ) )
             _ = phoenix.close()
         } yield response match {
-            case Result.Success( Response.Confirmation( topic, _, _ ) ) ⇒
-                //                event shouldBe Event.Reply
+            case Some( Response.Confirmation( topic, _, _ ) ) ⇒
                 topic shouldBe this.topic
             case _ ⇒ fail( s"Received $response" )
         }
@@ -50,7 +48,7 @@ class ChannelTest extends Suite {
             result ← EitherT.right( channel.send( Event( "no_reply" ), Json.Null ) )
             _ = phoenix.close()
         } yield {
-            result shouldBe Result.None
+            result shouldBe None
         }
     }
 
@@ -58,8 +56,9 @@ class ChannelTest extends Suite {
         val payload = Json.obj( "foo" → "bar".asJson )
 
         for {
-            phoenix ← EitherT.right( Phoenix( request ) )
-            channel ← EitherT( phoenix.join( topic ) )
+            phoenix ← Phoenix( request )
+            join ← phoenix.join( topic )
+            Right( channel ) = join
             push ← {
                 val push = channel.stream
                     .collect { case push: Push ⇒ push }
@@ -67,9 +66,7 @@ class ChannelTest extends Suite {
 
                 val send = channel.send( Event( "push" ), payload )
 
-                EitherT.right[Task, Error, Push] {
-                    Task.mapBoth( push, send )( ( left, _ ) ⇒ left )
-                }
+                Task.mapBoth( push, send )( ( left, _ ) ⇒ left )
             }
             _ = phoenix.close()
         } yield {

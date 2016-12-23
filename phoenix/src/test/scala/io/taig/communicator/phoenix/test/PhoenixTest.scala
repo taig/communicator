@@ -1,6 +1,6 @@
 package io.taig.communicator.phoenix.test
 
-import io.taig.communicator.phoenix.{ Phoenix, Result, Topic }
+import io.taig.communicator.phoenix.{ Phoenix, Topic }
 import io.taig.communicator.phoenix.message._
 import cats.syntax.either._
 
@@ -58,7 +58,7 @@ class PhoenixTest extends Suite {
             channel ← phoenix.join( topic )
             _ = phoenix.close()
         } yield channel match {
-            case Left( Result.Failure( Response.Error( topic, message, _ ) ) ) ⇒
+            case Left( Some( Response.Error( topic, message, _ ) ) ) ⇒
                 topic shouldBe topic
                 message shouldBe "unmatched topic"
             case response ⇒ fail( s"Received $response" )

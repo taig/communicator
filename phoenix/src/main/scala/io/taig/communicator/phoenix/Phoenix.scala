@@ -5,8 +5,8 @@ import java.util.concurrent.TimeUnit
 import cats.syntax.either._
 import io.circe.parser._
 import io.circe.syntax._
-import io.circe.{ Json, Error ⇒ CirceError }
-import io.taig.communicator.phoenix.message.{ Inbound, Push, Request, Response }
+import io.circe.Json
+import io.taig.communicator.phoenix.message.{ Inbound, Request, Response }
 import io.taig.communicator.{ OkHttpRequest, OkHttpWebSocket }
 import monix.eval.Task
 import monix.execution.{ Cancelable, Scheduler }
@@ -33,7 +33,7 @@ class Phoenix(
     def join(
         topic:   Topic,
         payload: Json  = Json.Null
-    ): Task[Either[Error, Channel]] = {
+    ): Task[Either[Option[Response.Error], Channel]] = {
         Channel.join( topic, payload )(
             socket,
             stream.filter( topic isSubscribedTo _.topic ),
@@ -56,7 +56,7 @@ object Phoenix {
     def apply(
         request:   OkHttpRequest,
         strategy:  OverflowStrategy.Synchronous[WebSocket.Event] = OverflowStrategy.Unbounded,
-        heartbeat: Option[FiniteDuration]                        = Some( 7 seconds )
+        heartbeat: Option[FiniteDuration]                        = Default.heartbeat
     )(
         implicit
         ohc: OkHttpClient,
@@ -97,25 +97,19 @@ object Phoenix {
         socket:  OkHttpWebSocket,
         stream:  Observable[Inbound],
         timeout: Duration
-    ): Task[Result] = {
+    ): Task[Option[Response]] = {
         val request = Request( topic, event, payload, ref )
 
         val channel = stream
             .collect { case response: Response ⇒ response }
             .filter( _.ref == request.ref )
             .headOptionL
-            .map {
-                case Some( confirmation: Response.Confirmation ) ⇒
-                    Result.Success( confirmation )
-                case Some( error: Response.Error ) ⇒ Result.Failure( error )
-                case None                          ⇒ Result.None
-            }
 
         val withTimeout = timeout match {
             case _: Infinite ⇒ channel
             case timeout: FiniteDuration ⇒
                 channel.timeout( timeout ).onErrorRecover {
-                    case _: TimeoutException ⇒ Result.None
+                    case _: TimeoutException ⇒ None
                 }
         }
 
