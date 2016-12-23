@@ -1,7 +1,7 @@
 # Communicator
 
 [![CircleCI](https://circleci.com/gh/Taig/communicator/tree/master.svg?style=shield)](https://circleci.com/gh/Taig/communicator/tree/master)
-[![codecov](https://codecov.io/github/Taig/Communicator/coverage.svg?branch=master)](https://codecov.io/github/Taig/Communicator?branch=master)
+[![codecov](https://codecov.io/github/Taig/Communicator/coverage.svg?branch=master)](https://codecov.io/github/Taig/communicator?branch=master)
 [![Maven](https://img.shields.io/maven-central/v/io.taig/communicator_2.11.svg)](http://search.maven.org/#artifactdetails%7Cio.taig%7Ccommunicator_2.11%7C3.0.0%7Cjar)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/Taig/Communicator/master/LICENSE)
 
@@ -13,14 +13,14 @@ Communicator provides a simple way to construct OkHttp requests as `monix.Task`s
 
 ```scala
 libraryDependencies ++=
-    "io.taig" %% "communicator-common" % "3.0.0-RC11" ::
-    "io.taig" %% "communicator-request" % "3.0.0-RC11" ::
-    "io.taig" %% "communicator-phoenix" % "3.0.0-RC11" ::
+    "io.taig" %% "communicator-common" % "3.0.0-RC12" ::
+    "io.taig" %% "communicator-request" % "3.0.0-RC12" ::
+    "io.taig" %% "communicator-phoenix" % "3.0.0-RC12" ::
     Nil
 ```
 
 ```scala
-libraryDependencies += "io.taig" %% "communicator" % "3.0.0-RC11"
+libraryDependencies += "io.taig" %% "communicator" % "3.0.0-RC12"
 ```
 
 ## Quickstart
