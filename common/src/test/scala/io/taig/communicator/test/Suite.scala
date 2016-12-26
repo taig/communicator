@@ -1,7 +1,5 @@
 package io.taig.communicator.test
 
-import java.util.logging.LogManager
-
 import monix.eval.Task
 import monix.execution.{ Scheduler, UncaughtExceptionReporter }
 import okhttp3.OkHttpClient
@@ -15,8 +13,6 @@ import scala.language.implicitConversions
 trait Suite
         extends AsyncFlatSpec
         with Matchers {
-    LogManager.getLogManager.reset()
-
     implicit val client = new OkHttpClient
 
     /**
