@@ -60,10 +60,6 @@ Lorem Ipsum
 
 Lorem Ipsum
 
-### Websockets
-
-Lorem Ipsum
-
 ### Phoenix Channels
 
 Lorem Ipsum

@@ -45,7 +45,7 @@ val request = Request( builder.build() ).parse[String]
 ```scala
 // Kick off the actual request
 val response = request.runAsync
-// response: monix.execution.CancelableFuture[io.taig.communicator.request.Response.With[String]] = monix.execution.CancelableFuture$Implementation@45644fda
+// response: monix.execution.CancelableFuture[io.taig.communicator.request.Response.With[String]] = monix.execution.CancelableFuture$Implementation@3400550b
 
 Await.result( response, 3 seconds )
 // res7: io.taig.communicator.request.Response.With[String] =
@@ -60,16 +60,16 @@ Await.result( response, 3 seconds )
 // Cache-Control: max-age=600
 // X-GitHub-Request-Id: B91F1118:2D53:8B3185F:5860E3B4
 // Accept-Ranges: bytes
-// Date: Mon, 26 Dec 2016 09:40:05 GMT
+// Date: Mon, 26 Dec 2016 09:41:21 GMT
 // Via: 1.1 varnish
-// Age: 396
+// Age: 474
 // Connection: keep-alive
-// X-Served-By: cache-fra1230-FRA
+// X-Served-By: cache-fra1245-FRA
 // X-Cache: HIT
-// X-Cache-Hits: 1
-// X-Timer: S1482745205.066205,VS0,VE0
+// X-Cache-Hits: 2
+// X-Timer: S1482745281.902766,VS0,VE0
 // Vary: Accept-Encoding
-// X-Fastly-Request-ID: b5e71f98703ffa9b98ce2acb9fffef6903dacaef
+// X-Fastly-Request-ID: 1b951d37871fe961a5319be29e0b4f9f5f4d25d2
 ```
 
 ## Usage
@@ -81,10 +81,6 @@ Lorem Ipsum
 Lorem Ipsum
 
 ### Parsing Content
-
-Lorem Ipsum
-
-### Websockets
 
 Lorem Ipsum
 
