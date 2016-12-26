@@ -1,4 +1,4 @@
-package io.taig.communicator.test
+package io.taig.communicator.request
 
 import monix.eval.Task
 import monix.execution.{ Scheduler, UncaughtExceptionReporter }

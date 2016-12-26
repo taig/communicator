@@ -1,7 +1,5 @@
-package io.taig.communicator.request.test
+package io.taig.communicator.request
 
-import io.taig.communicator.request.{ Request, Response }
-import io.taig.communicator.test.Suite
 import okhttp3.mockwebserver.MockResponse
 
 import scala.language.postfixOps

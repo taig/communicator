@@ -9,10 +9,10 @@ lazy val communicator = project.in( file( "." ) )
         startYear := Some( 2013 ),
         tutTargetDirectory := file( "." )
     )
-    .aggregate( common, request, phoenix )
-    .dependsOn( common, request, phoenix )
+    .aggregate( request, phoenix )
+    .dependsOn( request, phoenix )
 
-lazy val common = project
+lazy val request = project
     .settings( Settings.common )
     .settings(
         libraryDependencies ++=
@@ -22,17 +22,9 @@ lazy val common = project
             "ch.qos.logback" %  "logback-classic" % "1.1.8" % "test" ::
             "org.scalatest" %% "scalatest" % "3.0.1" % "test" ::
             Nil,
-        name := "common",
-        startYear := Some( 2016 )
-    )
-
-lazy val request = project
-    .settings( Settings.common )
-    .settings(
         name := "request",
         startYear := Some( 2016 )
     )
-    .dependsOn( common % "compile->compile;test->test" )
 
 lazy val phoenix = project
     .settings( Settings.common )
@@ -47,4 +39,4 @@ lazy val phoenix = project
             Nil,
         startYear := Some( 2016 )
     )
-    .dependsOn( common % "compile->compile;test->test" )
+    .dependsOn( request % "compile->compile;test->test" )
