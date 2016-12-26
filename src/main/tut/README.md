@@ -25,8 +25,12 @@ libraryDependencies += "io.taig" %% "communicator" % "3.0.0-RC12"
 
 ## Quickstart
 
-```tut
-import io.taig.communicator._; import request._; import monix.eval.Task; import okhttp3.OkHttpClient
+```tut:silent
+import monix._; import eval.Task; import execution.Scheduler.Implicits.global
+import io.taig.communicator._; import request._
+import okhttp3.OkHttpClient
+import scala._; import util._; import concurrent._; import duration._
+import language.postfixOps
 
 // To build request tasks, an implicit OkHttpClient should be in scope
 implicit val client = new OkHttpClient()
@@ -34,20 +38,14 @@ implicit val client = new OkHttpClient()
 // Simple OkHttp request builder
 val builder = new OkHttpRequest.Builder().url( "http://taig.io/" )
 
-// Construct a Task[Response]
-val request: Request = Request( builder.build() )
+// Construct a Task[Response] and parse it to a String
+val request = Request( builder.build() ).parse[String]
+```
 
-// Parse the response to a String
-val requestContent: Task[Response.With[String]] = request.parse[String]
-
+```tut:book
 // Kick off the actual request
-import monix.execution.Scheduler.Implicits.global
-import scala.util.{ Failure, Success }
-
-requestContent.runAsync.andThen {
-    case Success( content ) => "Success"
-    case Failure( exception ) => "Failure"
-}
+val response = request.runAsync
+Await.result( response, 3 seconds )
 ```
 
 ## Usage

@@ -26,40 +26,50 @@ libraryDependencies += "io.taig" %% "communicator" % "3.0.0-RC12"
 ## Quickstart
 
 ```scala
-scala> import io.taig.communicator._; import request._; import monix.eval.Task; import okhttp3.OkHttpClient
-import io.taig.communicator._
-import request._
-import monix.eval.Task
+import monix._; import eval.Task; import execution.Scheduler.Implicits.global
+import io.taig.communicator._; import request._
 import okhttp3.OkHttpClient
+import scala._; import util._; import concurrent._; import duration._
+import language.postfixOps
 
-scala> // To build request tasks, an implicit OkHttpClient should be in scope
-     | implicit val client = new OkHttpClient()
-client: okhttp3.OkHttpClient = okhttp3.OkHttpClient@59057210
+// To build request tasks, an implicit OkHttpClient should be in scope
+implicit val client = new OkHttpClient()
 
-scala> // Simple OkHttp request builder
-     | val builder = new OkHttpRequest.Builder().url( "http://taig.io/" )
-builder: okhttp3.Request.Builder = okhttp3.Request$Builder@4bf3d1c0
+// Simple OkHttp request builder
+val builder = new OkHttpRequest.Builder().url( "http://taig.io/" )
 
-scala> // Construct a Task[Response]
-     | val request: Request = Request( builder.build() )
-request: io.taig.communicator.request.Request = io.taig.communicator.request.Request@238f4bef
+// Construct a Task[Response] and parse it to a String
+val request = Request( builder.build() ).parse[String]
+```
 
-scala> // Parse the response to a String
-     | val requestContent: Task[Response.With[String]] = request.parse[String]
-requestContent: monix.eval.Task[io.taig.communicator.request.Response.With[String]] = BindAsync(monix.eval.internal.TaskCreate$$$Lambda$3699/890636445@2d7e07fa,monix.eval.Task$$Lambda$3705/1827360228@1b4cebdc)
+```scala
+// Kick off the actual request
+val response = request.runAsync
+// response: monix.execution.CancelableFuture[io.taig.communicator.request.Response.With[String]] = monix.execution.CancelableFuture$Implementation@45644fda
 
-scala> // Kick off the actual request
-     | import monix.execution.Scheduler.Implicits.global
-import monix.execution.Scheduler.Implicits.global
-
-scala> import scala.util.{ Failure, Success }
-import scala.util.{Failure, Success}
-
-scala> requestContent.runAsync.andThen {
-     |     case Success( content ) => "Success"
-     |     case Failure( exception ) => "Failure"
-     | }
-res5: monix.execution.CancelableFuture[io.taig.communicator.request.Response.With[String]] = monix.execution.CancelableFuture$Implementation@5eb9abb2
+Await.result( response, 3 seconds )
+// res7: io.taig.communicator.request.Response.With[String] =
+// >>> http://taig.io/
+// [No headers]
+// <<< 200 OK
+// Server: GitHub.com
+// Content-Type: text/html; charset=utf-8
+// Last-Modified: Tue, 24 Feb 2015 15:20:41 GMT
+// Access-Control-Allow-Origin: *
+// Expires: Mon, 26 Dec 2016 09:42:36 GMT
+// Cache-Control: max-age=600
+// X-GitHub-Request-Id: B91F1118:2D53:8B3185F:5860E3B4
+// Accept-Ranges: bytes
+// Date: Mon, 26 Dec 2016 09:40:05 GMT
+// Via: 1.1 varnish
+// Age: 396
+// Connection: keep-alive
+// X-Served-By: cache-fra1230-FRA
+// X-Cache: HIT
+// X-Cache-Hits: 1
+// X-Timer: S1482745205.066205,VS0,VE0
+// Vary: Accept-Encoding
+// X-Fastly-Request-ID: b5e71f98703ffa9b98ce2acb9fffef6903dacaef
 ```
 
 ## Usage
