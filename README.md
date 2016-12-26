@@ -1,8 +1,8 @@
 # Communicator
 
 [![CircleCI](https://circleci.com/gh/Taig/communicator/tree/master.svg?style=shield)](https://circleci.com/gh/Taig/communicator/tree/master)
-[![codecov](https://codecov.io/github/Taig/Communicator/coverage.svg?branch=master)](https://codecov.io/github/Taig/communicator?branch=master)
-[![Maven](https://img.shields.io/maven-central/v/io.taig/communicator_2.11.svg)](http://search.maven.org/#artifactdetails%7Cio.taig%7Ccommunicator_2.11%7C3.0.0%7Cjar)
+[![codecov](https://codecov.io/gh/Taig/communicator/branch/master/graph/badge.svg)](https://codecov.io/gh/Taig/communicator)
+[![Maven](https://img.shields.io/maven-central/v/io.taig/communicator_2.12.svg)](http://search.maven.org/#artifactdetails%7Cio.taig%7Ccommunicator_2.12%7C3.0.0%7Cjar)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/Taig/Communicator/master/LICENSE)
 
 > A [monix][1] wrapper for [OkHttp][2]
@@ -45,7 +45,7 @@ val request = Request( builder.build() ).parse[String]
 ```scala
 // Kick off the actual request
 val response = request.runAsync
-// response: monix.execution.CancelableFuture[io.taig.communicator.request.Response.With[String]] = monix.execution.CancelableFuture$Implementation@3400550b
+// response: monix.execution.CancelableFuture[io.taig.communicator.request.Response.With[String]] = monix.execution.CancelableFuture$Implementation@2a10ed7c
 
 Await.result( response, 3 seconds )
 // res7: io.taig.communicator.request.Response.With[String] =
@@ -60,16 +60,16 @@ Await.result( response, 3 seconds )
 // Cache-Control: max-age=600
 // X-GitHub-Request-Id: B91F1118:2D53:8B3185F:5860E3B4
 // Accept-Ranges: bytes
-// Date: Mon, 26 Dec 2016 09:41:21 GMT
+// Date: Mon, 26 Dec 2016 09:44:54 GMT
 // Via: 1.1 varnish
-// Age: 474
+// Age: 0
 // Connection: keep-alive
-// X-Served-By: cache-fra1245-FRA
+// X-Served-By: cache-fra1247-FRA
 // X-Cache: HIT
-// X-Cache-Hits: 2
-// X-Timer: S1482745281.902766,VS0,VE0
+// X-Cache-Hits: 1
+// X-Timer: S1482745494.470179,VS0,VE94
 // Vary: Accept-Encoding
-// X-Fastly-Request-ID: 1b951d37871fe961a5319be29e0b4f9f5f4d25d2
+// X-Fastly-Request-ID: a72ca13ca816e96e5844256f1a93ee247789d512
 ```
 
 ## Usage
