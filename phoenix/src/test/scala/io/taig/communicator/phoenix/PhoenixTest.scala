@@ -1,12 +1,11 @@
-package io.taig.communicator.phoenix.test
+package io.taig.communicator.phoenix
 
-import io.taig.communicator.phoenix.{ Phoenix, Topic }
-import io.taig.communicator.phoenix.message._
 import cats.syntax.either._
+import io.taig.communicator.phoenix.message._
 
 import scala.concurrent.TimeoutException
-import scala.language.postfixOps
 import scala.concurrent.duration._
+import scala.language.postfixOps
 
 class PhoenixTest extends Suite {
     it should "send a heartbeat" in {

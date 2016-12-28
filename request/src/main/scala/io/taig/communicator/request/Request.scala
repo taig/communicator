@@ -26,8 +26,9 @@ final class Request private ( task: Task[Response] ) {
     /**
      * Ignore the server response (and close the InputStream right away)
      *
-     * Calling methods of monix.Task on a Request instance (e.g. Request.map) will implicitly call this method to
-     * convert the Request to a Task (and therefore close the response InputStream).
+     * Calling methods of monix.Task on a Request instance (e.g. Request.map)
+     * will implicitly call this method to convert the Request to a Task (and
+     * therefore close the response InputStream).
      *
      * @return Task that ignores the response body
      */
@@ -39,8 +40,9 @@ final class Request private ( task: Task[Response] ) {
     /**
      * Get the raw Task instance
      *
-     * When calling this method it is necessary to handle and close the InputStream manually. You are discouraged to
-     * use this method and should only do so with good reasons.
+     * When calling this method it is necessary to handle and close the
+     * InputStream manually. You are discouraged to use this method and should
+     * only do so with good reasons.
      *
      * @return Task with an untouched Response object
      */

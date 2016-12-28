@@ -1,9 +1,8 @@
-package io.taig.communicator.phoenix.test
+package io.taig.communicator.phoenix
 
 import cats.data.EitherT
 import io.circe.Json
 import io.circe.syntax._
-import io.taig.communicator.phoenix._
 import io.taig.communicator.phoenix.message._
 import monix.cats._
 import monix.eval.Task

@@ -1,4 +1,4 @@
-package io.taig.communicator.phoenix.test
+package io.taig.communicator.phoenix
 
 import cats.data.EitherT
 import io.taig.communicator.OkHttpRequest
@@ -8,7 +8,7 @@ import org.scalatest.Assertion
 import scala.concurrent.Future
 import scala.language.implicitConversions
 
-trait Suite extends io.taig.communicator.test.Suite {
+trait Suite extends io.taig.communicator.request.Suite {
     val request = new OkHttpRequest.Builder()
         .url( s"ws://localhost:4000/socket/websocket" )
         .build()

@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.0.0
+
+_2016-12-27_
+
+ * Remove common module (phoenix depends on request now)
+ * Remove logging
+ * Finalize readme
+
 ## 3.0.0-RC12
 
 _2016-12-23_
