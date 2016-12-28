@@ -13,14 +13,14 @@ Communicator provides a simple way to construct OkHttp requests as `monix.Task`s
 
 ```scala
 libraryDependencies ++=
-    "io.taig" %% "communicator-common" % "3.0.0-RC12" ::
-    "io.taig" %% "communicator-request" % "3.0.0-RC12" ::
-    "io.taig" %% "communicator-phoenix" % "3.0.0-RC12" ::
+    "io.taig" %% "communicator-common" % "3.0.0" ::
+    "io.taig" %% "communicator-request" % "3.0.0" ::
+    "io.taig" %% "communicator-phoenix" % "3.0.0" ::
     Nil
 ```
 
 ```scala
-libraryDependencies += "io.taig" %% "communicator" % "3.0.0-RC12"
+libraryDependencies += "io.taig" %% "communicator" % "3.0.0"
 ```
 
 ## Quickstart
@@ -45,9 +45,9 @@ val request = Request( builder.build() ).parse[String]
 ```scala
 // Kick off the actual request
 val response = request.runAsync
-// response: monix.execution.CancelableFuture[io.taig.communicator.request.Response.With[String]] = monix.execution.CancelableFuture$Implementation@2a10ed7c
+// response: monix.execution.CancelableFuture[io.taig.communicator.request.Response.With[String]] = monix.execution.CancelableFuture$Implementation@15892322
 
-Await.result( response, 3 seconds )
+Await.result( response, 30 seconds )
 // res7: io.taig.communicator.request.Response.With[String] =
 // >>> http://taig.io/
 // [No headers]
@@ -56,37 +56,89 @@ Await.result( response, 3 seconds )
 // Content-Type: text/html; charset=utf-8
 // Last-Modified: Tue, 24 Feb 2015 15:20:41 GMT
 // Access-Control-Allow-Origin: *
-// Expires: Mon, 26 Dec 2016 09:42:36 GMT
+// Expires: Wed, 28 Dec 2016 18:49:26 GMT
 // Cache-Control: max-age=600
-// X-GitHub-Request-Id: B91F1118:2D53:8B3185F:5860E3B4
+// X-GitHub-Request-Id: B91F1118:2D55:6208844:586406DD
 // Accept-Ranges: bytes
-// Date: Mon, 26 Dec 2016 09:44:54 GMT
+// Date: Wed, 28 Dec 2016 20:50:38 GMT
 // Via: 1.1 varnish
 // Age: 0
 // Connection: keep-alive
-// X-Served-By: cache-fra1247-FRA
+// X-Served-By: cache-fra1248-FRA
 // X-Cache: HIT
 // X-Cache-Hits: 1
-// X-Timer: S1482745494.470179,VS0,VE94
+// X-Timer: S1482958237.944605,VS0,VE91
 // Vary: Accept-Encoding
-// X-Fastly-Request-ID: a72ca13ca816e96e5844256f1a93ee247789d512
+// X-Fastly-Request-ID: 962ef8f0e0f3b77c314eec95a599cd55c86e2792
 ```
 
 ## Usage
 
-Lorem Ipsum
+Communicator provides a thin layer around OkHttp using `monix.Task` to execute HTTP requests and `monix.Observable` for Phoenix Channels. To construct requests, the OkHttp builder API is used.
 
 ### Building Requests
 
-Lorem Ipsum
+Use the [OkHttp builder API][2] to construct requests which are then lifted into `io.taig.communicator.request.Request`.
 
-### Parsing Content
+```scala
+val headers = new OkHttpRequest.Builder().
+    url( "http://taig.io/" ).
+    header( "X-API-Key", "foobar" ).
+    build()
 
-Lorem Ipsum
+val request: Request = Request( headers )
+```
+
+### Handling Responses
+
+There are several ways to transform a `Request` to an executable `Task[Response]`.
+
+```scala
+// Ignores response body
+val ignoreBody: Task[Response] = request.ignoreBody
+
+// Parses response body to a String
+val parse: Task[Response.With[String]] = request.parse[String]
+```
 
 ### Phoenix Channels
 
-Lorem Ipsum
+```scala
+import monix.eval.Task
+import monix.execution.Scheduler.Implicits.global
+import io.circe.syntax._
+import io.taig.communicator._; import phoenix._
+import okhttp3.OkHttpClient
+import scala._; import util._; import concurrent._; import duration._
+import language.postfixOps
+
+implicit val client = new OkHttpClient()
+
+val request = new OkHttpRequest.Builder().
+    url( s"ws://localhost:4000/socket/websocket" ).
+    build()
+
+val topic = Topic( "echo", "foobar" )
+
+val task = for {
+    phoenix ← Phoenix( request )
+    channel ← phoenix.join( topic )
+    response ← channel match {
+        case Right( channel ) =>
+            channel.send( Event( "echo" ), "foobar".asJson )
+        case Left( error ) => ???
+    }
+    _ = phoenix.close()
+} yield response
+```
+
+```scala
+Await.result( task.runAsync, 30 seconds )
+// res4: Option[io.taig.communicator.phoenix.message.Response] =
+// Some(Confirmation(Topic(echo:foobar),{
+//   "payload" : "foobar"
+// },Ref(2)))
+```
 
 ## Testing
 

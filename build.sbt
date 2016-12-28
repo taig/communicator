@@ -19,7 +19,6 @@ lazy val request = project
             "com.squareup.okhttp3" % "okhttp" % Settings.dependency.okhttp ::
             "io.monix" %% "monix-eval" % Settings.dependency.monix ::
             "com.squareup.okhttp3" % "mockwebserver" % Settings.dependency.okhttp % "test" ::
-            "ch.qos.logback" %  "logback-classic" % "1.1.8" % "test" ::
             "org.scalatest" %% "scalatest" % "3.0.1" % "test" ::
             Nil,
         name := "request",

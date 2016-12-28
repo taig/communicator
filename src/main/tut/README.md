@@ -13,14 +13,14 @@ Communicator provides a simple way to construct OkHttp requests as `monix.Task`s
 
 ```scala
 libraryDependencies ++=
-    "io.taig" %% "communicator-common" % "3.0.0-RC12" ::
-    "io.taig" %% "communicator-request" % "3.0.0-RC12" ::
-    "io.taig" %% "communicator-phoenix" % "3.0.0-RC12" ::
+    "io.taig" %% "communicator-common" % "3.0.0" ::
+    "io.taig" %% "communicator-request" % "3.0.0" ::
+    "io.taig" %% "communicator-phoenix" % "3.0.0" ::
     Nil
 ```
 
 ```scala
-libraryDependencies += "io.taig" %% "communicator" % "3.0.0-RC12"
+libraryDependencies += "io.taig" %% "communicator" % "3.0.0"
 ```
 
 ## Quickstart
@@ -45,24 +45,72 @@ val request = Request( builder.build() ).parse[String]
 ```tut:book
 // Kick off the actual request
 val response = request.runAsync
-Await.result( response, 3 seconds )
+Await.result( response, 30 seconds )
 ```
 
 ## Usage
 
-Lorem Ipsum
+Communicator provides a thin layer around OkHttp using `monix.Task` to execute HTTP requests and `monix.Observable` for Phoenix Channels. To construct requests, the OkHttp builder API is used.
 
 ### Building Requests
 
-Lorem Ipsum
+Use the [OkHttp builder API][2] to construct requests which are then lifted into `io.taig.communicator.request.Request`.
 
-### Parsing Content
+```tut:silent
+val headers = new OkHttpRequest.Builder().
+    url( "http://taig.io/" ).
+    header( "X-API-Key", "foobar" ).
+    build()
 
-Lorem Ipsum
+val request: Request = Request( headers )
+```
+
+### Handling Responses
+
+There are several ways to transform a `Request` to an executable `Task[Response]`.
+
+```tut:silent
+// Ignores response body
+val ignoreBody: Task[Response] = request.ignoreBody
+
+// Parses response body to a String
+val parse: Task[Response.With[String]] = request.parse[String]
+```
 
 ### Phoenix Channels
 
-Lorem Ipsum
+```tut:reset:silent
+import monix.eval.Task
+import monix.execution.Scheduler.Implicits.global
+import io.circe.syntax._
+import io.taig.communicator._; import phoenix._
+import okhttp3.OkHttpClient
+import scala._; import util._; import concurrent._; import duration._
+import language.postfixOps
+
+implicit val client = new OkHttpClient()
+
+val request = new OkHttpRequest.Builder().
+    url( s"ws://localhost:4000/socket/websocket" ).
+    build()
+
+val topic = Topic( "echo", "foobar" )
+
+val task = for {
+    phoenix ← Phoenix( request )
+    channel ← phoenix.join( topic )
+    response ← channel match {
+        case Right( channel ) =>
+            channel.send( Event( "echo" ), "foobar".asJson )
+        case Left( error ) => ???
+    }
+    _ = phoenix.close()
+} yield response
+```
+
+```tut:book
+Await.result( task.runAsync, 30 seconds )
+```
 
 ## Testing
 
