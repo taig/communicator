@@ -35,6 +35,10 @@ object Dependencies {
         val parser = scala( "parser" )
     }
 
+    object logback extends Configuration( "ch.qos.logback", "logback", "1.1.8" ) {
+        val classic = java( "classic" )
+    }
+
     object monix extends Configuration( "io.monix", "monix", "2.1.2" ) {
         val cats = scala( "cats" )
 

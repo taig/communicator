@@ -1,5 +1,7 @@
 package io.taig
 
+import org.slf4j.LoggerFactory
+
 import scala.language.implicitConversions
 
 package object communicator {
@@ -8,6 +10,8 @@ package object communicator {
             override def run() = f()
         }
     }
+
+    private[communicator] val logger = LoggerFactory.getLogger( "request" )
 
     type OkHttpRequest = okhttp3.Request
 

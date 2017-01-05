@@ -60,6 +60,7 @@ object Request {
 
             scheduler.execute { () ⇒
                 try {
+                    logger.debug( s"Executing request: $request" )
                     val response = call.execute()
                     callback.onSuccess( Response( response ) )
                 } catch {

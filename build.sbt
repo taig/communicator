@@ -19,6 +19,7 @@ lazy val request = project
             Dependencies.okhttp.core ::
             Dependencies.monix.eval ::
             Dependencies.slf4j.api ::
+            Dependencies.logback.classic % "test" ::
             Dependencies.okhttp.mockwebserver % "test" ::
             Dependencies.scalatest % "test" ::
             Nil,
