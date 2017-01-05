@@ -45,8 +45,6 @@ class Phoenix(
     }
 
     def close(): Unit = {
-        heartbeat.cancel()
-
         val close = socket.close( 1000, null )
 
         if ( close ) {
@@ -72,6 +70,8 @@ object Phoenix {
         ohc: OkHttpClient,
         s:   Scheduler
     ): Task[Phoenix] = Task.defer {
+        var heartbeats = Cancelable.empty
+        
         val observable = WebSocket( request, strategy )
             .doOnNext {
                 case WebSocket.Event.Open( _, _ ) ⇒
@@ -86,7 +86,10 @@ object Phoenix {
                     logger.warn( s"Received unexpected event (discarding): $event" )
             }
             .doOnError( logger.error( "Failed to process message", _ ) )
-            .doOnTerminate( logger.debug( "Terminated connection" ) )
+            .doOnTerminate {
+                logger.debug( "Terminated connection" )
+                synchronized( heartbeats.cancel() )
+            }
             .publish
 
         val connection = observable.connect()
@@ -97,8 +100,8 @@ object Phoenix {
         }
 
         observable.collect {
-            case WebSocket.Event.Open( socket, _ ) ⇒
-                val heartbeats = heartbeat.fold( Cancelable.empty ) { delay ⇒
+            case WebSocket.Event.Open( socket, _ ) ⇒ synchronized {
+                heartbeats = heartbeat.fold( heartbeats ) { delay ⇒
                     this.heartbeat( delay )
                         .doOnSubscriptionCancel {
                             logger.debug( "Cancelling heartbeat" )
@@ -121,6 +124,7 @@ object Phoenix {
                     heartbeats,
                     timeout
                 )
+            }
         }.firstL
     }
 
