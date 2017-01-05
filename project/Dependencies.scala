@@ -52,4 +52,8 @@ object Dependencies {
     val paradise = "org.scalamacros" % "paradise" % "2.1.0"
 
     val scalatest = "org.scalatest" %% "scalatest" % "3.0.1"
+
+    object slf4j extends Configuration( "org.slf4j", "slf4j", "1.7.22" ) {
+        val api = java( "api" )
+    }
 }
