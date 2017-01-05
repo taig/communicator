@@ -10,18 +10,17 @@ import scala.concurrent.duration._
 import scala.language.postfixOps
 
 class PhoenixTest extends Suite {
-    it should "send a heartbeat" in {
-        for {
-            phoenix ← Phoenix( request )
-            response ← phoenix.stream.firstL
-            Response.Confirmation( topic, payload, _ ) = response
-            _ = phoenix.close()
-            _ ← Task.unit.delayExecution( 5 seconds )
-        } yield {
-            topic shouldBe Topic.Phoenix
-            payload shouldBe Json.obj()
-        }
-    }
+    //    it should "send a heartbeat" in {
+    //        for {
+    //            phoenix ← Phoenix( request )
+    //            response ← phoenix.stream.firstL
+    //            Response.Confirmation( topic, payload, _ ) = response
+    //            _ = phoenix.close()
+    //        } yield {
+    //            topic shouldBe Topic.Phoenix
+    //            payload shouldBe Json.obj()
+    //        }
+    //    }
 
     //    it should "allow to disable the heartbeat" in {
     //        for {
@@ -33,15 +32,15 @@ class PhoenixTest extends Suite {
     //            _ = phoenix.close()
     //        } yield response shouldBe None
     //    }
-    //
-    //    it should "allow to close the connection" in {
-    //        for {
-    //            phoenix ← Phoenix( request )
-    //            _ = phoenix.close()
-    //            response ← phoenix.stream.firstOptionL
-    //        } yield response shouldBe None
-    //    }
-    //
+
+    it should "allow to close the connection" in {
+        for {
+            phoenix ← Phoenix( request )
+            _ = phoenix.close()
+            response ← phoenix.stream.firstOptionL
+        } yield response shouldBe None
+    }
+
     //    it should "allow to join a Channel" in {
     //        val topic = Topic( "echo", "foobar" )
     //

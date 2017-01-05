@@ -74,6 +74,8 @@ object Phoenix {
     ): Task[Phoenix] = Task.defer {
         val observable = WebSocket( request, strategy )
             .doOnNext {
+                case WebSocket.Event.Open( _, _ ) ⇒
+                    logger.debug( s"Opened socket connection" )
                 case WebSocket.Event.Message( Right( message ) ) ⇒
                     logger.debug( s"Received message: $message" )
                 case WebSocket.Event.Closing( code, _ ) ⇒
@@ -155,7 +157,7 @@ object Phoenix {
     }
 
     def heartbeat( delay: FiniteDuration ): Observable[Request] = {
-        Observable.interval( delay ).map { _ ⇒
+        Observable.intervalWithFixedDelay( delay, delay ).map { _ ⇒
             Request( Topic.Phoenix, Event( "heartbeat" ) )
         }
     }
