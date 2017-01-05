@@ -15,8 +15,6 @@ case class Channel( topic: Topic )(
 ) {
     def send( event: Event, payload: Json ): Task[Option[Response]] =
         Phoenix.send( topic, event, payload )( socket, stream, timeout )
-
-    def leave: Task[Option[Response]] = send( Event.Leave, Json.Null )
 }
 
 object Channel {
