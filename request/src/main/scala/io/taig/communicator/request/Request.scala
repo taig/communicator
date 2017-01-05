@@ -65,14 +65,11 @@ object Request {
 
             scheduler.execute { () ⇒
                 try {
-                    logger.debug( s"Executing $request" )
                     val response = call.execute()
-                    logger.debug( s"Receiving $response" )
                     callback.onSuccess( Response( response ) )
                 } catch {
                     case exception: Throwable ⇒
                         if ( !canceled && exception.getMessage != "Canceled" ) {
-                            logger.error( "Request failed", exception )
                             callback.onError( exception )
                         }
                 }
@@ -80,7 +77,6 @@ object Request {
 
             Cancelable { () ⇒
                 canceled = true
-                logger.debug( "Cancelling request" )
                 callback.onError( new IOException( "Canceled" ) )
                 call.cancel()
             }

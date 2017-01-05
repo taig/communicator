@@ -25,9 +25,16 @@ class Phoenix(
         heartbeat:  Cancelable,
         timeout:    Duration
 ) {
-    val stream: Observable[Inbound] = observable.collect {
-        case WebSocket.Event.Message( Right( message ) ) ⇒
-            decode[Inbound]( message ).valueOr( throw _ )
+    val stream: Observable[Inbound] = {
+        observable.doOnNext {
+            case WebSocket.Event.Message( Right( message ) ) ⇒
+                logger.debug( s"Received message: $message" )
+            case event ⇒
+                logger.warn( s"Received unexpected event (discarding): $event" )
+        }.collect {
+            case WebSocket.Event.Message( Right( message ) ) ⇒
+                decode[Inbound]( message ).valueOr( throw _ )
+        }.doOnError( logger.error( "Failed to process message", _ ) )
     }
 
     def join(
@@ -46,7 +53,14 @@ class Phoenix(
 
         val close = socket.close( 1000, null )
 
-        if ( !close ) {
+        if ( close ) {
+            logger.debug( "Closing connection gracefully" )
+        } else {
+            logger.debug {
+                "Cancelling connection, because socket can not be closed " +
+                    "gracefully"
+            }
+
             connection.cancel()
         }
     }
@@ -72,10 +86,15 @@ object Phoenix {
 
         observable.collect {
             case WebSocket.Event.Open( socket, _ ) ⇒
-                val heartbeats = heartbeat match {
-                    case Some( delay ) ⇒
-                        this.heartbeat( delay ).foreach( socket.send( _ ) )
-                    case None ⇒ Cancelable.empty
+                val heartbeats = heartbeat.fold( Cancelable.empty ) { delay ⇒
+                    this.heartbeat( delay )
+                        .doOnSubscriptionCancel {
+                            logger.debug( "Cancelling heartbeat" )
+                        }
+                        .foreach { request ⇒
+                            logger.debug( s"Sending heartbeat: $request" )
+                            socket.send( request.asJson.noSpaces )
+                        }
                 }
 
                 new Phoenix(
@@ -120,10 +139,9 @@ object Phoenix {
         Task.mapBoth( withTimeout, send )( ( left, _ ) ⇒ left )
     }
 
-    def heartbeat( delay: FiniteDuration ): Observable[String] = {
+    def heartbeat( delay: FiniteDuration ): Observable[Request] = {
         Observable.interval( delay ).map { _ ⇒
-            val request = Request( Topic.Phoenix, Event( "heartbeat" ) )
-            request.asJson.noSpaces
+            Request( Topic.Phoenix, Event( "heartbeat" ) )
         }
     }
 }

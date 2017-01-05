@@ -18,8 +18,6 @@ lazy val request = project
         libraryDependencies ++=
             Dependencies.okhttp.core ::
             Dependencies.monix.eval ::
-            Dependencies.slf4j.api ::
-            Dependencies.logback.classic % "test" ::
             Dependencies.okhttp.mockwebserver % "test" ::
             Dependencies.scalatest % "test" ::
             Nil,
@@ -36,6 +34,8 @@ lazy val phoenix = project
             Dependencies.circe.generic ::
             Dependencies.circe.parser ::
             Dependencies.monix.reactive ::
+            Dependencies.slf4j.api ::
+            Dependencies.logback.classic % "test" ::
             Dependencies.monix.cats % "test" ::
             Nil,
         startYear := Some( 2016 )
