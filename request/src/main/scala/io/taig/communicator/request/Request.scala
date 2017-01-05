@@ -58,17 +58,26 @@ object Request {
         val task = Task.create[Response] { ( scheduler, callback ) ⇒
             val call = ohc.newCall( request )
 
+            var canceled = false
+
             scheduler.execute { () ⇒
                 try {
-                    logger.debug( s"Executing request: $request" )
+                    logger.debug( s"Executing $request" )
                     val response = call.execute()
+                    logger.debug( s"Receiving $response" )
                     callback.onSuccess( Response( response ) )
                 } catch {
-                    case exception: Throwable ⇒ callback.onError( exception )
+                    case exception: Throwable ⇒
+                        if ( !canceled && exception.getMessage != "Canceled" ) {
+                            logger.error( "Request failed", exception )
+                            callback.onError( exception )
+                        }
                 }
             }
 
             Cancelable { () ⇒
+                canceled = true
+                logger.debug( "Cancelling request" )
                 callback.onError( new IOException( "Canceled" ) )
                 call.cancel()
             }
