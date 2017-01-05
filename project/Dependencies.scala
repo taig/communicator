@@ -35,7 +35,7 @@ object Dependencies {
         val parser = scala( "parser" )
     }
 
-    object monix extends Configuration( "io.monix", "monix", "2.1.0" ) {
+    object monix extends Configuration( "io.monix", "monix", "2.1.2" ) {
         val cats = scala( "cats" )
 
         val eval = scala( "eval" )
