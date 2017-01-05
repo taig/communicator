@@ -44,13 +44,11 @@ object WebSocket {
                     socket: OkHttpWebSocket,
                     code:   Int,
                     reason: String
-                ): Unit = {
-                    downstream.onNext {
-                        Event.Closing(
-                            code,
-                            Some( reason ).filter( _.nonEmpty )
-                        )
-                    }
+                ): Unit = downstream.onNext {
+                    Event.Closing(
+                        code,
+                        Some( reason ).filter( _.nonEmpty )
+                    )
                 }
 
                 override def onClosed(
@@ -59,7 +57,7 @@ object WebSocket {
                     reason: String
                 ): Unit = {
                     downstream.onNext {
-                        Event.Close(
+                        Event.Closed(
                             code,
                             Some( reason ).filter( _.nonEmpty )
                         )
@@ -76,10 +74,16 @@ object WebSocket {
     sealed trait Event
 
     object Event {
-        case class Open( socket: OkHttpWebSocket, response: Response ) extends Event
+        case class Open( socket: OkHttpWebSocket, response: Response )
+            extends Event
+
         case class Message( payload: Either[ByteString, String] ) extends Event
-        case class Failure( exception: Throwable, response: OkHttpResponse ) extends Event
+
+        case class Failure( exception: Throwable, response: OkHttpResponse )
+            extends Event
+
         case class Closing( code: Int, reason: Option[String] ) extends Event
-        case class Close( code: Int, reason: Option[String] ) extends Event
+
+        case class Closed( code: Int, reason: Option[String] ) extends Event
     }
 }

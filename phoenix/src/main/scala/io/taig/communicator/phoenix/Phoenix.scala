@@ -20,22 +20,18 @@ import scala.language.postfixOps
 
 class Phoenix(
         socket:     OkHttpWebSocket,
-        observable: Observable[WebSocket.Event],
+        val stream: Observable[Inbound],
         connection: Cancelable,
         heartbeat:  Cancelable,
         timeout:    Duration
 ) {
-    val stream: Observable[Inbound] = {
-        observable.doOnNext {
-            case WebSocket.Event.Message( Right( message ) ) ⇒
-                logger.debug( s"Received message: $message" )
-            case event ⇒
-                logger.warn( s"Received unexpected event (discarding): $event" )
-        }.collect {
-            case WebSocket.Event.Message( Right( message ) ) ⇒
-                decode[Inbound]( message ).valueOr( throw _ )
-        }.doOnError( logger.error( "Failed to process message", _ ) )
-    }
+    //    val stream: Observable[Inbound] = {
+    //        observable.collect {
+    //            case WebSocket.Event.Message( Right( message ) ) ⇒
+    //                decode[Inbound]( message ).valueOr( throw _ )
+    //        }.doOnError( logger.error( "Failed to process message", _ ) )
+    //            .doOnTerminate( logger.debug( "Stream terminated" ) )
+    //    }
 
     def join(
         topic:   Topic,
@@ -76,10 +72,24 @@ object Phoenix {
         ohc: OkHttpClient,
         s:   Scheduler
     ): Task[Phoenix] = Task.defer {
-        val observable = WebSocket( request, strategy ).publish
+        val observable = WebSocket( request, strategy )
+            .doOnNext {
+                case WebSocket.Event.Message( Right( message ) ) ⇒
+                    logger.debug( s"Received message: $message" )
+                case WebSocket.Event.Closing( code, _ ) ⇒
+                    logger.debug( s"Closing connection: $code" )
+                case WebSocket.Event.Closed( code, _ ) ⇒
+                    logger.debug( s"Closed connection: $code" )
+                case event ⇒
+                    logger.warn( s"Received unexpected event (discarding): $event" )
+            }
+            .doOnError( logger.error( "Failed to process message", _ ) )
+            .doOnTerminate( logger.debug( "Terminated connection" ) )
+            .publish
+
         val connection = observable.connect()
 
-        val timeout = ohc.readTimeoutMillis() match {
+        val timeout = ohc.readTimeoutMillis match {
             case 0            ⇒ Inf
             case milliseconds ⇒ Duration( milliseconds, TimeUnit.MILLISECONDS )
         }
@@ -97,9 +107,14 @@ object Phoenix {
                         }
                 }
 
+                val stream = observable.collect {
+                    case WebSocket.Event.Message( Right( message ) ) ⇒
+                        decode[Inbound]( message ).valueOr( throw _ )
+                }
+
                 new Phoenix(
                     socket,
-                    observable,
+                    stream,
                     connection,
                     heartbeats,
                     timeout
