@@ -54,7 +54,10 @@ object Request {
         request.ignoreBody
     }
 
-    def apply( request: OkHttpRequest )( implicit ohc: OkHttpClient ): Request = {
+    def apply( request: OkHttpRequest )(
+        implicit
+        ohc: OkHttpClient
+    ): Request = {
         val task = Task.create[Response] { ( scheduler, callback ) ⇒
             val call = ohc.newCall( request )
 
