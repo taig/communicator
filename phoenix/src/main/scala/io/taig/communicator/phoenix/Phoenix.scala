@@ -6,7 +6,6 @@ import cats.syntax.either._
 import io.circe.parser._
 import io.circe.syntax._
 import io.circe.Json
-import io.taig.communicator.phoenix.message.{ Inbound, Request, Response }
 import io.taig.communicator.{ OkHttpRequest, OkHttpWebSocket }
 import monix.eval.Task
 import monix.execution.{ Cancelable, Scheduler }
@@ -24,16 +23,8 @@ class Phoenix(
         connection: Cancelable,
         heartbeat:  Cancelable,
         timeout:    Duration
-) {
-    //    val stream: Observable[Inbound] = {
-    //        observable.collect {
-    //            case WebSocket.Event.Message( Right( message ) ) ⇒
-    //                decode[Inbound]( message ).valueOr( throw _ )
-    //        }.doOnError( logger.error( "Failed to process message", _ ) )
-    //            .doOnTerminate( logger.debug( "Stream terminated" ) )
-    //    }
-
-    def join(
+) extends io.taig.phoenix.models.Phoenix[Observable, Task] {
+    override def join(
         topic:   Topic,
         payload: Json  = Json.Null
     ): Task[Either[Option[Response.Error], Channel]] = {
@@ -44,7 +35,7 @@ class Phoenix(
         )
     }
 
-    def close(): Unit = {
+    override def close(): Unit = {
         val close = socket.close( 1000, null )
 
         if ( close ) {
@@ -71,7 +62,7 @@ object Phoenix {
         s:   Scheduler
     ): Task[Phoenix] = Task.defer {
         var heartbeats = Cancelable.empty
-        
+
         val observable = WebSocket( request, strategy )
             .doOnNext {
                 case WebSocket.Event.Open( _, _ ) ⇒

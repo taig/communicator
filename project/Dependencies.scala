@@ -28,10 +28,6 @@ object Dependencies {
     }
 
     object circe extends Configuration( "io.circe", "circe", "0.6.1" ) {
-        val core = scala( "core" )
-
-        val generic = scala( "generic" )
-
         val parser = scala( "parser" )
     }
 
@@ -53,7 +49,7 @@ object Dependencies {
         val mockwebserver = java( "mockwebserver" )
     }
 
-    val paradise = "org.scalamacros" % "paradise" % "2.1.0"
+    val phoenixModels = "io.taig" %% "phoenix-models" % "1.0.0"
 
     val scalatest = "org.scalatest" %% "scalatest" % "3.0.1"
 

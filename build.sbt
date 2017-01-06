@@ -28,12 +28,10 @@ lazy val request = project
 lazy val phoenix = project
     .settings( Settings.common )
     .settings(
-        addCompilerPlugin( Dependencies.paradise cross CrossVersion.full ),
         libraryDependencies ++=
-            Dependencies.circe.core ::
-            Dependencies.circe.generic ::
             Dependencies.circe.parser ::
             Dependencies.monix.reactive ::
+            Dependencies.phoenixModels ::
             Dependencies.slf4j.api ::
             Dependencies.logback.classic % "test" ::
             Dependencies.monix.cats % "test" ::

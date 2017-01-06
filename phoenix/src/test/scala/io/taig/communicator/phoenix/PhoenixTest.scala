@@ -2,7 +2,6 @@ package io.taig.communicator.phoenix
 
 import cats.syntax.either._
 import io.circe.Json
-import io.taig.communicator.phoenix.message._
 
 import scala.concurrent.TimeoutException
 import scala.concurrent.duration._

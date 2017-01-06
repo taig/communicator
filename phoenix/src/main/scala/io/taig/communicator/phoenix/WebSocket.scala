@@ -3,7 +3,7 @@ package io.taig.communicator.phoenix
 import io.taig.communicator.{ OkHttpRequest, OkHttpResponse, OkHttpWebSocket, OkHttpWebSocketListener }
 import monix.execution.Cancelable
 import monix.reactive.{ Observable, OverflowStrategy }
-import okhttp3.{ OkHttpClient, Response }
+import okhttp3.OkHttpClient
 import okio.ByteString
 
 object WebSocket {
@@ -18,7 +18,7 @@ object WebSocket {
             val listener = new OkHttpWebSocketListener {
                 override def onOpen(
                     socket:   OkHttpWebSocket,
-                    response: Response
+                    response: OkHttpResponse
                 ): Unit = downstream.onNext( Event.Open( socket, response ) )
 
                 override def onMessage(
@@ -34,7 +34,7 @@ object WebSocket {
                 override def onFailure(
                     socket:    OkHttpWebSocket,
                     exception: Throwable,
-                    response:  Response
+                    response:  OkHttpResponse
                 ): Unit = {
                     downstream.onNext( Event.Failure( exception, response ) )
                     downstream.onError( exception )
@@ -74,7 +74,7 @@ object WebSocket {
     sealed trait Event
 
     object Event {
-        case class Open( socket: OkHttpWebSocket, response: Response )
+        case class Open( socket: OkHttpWebSocket, response: OkHttpResponse )
             extends Event
 
         case class Message( payload: Either[ByteString, String] ) extends Event
