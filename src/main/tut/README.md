@@ -27,6 +27,7 @@ libraryDependencies += "io.taig" %% "communicator" % "3.0.0"
 
 ```tut:silent
 import monix._; import eval.Task; import execution.Scheduler.Implicits.global
+import io.taig.phoenix.models._
 import io.taig.communicator._; import request._
 import okhttp3.OkHttpClient
 import scala._; import util._; import concurrent._; import duration._
@@ -84,6 +85,7 @@ import monix.eval.Task
 import monix.execution.Scheduler.Implicits.global
 import io.circe.syntax._
 import io.taig.communicator._; import phoenix._
+import io.taig.phoenix.models._
 import okhttp3.OkHttpClient
 import scala._; import util._; import concurrent._; import duration._
 import language.postfixOps

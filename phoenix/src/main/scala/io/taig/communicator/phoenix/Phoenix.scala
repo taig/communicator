@@ -7,6 +7,7 @@ import io.circe.parser._
 import io.circe.syntax._
 import io.circe.Json
 import io.taig.communicator.{ OkHttpRequest, OkHttpWebSocket }
+import io.taig.phoenix.models._
 import monix.eval.Task
 import monix.execution.{ Cancelable, Scheduler }
 import monix.reactive.{ Observable, OverflowStrategy }
@@ -23,7 +24,7 @@ class Phoenix(
         connection: Cancelable,
         heartbeat:  Cancelable,
         timeout:    Duration
-) extends io.taig.phoenix.models.Phoenix[Observable, Task] {
+) extends io.taig.phoenix.Phoenix[Observable, Task] {
     override def join(
         topic:   Topic,
         payload: Json  = Json.Null
