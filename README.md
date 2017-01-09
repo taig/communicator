@@ -2,7 +2,7 @@
 
 [![CircleCI](https://circleci.com/gh/Taig/communicator/tree/master.svg?style=shield)](https://circleci.com/gh/Taig/communicator/tree/master)
 [![codecov](https://codecov.io/gh/Taig/communicator/branch/master/graph/badge.svg)](https://codecov.io/gh/Taig/communicator)
-[![Maven](https://img.shields.io/maven-central/v/io.taig/communicator_2.12.svg)](http://search.maven.org/#artifactdetails%7Cio.taig%7Ccommunicator_2.12%7C3.0.0%7Cjar)
+[![Maven](https://img.shields.io/maven-central/v/io.taig/communicator_2.12.svg)](http://search.maven.org/#artifactdetails%7Cio.taig%7Ccommunicator_2.12%7C3.0.1%7Cjar)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/Taig/Communicator/master/LICENSE)
 
 > A [monix][1] wrapper for [OkHttp][2]
@@ -13,20 +13,21 @@ Communicator provides a simple way to construct OkHttp requests as `monix.Task`s
 
 ```scala
 libraryDependencies ++=
-    "io.taig" %% "communicator-common" % "3.0.0" ::
-    "io.taig" %% "communicator-request" % "3.0.0" ::
-    "io.taig" %% "communicator-phoenix" % "3.0.0" ::
+    "io.taig" %% "communicator-common" % "3.0.1" ::
+    "io.taig" %% "communicator-request" % "3.0.1" ::
+    "io.taig" %% "communicator-phoenix" % "3.0.1" ::
     Nil
 ```
 
 ```scala
-libraryDependencies += "io.taig" %% "communicator" % "3.0.0"
+libraryDependencies += "io.taig" %% "communicator" % "3.0.1"
 ```
 
 ## Quickstart
 
 ```scala
 import monix._; import eval.Task; import execution.Scheduler.Implicits.global
+import io.taig.phoenix.models._
 import io.taig.communicator._; import request._
 import okhttp3.OkHttpClient
 import scala._; import util._; import concurrent._; import duration._
@@ -40,15 +41,14 @@ val builder = new OkHttpRequest.Builder().url( "http://taig.io/" )
 
 // Construct a Task[Response] and parse it to a String
 val request = Request( builder.build() ).parse[String]
+
+// Kick off the actual request
+val response = request.runAsync
 ```
 
 ```scala
-// Kick off the actual request
-val response = request.runAsync
-// response: monix.execution.CancelableFuture[io.taig.communicator.request.Response.With[String]] = monix.execution.CancelableFuture$Implementation@688d0ad9
-
 Await.result( response, 30 seconds )
-// res7: io.taig.communicator.request.Response.With[String] =
+// res8: io.taig.communicator.request.Response.With[String] =
 // >>> http://taig.io/
 // [No headers]
 // <<< 200 OK
@@ -56,20 +56,20 @@ Await.result( response, 30 seconds )
 // Content-Type: text/html; charset=utf-8
 // Last-Modified: Tue, 24 Feb 2015 15:20:41 GMT
 // Access-Control-Allow-Origin: *
-// Expires: Fri, 06 Jan 2017 10:30:44 GMT
+// Expires: Mon, 09 Jan 2017 10:23:51 GMT
 // Cache-Control: max-age=600
-// X-GitHub-Request-Id: B91F1118:1618F:407E3C5:586F6F7C
+// X-GitHub-Request-Id: B91F1118:1618F:5D5DB90:5873625E
 // Accept-Ranges: bytes
-// Date: Fri, 06 Jan 2017 11:35:22 GMT
+// Date: Mon, 09 Jan 2017 12:45:59 GMT
 // Via: 1.1 varnish
-// Age: 486
+// Age: 447
 // Connection: keep-alive
-// X-Served-By: cache-fra1229-FRA
+// X-Served-By: cache-fra1222-FRA
 // X-Cache: HIT
 // X-Cache-Hits: 1
-// X-Timer: S1483702522.741674,VS0,VE0
+// X-Timer: S1483965959.619048,VS0,VE0
 // Vary: Accept-Encoding
-// X-Fastly-Request-ID: 5be27aeb47c717c89f0a43b568382c7512bdd0bb
+// X-Fastly-Request-ID: fb841e9c7f8d476d41c14c42488ee600169a3365
 ```
 
 ## Usage
@@ -108,6 +108,7 @@ import monix.eval.Task
 import monix.execution.Scheduler.Implicits.global
 import io.circe.syntax._
 import io.taig.communicator._; import phoenix._
+import io.taig.phoenix.models._
 import okhttp3.OkHttpClient
 import scala._; import util._; import concurrent._; import duration._
 import language.postfixOps
@@ -134,7 +135,7 @@ val task = for {
 
 ```scala
 Await.result( task.runAsync, 30 seconds )
-// res4: Option[io.taig.communicator.phoenix.Response] =
+// res4: Option[io.taig.phoenix.models.Response] =
 // Some(Confirmation(Topic(echo:foobar),{
 //   "payload" : "foobar"
 // },Ref(1)))

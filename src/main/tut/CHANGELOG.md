@@ -1,5 +1,15 @@
 # Changelog
 
+## 3.0.1
+
+_2017-01-09_
+
+ * Fix heartbeat issues not beng killed properly under all circumstances
+ * Upgrade to monix 2.1.2
+ * Disable logging of mockwebserver
+ * Add logging to phoenix module (such as heartbeat events)
+ * Don't publish empty jar of root project
+
 ## 3.0.0
 
 _2016-12-27_
