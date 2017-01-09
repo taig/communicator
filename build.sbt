@@ -2,10 +2,17 @@ lazy val communicator = project.in( file( "." ) )
     .settings( tutSettings ++ Settings.common )
     .settings(
         aggregate in tut := false,
+        autoScalaLibrary := false,
         description := "An OkHttp wrapper for Scala",
         name := "communicator",
+        managedSources := Seq.empty,
         normalizedName := name.value,
+        pomAllRepositories := false,
+        pomIncludeRepository := { _ => false },
+        publishArtifact in Compile := false,
+        publishMavenStyle := true,
 //        releaseProcess := Settings.releaseSteps,
+        sources in Compile := Seq.empty,
         startYear := Some( 2013 ),
         tutTargetDirectory := file( "." )
     )
