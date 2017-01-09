@@ -1,7 +1,8 @@
 package io.taig.communicator.phoenix
 
 import cats.syntax.either._
-import io.taig.communicator.phoenix.message._
+import io.circe.Json
+import io.taig.phoenix.models._
 
 import scala.concurrent.TimeoutException
 import scala.concurrent.duration._
@@ -11,12 +12,13 @@ class PhoenixTest extends Suite {
     it should "send a heartbeat" in {
         for {
             phoenix ← Phoenix( request )
-            response ← phoenix.stream.firstL
+            inbound ← phoenix.stream.firstL
             _ = phoenix.close()
-        } yield response match {
-            case Response.Confirmation( topic, _, _ ) ⇒
+        } yield inbound match {
+            case Response.Confirmation( topic, payload, _ ) ⇒
                 topic shouldBe Topic.Phoenix
-            case _ ⇒ fail( s"Received $response" )
+                payload shouldBe Json.obj()
+            case inbound ⇒ fail( s"Received $inbound" )
         }
     }
 
@@ -46,7 +48,11 @@ class PhoenixTest extends Suite {
             phoenix ← Phoenix( request )
             channel ← phoenix.join( topic )
             _ = phoenix.close()
-        } yield channel.map( _.topic ) shouldBe Right( topic )
+        } yield channel match {
+            case Right( channel ) ⇒
+                channel.topic shouldBe topic
+            case Left( error ) ⇒ fail( s"Received $error" )
+        }
     }
 
     it should "fail to join an invalid Channel" in {

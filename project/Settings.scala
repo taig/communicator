@@ -63,14 +63,4 @@ object Settings {
 //        Release.commitNextVersion,
 //        Release.pushChanges
 //    )
-
-    object dependency {
-        val cats = "0.8.1"
-        
-        val circe = "0.6.1"
-
-        val monix = "2.1.2"
-
-        val okhttp = "3.5.0"
-    }
 }

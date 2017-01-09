@@ -2,7 +2,7 @@ package io.taig.communicator.phoenix
 
 import io.circe.Json
 import io.taig.communicator.OkHttpWebSocket
-import io.taig.communicator.phoenix.message.{ Inbound, Response }
+import io.taig.phoenix.models._
 import monix.eval.Task
 import monix.reactive.Observable
 
@@ -12,11 +12,9 @@ case class Channel( topic: Topic )(
         socket:     OkHttpWebSocket,
         val stream: Observable[Inbound],
         timeout:    Duration
-) {
-    def send( event: Event, payload: Json ): Task[Option[Response]] =
+) extends io.taig.phoenix.Channel[Observable, Task] {
+    override def send( event: Event, payload: Json ): Task[Option[Response]] =
         Phoenix.send( topic, event, payload )( socket, stream, timeout )
-
-    def leave: Task[Option[Response]] = send( Event.Leave, Json.Null )
 }
 
 object Channel {

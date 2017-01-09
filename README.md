@@ -45,7 +45,7 @@ val request = Request( builder.build() ).parse[String]
 ```scala
 // Kick off the actual request
 val response = request.runAsync
-// response: monix.execution.CancelableFuture[io.taig.communicator.request.Response.With[String]] = monix.execution.CancelableFuture$Implementation@15892322
+// response: monix.execution.CancelableFuture[io.taig.communicator.request.Response.With[String]] = monix.execution.CancelableFuture$Implementation@688d0ad9
 
 Await.result( response, 30 seconds )
 // res7: io.taig.communicator.request.Response.With[String] =
@@ -56,20 +56,20 @@ Await.result( response, 30 seconds )
 // Content-Type: text/html; charset=utf-8
 // Last-Modified: Tue, 24 Feb 2015 15:20:41 GMT
 // Access-Control-Allow-Origin: *
-// Expires: Wed, 28 Dec 2016 18:49:26 GMT
+// Expires: Fri, 06 Jan 2017 10:30:44 GMT
 // Cache-Control: max-age=600
-// X-GitHub-Request-Id: B91F1118:2D55:6208844:586406DD
+// X-GitHub-Request-Id: B91F1118:1618F:407E3C5:586F6F7C
 // Accept-Ranges: bytes
-// Date: Wed, 28 Dec 2016 20:50:38 GMT
+// Date: Fri, 06 Jan 2017 11:35:22 GMT
 // Via: 1.1 varnish
-// Age: 0
+// Age: 486
 // Connection: keep-alive
-// X-Served-By: cache-fra1248-FRA
+// X-Served-By: cache-fra1229-FRA
 // X-Cache: HIT
 // X-Cache-Hits: 1
-// X-Timer: S1482958237.944605,VS0,VE91
+// X-Timer: S1483702522.741674,VS0,VE0
 // Vary: Accept-Encoding
-// X-Fastly-Request-ID: 962ef8f0e0f3b77c314eec95a599cd55c86e2792
+// X-Fastly-Request-ID: 5be27aeb47c717c89f0a43b568382c7512bdd0bb
 ```
 
 ## Usage
@@ -134,10 +134,10 @@ val task = for {
 
 ```scala
 Await.result( task.runAsync, 30 seconds )
-// res4: Option[io.taig.communicator.phoenix.message.Response] =
+// res4: Option[io.taig.communicator.phoenix.Response] =
 // Some(Confirmation(Topic(echo:foobar),{
 //   "payload" : "foobar"
-// },Ref(2)))
+// },Ref(1)))
 ```
 
 ## Testing

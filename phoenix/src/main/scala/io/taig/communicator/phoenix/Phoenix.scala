@@ -6,8 +6,8 @@ import cats.syntax.either._
 import io.circe.parser._
 import io.circe.syntax._
 import io.circe.Json
-import io.taig.communicator.phoenix.message.{ Inbound, Request, Response }
 import io.taig.communicator.{ OkHttpRequest, OkHttpWebSocket }
+import io.taig.phoenix.models._
 import monix.eval.Task
 import monix.execution.{ Cancelable, Scheduler }
 import monix.reactive.{ Observable, OverflowStrategy }
@@ -20,17 +20,12 @@ import scala.language.postfixOps
 
 class Phoenix(
         socket:     OkHttpWebSocket,
-        observable: Observable[WebSocket.Event],
+        val stream: Observable[Inbound],
         connection: Cancelable,
         heartbeat:  Cancelable,
         timeout:    Duration
-) {
-    val stream: Observable[Inbound] = observable.collect {
-        case WebSocket.Event.Message( Right( message ) ) ⇒
-            decode[Inbound]( message ).valueOr( throw _ )
-    }
-
-    def join(
+) extends io.taig.phoenix.Phoenix[Observable, Task] {
+    override def join(
         topic:   Topic,
         payload: Json  = Json.Null
     ): Task[Either[Option[Response.Error], Channel]] = {
@@ -41,12 +36,17 @@ class Phoenix(
         )
     }
 
-    def close(): Unit = {
-        heartbeat.cancel()
-
+    override def close(): Unit = {
         val close = socket.close( 1000, null )
 
-        if ( !close ) {
+        if ( close ) {
+            logger.debug( "Closing connection gracefully" )
+        } else {
+            logger.debug {
+                "Cancelling connection, because socket can not be closed " +
+                    "gracefully"
+            }
+
             connection.cancel()
         }
     }
@@ -62,29 +62,61 @@ object Phoenix {
         ohc: OkHttpClient,
         s:   Scheduler
     ): Task[Phoenix] = Task.defer {
-        val observable = WebSocket( request, strategy ).publish
+        var heartbeats = Cancelable.empty
+
+        val observable = WebSocket( request, strategy )
+            .doOnNext {
+                case WebSocket.Event.Open( _, _ ) ⇒
+                    logger.debug( s"Opened socket connection" )
+                case WebSocket.Event.Message( Right( message ) ) ⇒
+                    logger.debug( s"Received message: $message" )
+                case WebSocket.Event.Closing( code, _ ) ⇒
+                    logger.debug( s"Closing connection: $code" )
+                case WebSocket.Event.Closed( code, _ ) ⇒
+                    logger.debug( s"Closed connection: $code" )
+                case event ⇒
+                    logger.warn( s"Received unexpected event (discarding): $event" )
+            }
+            .doOnError( logger.error( "Failed to process message", _ ) )
+            .doOnTerminate {
+                logger.debug( "Terminated connection" )
+                synchronized( heartbeats.cancel() )
+            }
+            .publish
+
         val connection = observable.connect()
 
-        val timeout = ohc.readTimeoutMillis() match {
+        val timeout = ohc.readTimeoutMillis match {
             case 0            ⇒ Inf
             case milliseconds ⇒ Duration( milliseconds, TimeUnit.MILLISECONDS )
         }
 
         observable.collect {
-            case WebSocket.Event.Open( socket, _ ) ⇒
-                val heartbeats = heartbeat match {
-                    case Some( delay ) ⇒
-                        this.heartbeat( delay ).foreach( socket.send( _ ) )
-                    case None ⇒ Cancelable.empty
+            case WebSocket.Event.Open( socket, _ ) ⇒ synchronized {
+                heartbeats = heartbeat.fold( heartbeats ) { delay ⇒
+                    this.heartbeat( delay )
+                        .doOnSubscriptionCancel {
+                            logger.debug( "Cancelling heartbeat" )
+                        }
+                        .foreach { request ⇒
+                            logger.debug( s"Sending heartbeat: $request" )
+                            socket.send( request.asJson.noSpaces )
+                        }
+                }
+
+                val stream = observable.collect {
+                    case WebSocket.Event.Message( Right( message ) ) ⇒
+                        decode[Inbound]( message ).valueOr( throw _ )
                 }
 
                 new Phoenix(
                     socket,
-                    observable,
+                    stream,
                     connection,
                     heartbeats,
                     timeout
                 )
+            }
         }.firstL
     }
 
@@ -120,10 +152,9 @@ object Phoenix {
         Task.mapBoth( withTimeout, send )( ( left, _ ) ⇒ left )
     }
 
-    def heartbeat( delay: FiniteDuration ): Observable[String] = {
-        Observable.interval( delay ).map { _ ⇒
-            val request = Request( Topic.Phoenix, Event( "heartbeat" ) )
-            request.asJson.noSpaces
+    def heartbeat( delay: FiniteDuration ): Observable[Request] = {
+        Observable.intervalWithFixedDelay( delay, delay ).map { _ ⇒
+            Request( Topic.Phoenix, Event( "heartbeat" ) )
         }
     }
 }

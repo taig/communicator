@@ -3,7 +3,7 @@ package io.taig.communicator.phoenix
 import io.taig.communicator.{ OkHttpRequest, OkHttpResponse, OkHttpWebSocket, OkHttpWebSocketListener }
 import monix.execution.Cancelable
 import monix.reactive.{ Observable, OverflowStrategy }
-import okhttp3.{ OkHttpClient, Response }
+import okhttp3.OkHttpClient
 import okio.ByteString
 
 object WebSocket {
@@ -18,7 +18,7 @@ object WebSocket {
             val listener = new OkHttpWebSocketListener {
                 override def onOpen(
                     socket:   OkHttpWebSocket,
-                    response: Response
+                    response: OkHttpResponse
                 ): Unit = downstream.onNext( Event.Open( socket, response ) )
 
                 override def onMessage(
@@ -34,7 +34,7 @@ object WebSocket {
                 override def onFailure(
                     socket:    OkHttpWebSocket,
                     exception: Throwable,
-                    response:  Response
+                    response:  OkHttpResponse
                 ): Unit = {
                     downstream.onNext( Event.Failure( exception, response ) )
                     downstream.onError( exception )
@@ -44,13 +44,11 @@ object WebSocket {
                     socket: OkHttpWebSocket,
                     code:   Int,
                     reason: String
-                ): Unit = {
-                    downstream.onNext {
-                        Event.Closing(
-                            code,
-                            Some( reason ).filter( _.nonEmpty )
-                        )
-                    }
+                ): Unit = downstream.onNext {
+                    Event.Closing(
+                        code,
+                        Some( reason ).filter( _.nonEmpty )
+                    )
                 }
 
                 override def onClosed(
@@ -59,7 +57,7 @@ object WebSocket {
                     reason: String
                 ): Unit = {
                     downstream.onNext {
-                        Event.Close(
+                        Event.Closed(
                             code,
                             Some( reason ).filter( _.nonEmpty )
                         )
@@ -76,10 +74,16 @@ object WebSocket {
     sealed trait Event
 
     object Event {
-        case class Open( socket: OkHttpWebSocket, response: Response ) extends Event
+        case class Open( socket: OkHttpWebSocket, response: OkHttpResponse )
+            extends Event
+
         case class Message( payload: Either[ByteString, String] ) extends Event
-        case class Failure( exception: Throwable, response: OkHttpResponse ) extends Event
+
+        case class Failure( exception: Throwable, response: OkHttpResponse )
+            extends Event
+
         case class Closing( code: Int, reason: Option[String] ) extends Event
-        case class Close( code: Int, reason: Option[String] ) extends Event
+
+        case class Closed( code: Int, reason: Option[String] ) extends Event
     }
 }

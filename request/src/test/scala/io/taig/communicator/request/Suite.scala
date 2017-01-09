@@ -1,5 +1,7 @@
 package io.taig.communicator.request
 
+import java.util.logging.LogManager
+
 import monix.eval.Task
 import monix.execution.{ Scheduler, UncaughtExceptionReporter }
 import okhttp3.OkHttpClient
@@ -35,4 +37,6 @@ trait Suite
     implicit def taskToFuture(
         task: Task[Assertion]
     ): Future[Assertion] = task.runAsync
+
+    LogManager.getLogManager.reset()
 }

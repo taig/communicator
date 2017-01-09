@@ -54,20 +54,29 @@ object Request {
         request.ignoreBody
     }
 
-    def apply( request: OkHttpRequest )( implicit ohc: OkHttpClient ): Request = {
+    def apply( request: OkHttpRequest )(
+        implicit
+        ohc: OkHttpClient
+    ): Request = {
         val task = Task.create[Response] { ( scheduler, callback ) ⇒
             val call = ohc.newCall( request )
+
+            var canceled = false
 
             scheduler.execute { () ⇒
                 try {
                     val response = call.execute()
                     callback.onSuccess( Response( response ) )
                 } catch {
-                    case exception: Throwable ⇒ callback.onError( exception )
+                    case exception: Throwable ⇒
+                        if ( !canceled && exception.getMessage != "Canceled" ) {
+                            callback.onError( exception )
+                        }
                 }
             }
 
             Cancelable { () ⇒
+                canceled = true
                 callback.onError( new IOException( "Canceled" ) )
                 call.cancel()
             }
