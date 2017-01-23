@@ -3,8 +3,6 @@ package io.taig.communicator.request
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.{ MediaType, RequestBody }
 
-import scala.language.postfixOps
-
 class RequestTest extends Suite {
     it should "allow to parse the response" in {
         val builder = http { server ⇒

@@ -3,8 +3,6 @@ package io.taig.communicator.request
 import okhttp3.ResponseBody
 import okhttp3.mockwebserver.MockResponse
 
-import scala.language.postfixOps
-
 class ParserTest extends Suite {
     it should "support Byte Array" in {
         val builder = http { server ⇒

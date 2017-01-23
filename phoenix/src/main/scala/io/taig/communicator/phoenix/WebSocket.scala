@@ -19,17 +19,26 @@ object WebSocket {
                 override def onOpen(
                     socket:   OkHttpWebSocket,
                     response: OkHttpResponse
-                ): Unit = downstream.onNext( Event.Open( socket, response ) )
+                ): Unit = {
+                    downstream.onNext( Event.Open( socket, response ) )
+                    ()
+                }
 
                 override def onMessage(
                     socket:  OkHttpWebSocket,
                     message: String
-                ): Unit = downstream.onNext( Event.Message( Right( message ) ) )
+                ): Unit = {
+                    downstream.onNext( Event.Message( Right( message ) ) )
+                    ()
+                }
 
                 override def onMessage(
                     socket:  OkHttpWebSocket,
                     message: ByteString
-                ): Unit = downstream.onNext( Event.Message( Left( message ) ) )
+                ): Unit = {
+                    downstream.onNext( Event.Message( Left( message ) ) )
+                    ()
+                }
 
                 override def onFailure(
                     socket:    OkHttpWebSocket,
@@ -38,17 +47,21 @@ object WebSocket {
                 ): Unit = {
                     downstream.onNext( Event.Failure( exception, response ) )
                     downstream.onError( exception )
+                    ()
                 }
 
                 override def onClosing(
                     socket: OkHttpWebSocket,
                     code:   Int,
                     reason: String
-                ): Unit = downstream.onNext {
-                    Event.Closing(
-                        code,
-                        Some( reason ).filter( _.nonEmpty )
-                    )
+                ): Unit = {
+                    downstream.onNext {
+                        Event.Closing(
+                            code,
+                            Some( reason ).filter( _.nonEmpty )
+                        )
+                    }
+                    ()
                 }
 
                 override def onClosed(

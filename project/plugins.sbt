@@ -1,5 +1,3 @@
-//addSbtPlugin( "com.github.gseitz" % "sbt-release" % "1.0.3" )
-
 addSbtPlugin( "com.typesafe.sbt" % "sbt-git" % "0.8.5" )
 
 addSbtPlugin( "io.taig" % "sbt-scalariform" % "1.7.1" )

@@ -11,7 +11,6 @@ lazy val communicator = project.in( file( "." ) )
         pomIncludeRepository := { _ => false },
         publishArtifact in Compile := false,
         publishMavenStyle := true,
-//        releaseProcess := Settings.releaseSteps,
         sources in Compile := Seq.empty,
         startYear := Some( 2013 ),
         tutTargetDirectory := file( "." )

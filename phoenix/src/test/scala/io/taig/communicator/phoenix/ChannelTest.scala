@@ -7,8 +7,6 @@ import io.taig.phoenix.models._
 import monix.cats._
 import monix.eval.Task
 
-import scala.language.{ implicitConversions, postfixOps }
-
 class ChannelTest extends Suite {
     val topic = Topic( "echo", "foobar" )
 
