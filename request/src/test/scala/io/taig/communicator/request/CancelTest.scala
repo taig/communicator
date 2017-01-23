@@ -4,8 +4,6 @@ import java.util.concurrent.TimeUnit
 
 import okhttp3.mockwebserver.MockResponse
 
-import scala.language.postfixOps
-
 class CancelTest extends Suite {
     it should "be cancellable" in {
         val builder = http { server ⇒

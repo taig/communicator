@@ -2,8 +2,6 @@ package io.taig.communicator.request
 
 import okhttp3.mockwebserver.MockResponse
 
-import scala.language.postfixOps
-
 class ResponseTest extends Suite {
     it should "have a useful toString implementation" in {
         val builder = http { server ⇒

@@ -11,13 +11,12 @@ lazy val communicator = project.in( file( "." ) )
         pomIncludeRepository := { _ => false },
         publishArtifact in Compile := false,
         publishMavenStyle := true,
-//        releaseProcess := Settings.releaseSteps,
         sources in Compile := Seq.empty,
         startYear := Some( 2013 ),
         tutTargetDirectory := file( "." )
     )
-    .aggregate( request, phoenix )
-    .dependsOn( request, phoenix )
+    .aggregate( request, builder, phoenix )
+    .dependsOn( request, builder, phoenix )
 
 lazy val request = project
     .settings( Settings.common )
@@ -31,6 +30,17 @@ lazy val request = project
         name := "request",
         startYear := Some( 2016 )
     )
+
+lazy val builder = project
+    .settings( Settings.common )
+    .settings(
+        libraryDependencies ++=
+            Dependencies.cats.core ::
+            Nil,
+        name := "builder",
+        startYear := Some( 2016 )
+    )
+    .dependsOn( request )
 
 lazy val phoenix = project
     .settings( Settings.common )

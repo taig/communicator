@@ -1,6 +1,6 @@
 package io.taig.communicator.phoenix
 
-import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeUnit.MILLISECONDS
 
 import cats.syntax.either._
 import io.circe.parser._
@@ -16,7 +16,6 @@ import okhttp3.OkHttpClient
 import scala.concurrent.TimeoutException
 import scala.concurrent.duration._
 import scala.concurrent.duration.Duration.{ Inf, Infinite }
-import scala.language.postfixOps
 
 class Phoenix(
         socket:     OkHttpWebSocket,
@@ -88,7 +87,7 @@ object Phoenix {
 
         val timeout = ohc.readTimeoutMillis match {
             case 0            ⇒ Inf
-            case milliseconds ⇒ Duration( milliseconds, TimeUnit.MILLISECONDS )
+            case milliseconds ⇒ Duration( milliseconds.toLong, MILLISECONDS )
         }
 
         observable.collect {
@@ -101,6 +100,7 @@ object Phoenix {
                         .foreach { request ⇒
                             logger.debug( s"Sending heartbeat: $request" )
                             socket.send( request.asJson.noSpaces )
+                            ()
                         }
                 }
 
