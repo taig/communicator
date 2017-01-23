@@ -39,7 +39,7 @@ object Dependencies {
         val parser = scala( "parser" )
     }
 
-    object logback extends Configuration( "ch.qos.logback", "logback", "1.1.8" ) {
+    object logback extends Configuration( "ch.qos.logback", "logback", "1.1.9" ) {
         val classic = java( "classic" )
     }
 
