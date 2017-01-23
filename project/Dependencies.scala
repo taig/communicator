@@ -27,7 +27,7 @@ object Dependencies {
         }
     }
 
-    object cats extends Configuration( "org.typelevel", "cats", "0.8.1" ) {
+    object cats extends Configuration( "org.typelevel", "cats", "0.9.0" ) {
         val core = scala( "core" )
 
         val kernel = scala( "kernel" )
