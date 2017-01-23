@@ -37,14 +37,6 @@ object Settings {
 //            "-Ywarn-unused-import" ::
 //            "-Ywarn-value-discard" ::
             Nil,
-        scalacOptions ++= {
-            scalaVersion.value match {
-                case Scala211 =>
-                    "-target:jvm-1.7" ::
-                    Nil
-                case _ => Nil
-            }
-        },
         scalaVersion := Scala212,
         testOptions in Test += Tests.Argument( "-oFD" )
     )
