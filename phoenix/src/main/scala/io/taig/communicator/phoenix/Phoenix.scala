@@ -73,10 +73,9 @@ object Phoenix {
                     logger.debug( s"Closing connection: $code" )
                 case WebSocket.Event.Closed( code, _ ) ⇒
                     logger.debug( s"Closed connection: $code" )
-                case event ⇒
-                    logger.warn( s"Received unexpected event (discarding): $event" )
+                case _ ⇒ //
             }
-            .doOnError( logger.error( "Failed to process message", _ ) )
+            .doOnError( logger.error( "WebSocket connection failed", _ ) )
             .doOnTerminate {
                 logger.debug( "Terminated connection" )
                 synchronized( heartbeats.cancel() )

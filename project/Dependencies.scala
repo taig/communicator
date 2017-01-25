@@ -6,9 +6,8 @@ object Dependencies {
         version: String,
         prefix: Option[String] = None
     ) {
-        def this( group: String, prefix: String, version: String ) = {
+        def this( group: String, prefix: String, version: String ) =
             this( group, version, Some( prefix ) )
-        }
 
         def module(
             name: String,
@@ -18,13 +17,11 @@ object Dependencies {
             f( artifact )
         }
 
-        def scala( name: String, version: String = this.version ): ModuleID = {
+        def scala( name: String, version: String = this.version ): ModuleID =
             module( name, group %% _ % version )
-        }
 
-        def java( name: String, version: String = this.version ): ModuleID = {
+        def java( name: String, version: String = this.version ): ModuleID =
             module( name, group % _ % version )
-        }
     }
 
     object cats extends Configuration( "org.typelevel", "cats", "0.9.0" ) {
