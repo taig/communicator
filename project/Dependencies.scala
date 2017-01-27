@@ -40,7 +40,7 @@ object Dependencies {
         val classic = java( "classic" )
     }
 
-    object monix extends Configuration( "io.monix", "monix", "2.1.2" ) {
+    object monix extends Configuration( "io.monix", "monix", "2.2.0" ) {
         val cats = scala( "cats" )
 
         val eval = scala( "eval" )

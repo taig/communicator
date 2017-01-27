@@ -14,9 +14,9 @@ class ChannelTest extends Suite {
 
     it should "receive echo messages" in {
         for {
-            phoenix ← EitherT.right( Phoenix( request ) )
-            channel ← EitherT( phoenix.join( topic ) )
-            response ← EitherT.right( channel.send( Event( "echo" ), payload ) )
+            phoenix ← EitherT.right[Task, Option[Response.Error], Phoenix]( Phoenix( request ) )
+            channel ← EitherT[Task, Option[Response.Error], Channel]( phoenix.join( topic ) )
+            response ← EitherT.right[Task, Option[Response.Error], Option[Response]]( channel.send( Event( "echo" ), payload ) )
             _ = phoenix.close()
         } yield response match {
             case Some( Response.Confirmation( topic, _, _ ) ) ⇒
@@ -27,9 +27,9 @@ class ChannelTest extends Suite {
 
     it should "timeout when the server omits a response" in {
         for {
-            phoenix ← EitherT.right( Phoenix( request ) )
-            channel ← EitherT( phoenix.join( topic ) )
-            result ← EitherT.right( channel.send( Event( "no_reply" ), Json.Null ) )
+            phoenix ← EitherT.right[Task, Option[Response.Error], Phoenix]( Phoenix( request ) )
+            channel ← EitherT[Task, Option[Response.Error], Channel]( phoenix.join( topic ) )
+            result ← EitherT.right[Task, Option[Response.Error], Option[Response]]( channel.send( Event( "no_reply" ), Json.Null ) )
             _ = phoenix.close()
         } yield {
             result shouldBe None
