@@ -6,9 +6,8 @@ object Dependencies {
         version: String,
         prefix: Option[String] = None
     ) {
-        def this( group: String, prefix: String, version: String ) = {
+        def this( group: String, prefix: String, version: String ) =
             this( group, version, Some( prefix ) )
-        }
 
         def module(
             name: String,
@@ -18,16 +17,14 @@ object Dependencies {
             f( artifact )
         }
 
-        def scala( name: String, version: String = this.version ): ModuleID = {
+        def scala( name: String, version: String = this.version ): ModuleID =
             module( name, group %% _ % version )
-        }
 
-        def java( name: String, version: String = this.version ): ModuleID = {
+        def java( name: String, version: String = this.version ): ModuleID =
             module( name, group % _ % version )
-        }
     }
 
-    object cats extends Configuration( "org.typelevel", "cats", "0.8.1" ) {
+    object cats extends Configuration( "org.typelevel", "cats", "0.9.0" ) {
         val core = scala( "core" )
 
         val kernel = scala( "kernel" )
@@ -35,15 +32,15 @@ object Dependencies {
         val macros = scala( "macros" )
     }
 
-    object circe extends Configuration( "io.circe", "circe", "0.6.1" ) {
+    object circe extends Configuration( "io.circe", "circe", "0.7.0" ) {
         val parser = scala( "parser" )
     }
 
-    object logback extends Configuration( "ch.qos.logback", "logback", "1.1.8" ) {
+    object logback extends Configuration( "ch.qos.logback", "logback", "1.1.9" ) {
         val classic = java( "classic" )
     }
 
-    object monix extends Configuration( "io.monix", "monix", "2.1.2" ) {
+    object monix extends Configuration( "io.monix", "monix", "2.2.0" ) {
         val cats = scala( "cats" )
 
         val eval = scala( "eval" )

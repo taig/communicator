@@ -73,12 +73,15 @@ object Phoenix {
                     logger.debug( s"Closing connection: $code" )
                 case WebSocket.Event.Closed( code, _ ) ⇒
                     logger.debug( s"Closed connection: $code" )
-                case event ⇒
-                    logger.warn( s"Received unexpected event (discarding): $event" )
+                case _ ⇒ //
             }
-            .doOnError( logger.error( "Failed to process message", _ ) )
-            .doOnTerminate {
+            .doOnError( logger.error( "WebSocket connection failed", _ ) )
+            .doOnTerminate { _ ⇒
                 logger.debug( "Terminated connection" )
+                synchronized( heartbeats.cancel() )
+            }
+            .doOnSubscriptionCancel { () ⇒
+                logger.debug( "Cancelled connection" )
                 synchronized( heartbeats.cancel() )
             }
             .publish
@@ -92,9 +95,9 @@ object Phoenix {
 
         observable.collect {
             case WebSocket.Event.Open( socket, _ ) ⇒ synchronized {
-                heartbeats = heartbeat.fold( heartbeats ) { delay ⇒
-                    this.heartbeat( delay )
-                        .doOnSubscriptionCancel {
+                heartbeats = heartbeat.fold( heartbeats ) { interval ⇒
+                    this.heartbeat( interval )
+                        .doOnSubscriptionCancel { () ⇒
                             logger.debug( "Cancelling heartbeat" )
                         }
                         .foreach { request ⇒
@@ -152,8 +155,8 @@ object Phoenix {
         Task.mapBoth( withTimeout, send )( ( left, _ ) ⇒ left )
     }
 
-    def heartbeat( delay: FiniteDuration ): Observable[Request] = {
-        Observable.intervalWithFixedDelay( delay, delay ).map { _ ⇒
+    def heartbeat( interval: FiniteDuration ): Observable[Request] = {
+        Observable.intervalWithFixedDelay( interval, interval ).map { _ ⇒
             Request( Topic.Phoenix, Event( "heartbeat" ) )
         }
     }
