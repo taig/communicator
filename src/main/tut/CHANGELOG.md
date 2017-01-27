@@ -1,5 +1,16 @@
 # Changelog
 
+## 3.1.0
+
+_2017-01-27_
+
+ *  The return of the builder module (#40)
+ *  Upgrade to monix 2.2.0
+ *  Change log wording
+ *  Upgrade to circe 0.7.0
+ *  Upgrade to cats 0.9.0
+ *  Upgrade to logback-classic 1.1.9
+
 ## 3.0.1
 
 _2017-01-09_
