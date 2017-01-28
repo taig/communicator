@@ -54,7 +54,7 @@ object Dependencies {
         val mockwebserver = java( "mockwebserver" )
     }
 
-    val phoenixModels = "io.taig" %% "phoenix-models" % "1.0.1"
+    val phoenixModels = "io.taig" %% "phoenix-models" % "1.0.2"
 
     val scalatest = "org.scalatest" %% "scalatest" % "3.0.1"
 
