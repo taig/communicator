@@ -40,7 +40,7 @@ object Dependencies {
         val classic = java( "classic" )
     }
 
-    object monix extends Configuration( "io.monix", "monix", "2.2.0" ) {
+    object monix extends Configuration( "io.monix", "monix", "2.2.1" ) {
         val cats = scala( "cats" )
 
         val eval = scala( "eval" )
@@ -48,13 +48,13 @@ object Dependencies {
         val reactive = scala( "reactive" )
     }
 
-    object okhttp extends Configuration( "com.squareup.okhttp3", "3.5.0" ) {
+    object okhttp extends Configuration( "com.squareup.okhttp3", "3.6.0" ) {
         val core = java( "okhttp" )
 
         val mockwebserver = java( "mockwebserver" )
     }
 
-    val phoenixModels = "io.taig" %% "phoenix-models" % "1.0.1"
+    val phoenixModels = "io.taig" %% "phoenix-models" % "1.0.2"
 
     val scalatest = "org.scalatest" %% "scalatest" % "3.0.1"
 
