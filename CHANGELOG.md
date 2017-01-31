@@ -1,15 +1,23 @@
 # Changelog
 
+## 3.1.1
+
+_2017-01-30_
+
+ * Upgrade to okhttp 2.6.0
+ * Upgrade to monix 2.2.1
+ * Upgrade to phoenix-models 1.0.2
+ 
 ## 3.1.0
 
 _2017-01-27_
 
- *  The return of the builder module (#40)
- *  Upgrade to monix 2.2.0
- *  Change log wording
- *  Upgrade to circe 0.7.0
- *  Upgrade to cats 0.9.0
- *  Upgrade to logback-classic 1.1.9
+ * The return of the builder module (#40)
+ * Upgrade to monix 2.2.0
+ * Change log wording
+ * Upgrade to circe 0.7.0
+ * Upgrade to cats 0.9.0
+ * Upgrade to logback-classic 1.1.9
 
 ## 3.0.1
 
