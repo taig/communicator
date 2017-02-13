@@ -1,21 +1,32 @@
 package io.taig.communicator.phoenix
 
 import io.taig.communicator.{ OkHttpRequest, OkHttpResponse, OkHttpWebSocket, OkHttpWebSocketListener }
+import monix.eval.Task
 import monix.execution.Ack.Stop
-import monix.execution.Cancelable
+import monix.execution.{ Cancelable, Scheduler }
+import monix.execution.cancelables.SerialCancelable
 import monix.reactive.{ Observable, OverflowStrategy }
 import okhttp3.OkHttpClient
 import okio.ByteString
 
+import scala.concurrent.duration.FiniteDuration
+import scala.util.{ Failure, Success }
+
 object WebSocket {
     def apply(
-        request:  OkHttpRequest,
-        strategy: OverflowStrategy.Synchronous[Event] = OverflowStrategy.Unbounded
+        request:           OkHttpRequest,
+        strategy:          OverflowStrategy.Synchronous[Event] = OverflowStrategy.Unbounded,
+        failureReconnect:  Option[FiniteDuration]              = None,
+        completeReconnect: Option[FiniteDuration]              = None
     )(
         implicit
         ohc: OkHttpClient
     ): Observable[Event] = Observable.create( strategy ) { downstream ⇒
-        val listener = new OkHttpWebSocketListener {
+        val sc = SerialCancelable()
+
+        import downstream.scheduler
+
+        lazy val listener: OkHttpWebSocketListener = new OkHttpWebSocketListener {
             override def onOpen(
                 socket:   OkHttpWebSocket,
                 response: OkHttpResponse
@@ -52,7 +63,11 @@ object WebSocket {
                 response:  OkHttpResponse
             ): Unit = {
                 downstream.onNext( Event.Failure( exception, response ) )
-                downstream.onError( exception )
+
+                failureReconnect.fold( downstream.onError( exception ) ) {
+                    sc := reconnect( request, listener, sc, _ )
+                }
+
                 ()
             }
 
@@ -67,6 +82,7 @@ object WebSocket {
                         Some( reason ).filter( _.nonEmpty )
                     )
                 }
+
                 ()
             }
 
@@ -81,17 +97,48 @@ object WebSocket {
                         Some( reason ).filter( _.nonEmpty )
                     )
                 }
-                downstream.onComplete()
+
+                completeReconnect.fold( downstream.onComplete() ) {
+                    sc := reconnect( request, listener, sc, _ )
+                }
+
+                ()
             }
         }
 
         val socket = ohc.newWebSocket( request, listener )
+        sc := cancel( socket )
+    }
 
+    private def reconnect(
+        request:  OkHttpRequest,
+        listener: OkHttpWebSocketListener,
+        sc:       SerialCancelable,
+        delay:    FiniteDuration
+    )(
+        implicit
+        ohc: OkHttpClient,
+        s:   Scheduler
+    ): Cancelable = {
+        Task
+            .delay( ohc.newWebSocket( request, listener ) )
+            .delayExecution( delay )
+            .materialize
+            .foreach {
+                case Success( socket ) ⇒
+                    sc := cancel( socket )
+                    ()
+                case Failure( _ ) ⇒
+                    sc := reconnect( request, listener, sc, delay )
+                    ()
+            }
+    }
+
+    private def cancel( socket: OkHttpWebSocket ): Cancelable =
         Cancelable { () ⇒
             socket.close( 1000, null )
             ()
         }
-    }
 
     sealed trait Event
 
