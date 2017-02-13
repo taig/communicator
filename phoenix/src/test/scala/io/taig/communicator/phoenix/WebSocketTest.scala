@@ -3,6 +3,8 @@ package io.taig.communicator.phoenix
 import io.taig.communicator.OkHttpRequest
 import monix.eval.Task
 
+import scala.language.postfixOps
+
 class WebSocketTest extends Suite {
     override val request = new OkHttpRequest.Builder()
         .url( "wss://echo.websocket.org" )

@@ -65,7 +65,9 @@ object WebSocket {
                 downstream.onNext( Event.Failure( exception, response ) )
 
                 failureReconnect.fold( downstream.onError( exception ) ) {
-                    sc := reconnect( request, listener, sc, _ )
+                    delay ⇒
+                        sc := reconnect( request, listener, sc, delay )
+                        ()
                 }
 
                 ()
@@ -98,8 +100,9 @@ object WebSocket {
                     )
                 }
 
-                completeReconnect.fold( downstream.onComplete() ) {
-                    sc := reconnect( request, listener, sc, _ )
+                completeReconnect.fold( downstream.onComplete() ) { delay ⇒
+                    sc := reconnect( request, listener, sc, delay )
+                    ()
                 }
 
                 ()
@@ -119,7 +122,7 @@ object WebSocket {
         implicit
         ohc: OkHttpClient,
         s:   Scheduler
-    ): Cancelable = {
+    ): Cancelable =
         Task
             .delay( ohc.newWebSocket( request, listener ) )
             .delayExecution( delay )
@@ -132,7 +135,6 @@ object WebSocket {
                     sc := reconnect( request, listener, sc, delay )
                     ()
             }
-    }
 
     private def cancel( socket: OkHttpWebSocket ): Cancelable =
         Cancelable { () ⇒
