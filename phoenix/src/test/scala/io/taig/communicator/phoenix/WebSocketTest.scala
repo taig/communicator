@@ -3,6 +3,7 @@ package io.taig.communicator.phoenix
 import io.taig.communicator.OkHttpRequest
 import monix.eval.Task
 
+import scala.concurrent.duration._
 import scala.language.postfixOps
 
 class WebSocketTest extends Suite {
@@ -35,6 +36,22 @@ class WebSocketTest extends Suite {
             .runAsync
             .map {
                 _ should contain theSameElementsAs List( "foo", "bar" )
+            }
+    }
+
+    it should "reconnect after failure" in {
+        var count = 0
+
+        WebSocket(
+            request,
+            failureReconnect = Some( 100 milliseconds )
+        ).share.collect {
+                case WebSocket.Event.Open( socket, _ ) ⇒
+                    socket.cancel()
+                    count += 1
+                    count
+            }.take( 2 ).toListL.timeout( 10 seconds ).runAsync.map {
+                _ should contain theSameElementsAs List( 1, 2 )
             }
     }
 }
