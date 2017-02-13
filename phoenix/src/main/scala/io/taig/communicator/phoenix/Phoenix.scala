@@ -27,20 +27,18 @@ class Phoenix(
     override def join(
         topic:   Topic,
         payload: Json  = Json.Null
-    ): Task[Either[Option[Response.Error], Channel]] = {
+    ): Task[Either[Option[Response.Error], Channel]] =
         Channel.join( topic, payload )(
             socket,
             stream.filter( topic isSubscribedTo _.topic ),
             timeout
         )
-    }
 
     override def close(): Unit = {
         val close = socket.close( 1000, null )
 
-        if ( close ) {
-            logger.debug( "Closing connection gracefully" )
-        } else {
+        if ( close ) logger.debug( "Closing connection gracefully" )
+        else {
             logger.debug {
                 "Cancelling connection, because socket can not be closed " +
                     "gracefully"
@@ -155,9 +153,8 @@ object Phoenix {
         Task.mapBoth( withTimeout, send )( ( left, _ ) ⇒ left )
     }
 
-    def heartbeat( interval: FiniteDuration ): Observable[Request] = {
+    def heartbeat( interval: FiniteDuration ): Observable[Request] =
         Observable.intervalWithFixedDelay( interval, interval ).map { _ ⇒
             Request( Topic.Phoenix, Event( "heartbeat" ) )
         }
-    }
 }

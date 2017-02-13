@@ -25,12 +25,11 @@ object Channel {
         socket:  OkHttpWebSocket,
         stream:  Observable[Inbound],
         timeout: Duration
-    ): Task[Either[Option[Response.Error], Channel]] = {
+    ): Task[Either[Option[Response.Error], Channel]] =
         Phoenix.send( topic, Event.Join )( socket, stream, timeout ).map {
             case Some( Response.Confirmation( _, _, _ ) ) ⇒
                 Right( Channel( topic )( socket, stream, timeout ) )
             case Some( error: Response.Error ) ⇒ Left( Some( error ) )
             case None                          ⇒ Left( None )
         }
-    }
 }
