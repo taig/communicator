@@ -10,6 +10,7 @@ import io.taig.communicator.{ OkHttpRequest, OkHttpWebSocket }
 import io.taig.phoenix.models.Response.Error
 import io.taig.phoenix.models.{ Event ⇒ PEvent, _ }
 import monix.eval.Task
+import monix.execution.Ack.Stop
 import monix.execution.{ Cancelable, Scheduler }
 import monix.reactive.{ Observable, OverflowStrategy }
 import okhttp3.OkHttpClient
@@ -19,13 +20,9 @@ import scala.concurrent.duration.Duration.{ Inf, Infinite }
 import scala.concurrent.duration._
 
 class Phoenix2(
-        val socket: OkHttpWebSocket,
-        val stream: Observable[Inbound]
-) extends io.taig.phoenix.Phoenix[Observable, Task] {
-    override def join( topic: Topic, payload: Json ) = ???
-
-    override def close(): Unit = ???
-}
+    val socket: OkHttpWebSocket,
+    val stream: Observable[Inbound]
+)
 
 object Phoenix2 {
     object Event {
@@ -35,40 +32,46 @@ object Phoenix2 {
 
     def apply(
         request:           OkHttpRequest,
-        strategy:          OverflowStrategy.Synchronous[WebSocket.Event] = OverflowStrategy.Unbounded,
-        heartbeat:         Option[FiniteDuration]                        = Default.heartbeat,
-        failureReconnect:  Option[FiniteDuration]                        = None,
-        completeReconnect: Option[FiniteDuration]                        = None
+        heartbeat:         Option[FiniteDuration] = Default.heartbeat,
+        failureReconnect:  Option[FiniteDuration] = None,
+        completeReconnect: Option[FiniteDuration] = None
     )(
         implicit
-        ohc: OkHttpClient,
-        s:   Scheduler
-    ): Observable[Event] = Observable.defer {
+        ohc: OkHttpClient
+    ): Observable[Event] = Observable.create[Event]( OverflowStrategy.Unbounded ) { downstream ⇒
+        import downstream.scheduler
+
         val observable = WebSocket(
             request,
-            strategy,
             failureReconnect,
             completeReconnect
         ).publish
 
         val subscription = observable.connect()
 
-        val stream = observable.collect {
+        val stream = observable.doOnNext { event ⇒
+            logger.debug( s"Received event: $event" )
+        }.collect {
             case WebSocket.Event.Message( Right( message ) ) ⇒
                 decode[Inbound]( message ).valueOr( throw _ )
         }
 
-        observable.flatMap {
+        def next( event: Event ): Unit =
+            if ( downstream.onNext( event ) == Stop ) {
+                subscription.cancel()
+            }
+
+        observable.foreach {
             case WebSocket.Event.Open( socket, _ ) ⇒
-                Observable.now( Event.Available( new Phoenix2( socket, stream ) ) )
-            case WebSocket.Event.Failure( _, _ ) ⇒
-                Observable.now( Event.Unavailable )
-            case WebSocket.Event.Closing( _, _ ) ⇒
-                Observable.now( Event.Unavailable )
-            case _ ⇒ Observable.empty
-        }.doOnSubscriptionCancel { () ⇒
-            subscription.cancel()
-        }.replay( 1 )
+                val phoenix = new Phoenix2( socket, stream )
+                val available = Event.Available( phoenix )
+                next( available )
+            case WebSocket.Event.Failure( _, _ ) ⇒ next( Event.Unavailable )
+            case WebSocket.Event.Closing( _, _ ) ⇒ next( Event.Unavailable )
+            case _                               ⇒ //
+        }
+
+        subscription
     }
 
     sealed trait Event
@@ -122,7 +125,12 @@ object Phoenix2 {
         val request = Request( topic, event, payload, ref )
 
         val response = stream
-            .collect { case response: Response ⇒ response }
+            .collect {
+                case response: Response ⇒
+                    logger.debug( "Received response" )
+                    logger.debug( response.toString )
+                    response
+            }
             .filter( _.ref == request.ref )
             .headOptionL
 
@@ -131,6 +139,8 @@ object Phoenix2 {
 
             cancelable.onComplete( callback( _ ) )( scheduler )
 
+            logger.debug( "Sending request" )
+            logger.debug( request.asJson.spaces4 )
             socket.send( p.pretty( request.asJson ) )
 
             cancelable

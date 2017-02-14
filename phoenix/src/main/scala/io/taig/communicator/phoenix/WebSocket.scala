@@ -15,13 +15,12 @@ import scala.util.{ Failure, Success }
 object WebSocket {
     def apply(
         request:           OkHttpRequest,
-        strategy:          OverflowStrategy.Synchronous[Event] = OverflowStrategy.Unbounded,
-        failureReconnect:  Option[FiniteDuration]              = None,
-        completeReconnect: Option[FiniteDuration]              = None
+        failureReconnect:  Option[FiniteDuration] = None,
+        completeReconnect: Option[FiniteDuration] = None
     )(
         implicit
         ohc: OkHttpClient
-    ): Observable[Event] = Observable.create( strategy ) { downstream ⇒
+    ): Observable[Event] = Observable.create( OverflowStrategy.Unbounded ) { downstream ⇒
         val sc = SerialCancelable()
 
         import downstream.scheduler
@@ -31,6 +30,8 @@ object WebSocket {
                 socket:   OkHttpWebSocket,
                 response: OkHttpResponse
             ): Unit = {
+                logger.debug( "WebSocket: Open" )
+
                 downstream.onNext( Event.Open( socket, response ) )
                 ()
             }
@@ -39,6 +40,9 @@ object WebSocket {
                 socket:  OkHttpWebSocket,
                 message: String
             ): Unit = {
+                logger.debug( "WebSocket: String-Message" )
+                logger.debug( message )
+
                 val ack = downstream.onNext( Event.Message( Right( message ) ) )
 
                 if ( ack == Stop ) {
@@ -50,6 +54,8 @@ object WebSocket {
                 socket:  OkHttpWebSocket,
                 message: ByteString
             ): Unit = {
+                logger.debug( "WebSocket: Byte-Message" )
+
                 val ack = downstream.onNext( Event.Message( Left( message ) ) )
 
                 if ( ack == Stop ) {
@@ -62,6 +68,8 @@ object WebSocket {
                 exception: Throwable,
                 response:  OkHttpResponse
             ): Unit = {
+                logger.debug( "WebSocket: Failure", exception )
+
                 downstream.onNext( Event.Failure( exception, response ) )
 
                 failureReconnect.fold( downstream.onError( exception ) ) {
@@ -78,6 +86,8 @@ object WebSocket {
                 code:   Int,
                 reason: String
             ): Unit = {
+                logger.debug( s"WebSocket: Closing ($code)" )
+
                 downstream.onNext {
                     Event.Closing(
                         code,
@@ -93,6 +103,8 @@ object WebSocket {
                 code:   Int,
                 reason: String
             ): Unit = {
+                logger.debug( s"WebSocket: Closed ($code)" )
+
                 downstream.onNext {
                     Event.Closed(
                         code,

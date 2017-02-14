@@ -65,7 +65,6 @@ object Phoenix {
 
         val observable = WebSocket(
             request,
-            strategy,
             failureReconnect,
             completeReconnect
         ).doOnNext {
