@@ -51,9 +51,11 @@ class Phoenix(
 
 object Phoenix {
     def apply(
-        request:   OkHttpRequest,
-        strategy:  OverflowStrategy.Synchronous[WebSocket.Event] = OverflowStrategy.Unbounded,
-        heartbeat: Option[FiniteDuration]                        = Default.heartbeat
+        request:           OkHttpRequest,
+        strategy:          OverflowStrategy.Synchronous[WebSocket.Event] = OverflowStrategy.Unbounded,
+        heartbeat:         Option[FiniteDuration]                        = Default.heartbeat,
+        failureReconnect:  Option[FiniteDuration]                        = None,
+        completeReconnect: Option[FiniteDuration]                        = None
     )(
         implicit
         ohc: OkHttpClient,
@@ -61,28 +63,30 @@ object Phoenix {
     ): Task[Phoenix] = Task.defer {
         var heartbeats = Cancelable.empty
 
-        val observable = WebSocket( request, strategy )
-            .doOnNext {
-                case WebSocket.Event.Open( _, _ ) ⇒
-                    logger.debug( s"Opened socket connection" )
-                case WebSocket.Event.Message( Right( message ) ) ⇒
-                    logger.debug( s"Received message: $message" )
-                case WebSocket.Event.Closing( code, _ ) ⇒
-                    logger.debug( s"Closing connection: $code" )
-                case WebSocket.Event.Closed( code, _ ) ⇒
-                    logger.debug( s"Closed connection: $code" )
-                case _ ⇒ //
-            }
-            .doOnError( logger.error( "WebSocket connection failed", _ ) )
-            .doOnTerminate { _ ⇒
-                logger.debug( "Terminated connection" )
-                synchronized( heartbeats.cancel() )
-            }
-            .doOnSubscriptionCancel { () ⇒
-                logger.debug( "Cancelled connection" )
-                synchronized( heartbeats.cancel() )
-            }
-            .publish
+        val observable = WebSocket(
+            request,
+            strategy,
+            failureReconnect,
+            completeReconnect
+        ).doOnNext {
+            case WebSocket.Event.Open( _, _ ) ⇒
+                logger.debug( s"Opened socket connection" )
+            case WebSocket.Event.Message( Right( message ) ) ⇒
+                logger.debug( s"Received message: $message" )
+            case WebSocket.Event.Closing( code, _ ) ⇒
+                logger.debug( s"Closing connection: $code" )
+            case WebSocket.Event.Closed( code, _ ) ⇒
+                logger.debug( s"Closed connection: $code" )
+            case _ ⇒ //
+        }.doOnError {
+            logger.error( "WebSocket connection failed", _ )
+        }.doOnTerminate { _ ⇒
+            logger.debug( "Terminated connection" )
+            synchronized( heartbeats.cancel() )
+        }.doOnSubscriptionCancel { () ⇒
+            logger.debug( "Cancelled connection" )
+            synchronized( heartbeats.cancel() )
+        }.publish
 
         val connection = observable.connect()
 
