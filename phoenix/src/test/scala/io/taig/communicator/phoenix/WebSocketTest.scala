@@ -54,4 +54,20 @@ class WebSocketTest extends Suite {
                 _ should contain theSameElementsAs List( 1, 2 )
             }
     }
+
+    it should "reconnect after complete" in {
+        var count = 0
+
+        WebSocket(
+            request,
+            completeReconnect = Some( 100 milliseconds )
+        ).share.collect {
+                case WebSocket.Event.Open( socket, _ ) ⇒
+                    socket.close( 1000, null )
+                    count += 1
+                    count
+            }.take( 2 ).toListL.timeout( 10 seconds ).runAsync.map {
+                _ should contain theSameElementsAs List( 1, 2 )
+            }
+    }
 }

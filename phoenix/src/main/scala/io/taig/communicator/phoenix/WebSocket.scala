@@ -122,7 +122,7 @@ object WebSocket {
         implicit
         ohc: OkHttpClient,
         s:   Scheduler
-    ): Cancelable =
+    ): Cancelable = {
         Task
             .delay( ohc.newWebSocket( request, listener ) )
             .delayExecution( delay )
@@ -135,6 +135,7 @@ object WebSocket {
                     sc := reconnect( request, listener, sc, delay )
                     ()
             }
+    }
 
     private def cancel( socket: OkHttpWebSocket ): Cancelable =
         Cancelable { () ⇒
