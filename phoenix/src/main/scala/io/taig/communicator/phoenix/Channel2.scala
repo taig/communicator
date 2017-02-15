@@ -6,13 +6,16 @@ import io.taig.phoenix.models.{ Event ⇒ PEvent, _ }
 import monix.eval.Task
 import monix.reactive.Observable
 
+import scala.concurrent.duration.FiniteDuration
+
 case class Channel2( topic: Topic )(
-        val socket: OkHttpWebSocket,
-        val stream: Observable[Inbound]
+        val socket:  OkHttpWebSocket,
+        val stream:  Observable[Inbound],
+        val timeout: FiniteDuration
 ) extends io.taig.phoenix.Channel[Observable, Task] {
     override def send( event: PEvent, payload: Json ) = {
         val request = Request( topic, event, payload )
-        Phoenix2.send( request )( socket, stream )
+        Phoenix2.send( request )( socket, stream, timeout )
     }
 }
 
@@ -27,11 +30,11 @@ object Channel2 {
             import phoenix._
 
             val request = Request( topic, PEvent.Join, payload )
-            val task = Phoenix2.send( request )( socket, stream )
+            val task = Phoenix2.send( request )( socket, stream, timeout )
 
             Observable.fromTask( task ).map {
                 case Some( Response.Confirmation( _, _, _ ) ) ⇒
-                    val channel = Channel2( topic )( socket, stream )
+                    val channel = Channel2( topic )( socket, stream, timeout )
                     Event.Available( channel )
                 case Some( error: Response.Error ) ⇒
                     Event.Failure( Some( error ) )

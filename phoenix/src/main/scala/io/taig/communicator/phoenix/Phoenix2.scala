@@ -16,9 +16,10 @@ import scala.concurrent.TimeoutException
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
-class Phoenix2(
-    val socket: OkHttpWebSocket,
-    val stream: Observable[Inbound]
+case class Phoenix2(
+    val socket:  OkHttpWebSocket,
+    val stream:  Observable[Inbound],
+    val timeout: FiniteDuration
 )
 
 object Phoenix2 {
@@ -77,7 +78,7 @@ object Phoenix2 {
         observable.foreach {
             case WebSocket.Event.Open( socket, _ ) ⇒
                 heartbeats = enableHeartbeat( socket )
-                val phoenix = new Phoenix2( socket, stream )
+                val phoenix = Phoenix2( socket, stream, timeout )
                 val available = Event.Available( phoenix )
 
                 next( available )
@@ -96,7 +97,7 @@ object Phoenix2 {
     def send( request: Request )(
         socket:  OkHttpWebSocket,
         stream:  Observable[Inbound],
-        timeout: FiniteDuration      = Default.timeout
+        timeout: FiniteDuration
     )(
         implicit
         p: Printer = Printer.noSpaces

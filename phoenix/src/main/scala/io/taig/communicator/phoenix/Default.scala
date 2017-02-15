@@ -8,7 +8,7 @@ object Default {
 
     val failureReconnect: Option[FiniteDuration] = None
 
-    val heartbeat: Option[FiniteDuration] = Some( 7 seconds )
+    val heartbeat: Option[FiniteDuration] = Some( 10 seconds )
 
-    val timeout: FiniteDuration = 5 seconds
+    val timeout: FiniteDuration = 10 seconds
 }
