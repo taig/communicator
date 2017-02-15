@@ -1,23 +1,20 @@
 package io.taig.communicator.phoenix
 
-import java.util.concurrent.TimeUnit.MILLISECONDS
-
 import cats.syntax.either._
 import io.circe.{ Json, Printer }
 import io.circe.syntax._
 import io.circe.parser.decode
 import io.taig.communicator.{ OkHttpRequest, OkHttpWebSocket }
-import io.taig.phoenix.models.Response.Error
 import io.taig.phoenix.models.{ Event ⇒ PEvent, _ }
 import monix.eval.Task
 import monix.execution.Ack.Stop
-import monix.execution.{ Cancelable, Scheduler }
+import monix.execution.Cancelable
 import monix.reactive.{ Observable, OverflowStrategy }
 import okhttp3.OkHttpClient
 
 import scala.concurrent.TimeoutException
-import scala.concurrent.duration.Duration.{ Inf, Infinite }
 import scala.concurrent.duration._
+import scala.language.postfixOps
 
 class Phoenix2(
     val socket: OkHttpWebSocket,
@@ -25,6 +22,8 @@ class Phoenix2(
 )
 
 object Phoenix2 {
+    sealed trait Event
+
     object Event {
         case class Available( phoenix: Phoenix2 ) extends Event
         case object Unavailable extends Event
@@ -33,8 +32,9 @@ object Phoenix2 {
     def apply(
         request:           OkHttpRequest,
         heartbeat:         Option[FiniteDuration] = Default.heartbeat,
-        failureReconnect:  Option[FiniteDuration] = None,
-        completeReconnect: Option[FiniteDuration] = None
+        timeout:           FiniteDuration         = Default.timeout,
+        failureReconnect:  Option[FiniteDuration] = Default.failureReconnect,
+        completeReconnect: Option[FiniteDuration] = Default.completeReconnect
     )(
         implicit
         ohc: OkHttpClient
@@ -47,78 +47,53 @@ object Phoenix2 {
             completeReconnect
         ).publish
 
-        val subscription = observable.connect()
+        val connection = observable.connect()
 
-        val stream = observable.doOnNext { event ⇒
-            logger.debug( s"Received event: $event" )
-        }.collect {
+        val stream = observable.collect {
             case WebSocket.Event.Message( Right( message ) ) ⇒
                 decode[Inbound]( message ).valueOr( throw _ )
         }
 
-        def next( event: Event ): Unit =
+        var heartbeats = Cancelable.empty
+
+        val cancelable = Cancelable { () ⇒
+            heartbeats.cancel()
+            connection.cancel()
+        }
+
+        def next( event: Event ): Unit = {
             if ( downstream.onNext( event ) == Stop ) {
-                subscription.cancel()
+                cancelable.cancel()
+            }
+        }
+
+        def enableHeartbeat( socket: OkHttpWebSocket ): Cancelable =
+            heartbeat.fold( Cancelable.empty ) { interval ⇒
+                this.heartbeat( interval ).mapTask { request ⇒
+                    send( request )( socket, stream, timeout )
+                }.publish.connect()
             }
 
         observable.foreach {
             case WebSocket.Event.Open( socket, _ ) ⇒
+                heartbeats = enableHeartbeat( socket )
                 val phoenix = new Phoenix2( socket, stream )
                 val available = Event.Available( phoenix )
+
                 next( available )
-            case WebSocket.Event.Failure( _, _ ) ⇒ next( Event.Unavailable )
-            case WebSocket.Event.Closing( _, _ ) ⇒ next( Event.Unavailable )
-            case _                               ⇒ //
+            case WebSocket.Event.Failure( _, _ ) ⇒
+                heartbeats.cancel()
+                next( Event.Unavailable )
+            case WebSocket.Event.Closing( _, _ ) ⇒
+                heartbeats.cancel()
+                next( Event.Unavailable )
+            case _ ⇒ //
         }
 
-        subscription
+        cancelable
     }
 
-    sealed trait Event
-
-    def send(
-        topic:   Topic,
-        event:   PEvent,
-        payload: Json   = Json.Null,
-        ref:     Ref    = Ref.unique()
-    )(
-        phoenix: Observable[Phoenix2.Event],
-        timeout: FiniteDuration             = Default.timeout
-    )(
-        implicit
-        p: Printer = Printer.noSpaces
-    ): Task[Option[Response]] = Task.defer {
-        val request = Request( topic, event, payload, ref )
-
-        val available = phoenix
-            .collect { case Phoenix2.Event.Available( phoenix ) ⇒ phoenix }
-
-        val response = available
-            .flatMap( _.stream )
-            .collect { case response: Response ⇒ response }
-            .filter( _.ref == request.ref )
-            .headOptionL
-            .timeout( timeout )
-            .onErrorRecover { case _: TimeoutException ⇒ None }
-
-        Task.create { ( scheduler, callback ) ⇒
-            response
-                .runAsync( scheduler )
-                .onComplete( callback( _ ) )( scheduler )
-
-            available.map( _.socket ).firstL.foreach { socket ⇒
-                socket.send( p.pretty( request.asJson ) )
-                ()
-            }( scheduler )
-        }
-    }
-
-    def send2(
-        topic:   Topic,
-        event:   PEvent,
-        payload: Json   = Json.Null,
-        ref:     Ref    = Ref.unique()
-    )(
+    def send( request: Request )(
         socket:  OkHttpWebSocket,
         stream:  Observable[Inbound],
         timeout: FiniteDuration      = Default.timeout
@@ -126,8 +101,6 @@ object Phoenix2 {
         implicit
         p: Printer = Printer.noSpaces
     ): Task[Option[Response]] = {
-        val request = Request( topic, event, payload, ref )
-
         val response = stream
             .collect {
                 case response: Response ⇒
@@ -152,4 +125,9 @@ object Phoenix2 {
             cancelable
         }
     }
+
+    def heartbeat( interval: FiniteDuration ): Observable[Request] =
+        Observable.intervalWithFixedDelay( interval, interval ).map { _ ⇒
+            Request( Topic.Phoenix, PEvent( "heartbeat" ) )
+        }
 }

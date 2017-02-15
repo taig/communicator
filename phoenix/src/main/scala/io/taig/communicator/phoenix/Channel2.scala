@@ -11,7 +11,8 @@ case class Channel2( topic: Topic )(
         val stream: Observable[Inbound]
 ) extends io.taig.phoenix.Channel[Observable, Task] {
     override def send( event: PEvent, payload: Json ) = {
-        Phoenix2.send2( topic, event, payload )( socket, stream )
+        val request = Request( topic, event, payload )
+        Phoenix2.send( request )( socket, stream )
     }
 }
 
@@ -25,8 +26,8 @@ object Channel2 {
         case Phoenix2.Event.Available( phoenix ) ⇒
             import phoenix._
 
-            val task = Phoenix2
-                .send2( topic, PEvent.Join )( socket, stream )
+            val request = Request( topic, PEvent.Join, payload )
+            val task = Phoenix2.send( request )( socket, stream )
 
             Observable.fromTask( task ).map {
                 case Some( Response.Confirmation( _, _, _ ) ) ⇒

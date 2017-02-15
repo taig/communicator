@@ -10,19 +10,37 @@ import scala.concurrent.duration._
 import scala.language.postfixOps
 
 class Phoenix2Test extends Suite {
-    //    it should "send a heartbeat" in {
-    //        for {
-    //            phoenix ← Phoenix( request )
-    //            inbound ← phoenix.stream.firstL
-    //            _ = phoenix.close()
-    //        } yield inbound match {
-    //            case Response.Confirmation( topic, payload, _ ) ⇒
-    //                topic shouldBe Topic.Phoenix
-    //                payload shouldBe Json.obj()
-    //            case inbound ⇒ fail( s"Received $inbound" )
-    //        }
-    //    }
-    //
+    it should "send a heartbeat" in {
+        val phoenix = Phoenix2(
+            request,
+            heartbeat = Some( 1 second )
+        ).share
+
+        phoenix.collect {
+            case Phoenix2.Event.Available( phoenix ) ⇒ phoenix
+        }.flatMap( _.stream )
+            .collect {
+                case confirmation: Response.Confirmation ⇒ confirmation
+            }
+            .firstL
+            .timeout( 10 seconds )
+            .runAsync
+            .map { confirmation ⇒
+                confirmation.topic shouldBe Topic.Phoenix
+            }
+
+        //            for {
+        //                phoenix ← Phoenix( request )
+        //                inbound ← phoenix.stream.firstL
+        //                _ = phoenix.close()
+        //            } yield inbound match {
+        //                case Response.Confirmation( topic, payload, _ ) ⇒
+        //                    topic shouldBe Topic.Phoenix
+        //                    payload shouldBe Json.obj()
+        //                case inbound ⇒ fail( s"Received $inbound" )
+        //            }
+    }
+
     //    it should "allow to disable the heartbeat" in {
     //        for {
     //            phoenix ← Phoenix( request, heartbeat = None )
