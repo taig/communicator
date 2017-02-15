@@ -74,6 +74,7 @@ object WebSocket {
 
                 failureReconnect.fold( downstream.onError( exception ) ) {
                     delay ⇒
+                        logger.debug( s"Initiating reconnect in $delay" )
                         sc := reconnect( request, listener, sc, delay )
                         ()
                 }
@@ -113,6 +114,7 @@ object WebSocket {
                 }
 
                 completeReconnect.fold( downstream.onComplete() ) { delay ⇒
+                    logger.debug( s"Initiating reconnect in $delay" )
                     sc := reconnect( request, listener, sc, delay )
                     ()
                 }

@@ -43,7 +43,7 @@ class Phoenix2Test extends Suite {
     it should "allow to join a Channel" in {
         val topic = Topic( "echo", "foobar" )
 
-        val phoenix = Phoenix2( request )
+        val phoenix = Phoenix2( request ).share
         val channel = Channel2.join( topic )( phoenix )
 
         channel.collect {
@@ -53,18 +53,34 @@ class Phoenix2Test extends Suite {
         }
     }
 
-    //    it should "fail to join an invalid Channel" in {
-    //        val topic = Topic( "foo", "bar" )
-    //
-    //        for {
-    //            phoenix ← Phoenix( request )
-    //            channel ← phoenix.join( topic )
-    //            _ = phoenix.close()
-    //        } yield channel match {
-    //            case Left( Some( Response.Error( topic, message, _ ) ) ) ⇒
-    //                topic shouldBe topic
-    //                message shouldBe "unmatched topic"
-    //            case response ⇒ fail( s"Received $response" )
-    //        }
-    //    }
+    it should "rejoin a Channel when reconnecting" in {
+        val topic = Topic( "echo", "foobar" )
+
+        val phoenix = Phoenix2(
+            request,
+            failureReconnect = Some( 500 milliseconds )
+        ).share
+        val channel = Channel2.join( topic )( phoenix )
+
+        channel.collect {
+            case Channel2.Event.Available( channel ) ⇒
+                channel.socket.cancel()
+                channel
+        }.take( 2 ).toListL.timeout( 10 seconds ).runAsync.map {
+            _ should have length 2
+        }
+    }
+
+    it should "fail to join an invalid Channel" in {
+        val topic = Topic( "foo", "bar" )
+
+        val phoenix = Phoenix2( request ).share
+        val channel = Channel2.join( topic )( phoenix )
+
+        channel.collect {
+            case Channel2.Event.Failure( response ) ⇒ response
+        }.firstL.timeout( 10 seconds ).runAsync.map {
+            _.map( _.message ) shouldBe Some( "unmatched topic" )
+        }
+    }
 }
