@@ -1,7 +1,9 @@
 package io.taig.communicator.phoenix
 
+import cats.data.EitherT
 import io.circe.Json
 import io.taig.phoenix.models._
+import monix.eval.Task
 
 import scala.concurrent.TimeoutException
 import scala.concurrent.duration._
@@ -81,6 +83,21 @@ class Phoenix2Test extends Suite {
             case Channel2.Event.Failure( response ) ⇒ response
         }.firstL.timeout( 10 seconds ).runAsync.map {
             _.map( _.message ) shouldBe Some( "unmatched topic" )
+        }
+    }
+
+    it should "return None when the server omits a response" in {
+        val topic = Topic( "echo", "foobar" )
+
+        val phoenix = Phoenix2( request ).share
+        val channel = Channel2.join( topic )( phoenix )
+
+        channel.collect {
+            case Channel2.Event.Available( channel ) ⇒ channel
+        }.mapTask { channel ⇒
+            channel.send( Event( "no_reply" ), Json.Null )
+        }.firstL.timeout( 10 seconds ).runAsync.map {
+            _ should not be defined
         }
     }
 }

@@ -82,7 +82,8 @@ object Phoenix2 {
         payload: Json   = Json.Null,
         ref:     Ref    = Ref.unique()
     )(
-        phoenix: Observable[Phoenix2.Event]
+        phoenix: Observable[Phoenix2.Event],
+        timeout: FiniteDuration             = Default.timeout
     )(
         implicit
         p: Printer = Printer.noSpaces
@@ -97,6 +98,8 @@ object Phoenix2 {
             .collect { case response: Response ⇒ response }
             .filter( _.ref == request.ref )
             .headOptionL
+            .timeout( timeout )
+            .onErrorRecover { case _: TimeoutException ⇒ None }
 
         Task.create { ( scheduler, callback ) ⇒
             response
@@ -116,8 +119,9 @@ object Phoenix2 {
         payload: Json   = Json.Null,
         ref:     Ref    = Ref.unique()
     )(
-        socket: OkHttpWebSocket,
-        stream: Observable[Inbound]
+        socket:  OkHttpWebSocket,
+        stream:  Observable[Inbound],
+        timeout: FiniteDuration      = Default.timeout
     )(
         implicit
         p: Printer = Printer.noSpaces
@@ -133,6 +137,8 @@ object Phoenix2 {
             }
             .filter( _.ref == request.ref )
             .headOptionL
+            .timeout( timeout )
+            .onErrorRecover { case _: TimeoutException ⇒ None }
 
         Task.create { ( scheduler, callback ) ⇒
             val cancelable = response.runAsync( scheduler )
