@@ -70,4 +70,32 @@ class WebSocketTest extends Suite {
                 _ should contain theSameElementsAs List( 1, 2 )
             }
     }
+
+    it should "not reconnect when canelled explicitly" in {
+        var count = 0
+
+        val observable = WebSocket(
+            request,
+            failureReconnect  = Some( 100 milliseconds ),
+            completeReconnect = Some( 100 milliseconds )
+        ).publish
+
+        val subscription = observable.connect()
+
+        observable.collect {
+            case WebSocket.Event.Open( socket, _ ) ⇒
+                if ( count == 0 ) {
+                    socket.close( 1000, null )
+                }
+
+                if ( count == 1 ) {
+                    subscription.cancel()
+                }
+
+                count += 1
+                count
+        }.take( 3 ).toListL.timeout( 10 seconds ).runAsync.map {
+            _ should contain theSameElementsAs List( 1, 2 )
+        }
+    }
 }

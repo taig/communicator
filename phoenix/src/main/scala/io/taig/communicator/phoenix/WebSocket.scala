@@ -32,8 +32,10 @@ object WebSocket {
             ): Unit = {
                 logger.debug( "WebSocket: Open" )
 
-                downstream.onNext( Event.Open( socket, response ) )
-                ()
+                if ( downstream.onNext( Event.Open( socket, response ) ) == Stop ) {
+                    logger.info( "#1 onNext returned stop, cancelling" )
+                    sc.cancel()
+                }
             }
 
             override def onMessage(
@@ -43,10 +45,9 @@ object WebSocket {
                 logger.debug( "WebSocket: String-Message" )
                 logger.debug( message )
 
-                val ack = downstream.onNext( Event.Message( Right( message ) ) )
-
-                if ( ack == Stop ) {
-                    socket.cancel()
+                if ( downstream.onNext( Event.Message( Right( message ) ) ) == Stop ) {
+                    logger.info( "#2 onNext returned stop, cancelling" )
+                    sc.cancel()
                 }
             }
 
@@ -56,10 +57,9 @@ object WebSocket {
             ): Unit = {
                 logger.debug( "WebSocket: Byte-Message" )
 
-                val ack = downstream.onNext( Event.Message( Left( message ) ) )
-
-                if ( ack == Stop ) {
-                    socket.cancel()
+                if ( downstream.onNext( Event.Message( Left( message ) ) ) == Stop ) {
+                    logger.info( "#3 onNext returned stop, cancelling" )
+                    sc.cancel()
                 }
             }
 
@@ -70,16 +70,26 @@ object WebSocket {
             ): Unit = {
                 logger.debug( "WebSocket: Failure", exception )
 
-                downstream.onNext( Event.Failure( exception, response ) )
-
-                failureReconnect.fold( downstream.onError( exception ) ) {
-                    delay ⇒
-                        logger.debug( s"Initiating reconnect in $delay" )
-                        sc := reconnect( request, listener, sc, delay )
-                        ()
+                if ( downstream.onNext( Event.Failure( exception, response ) ) == Stop ) {
+                    logger.info( "#4 onNext returned stop, cancelling" )
+                    sc.cancel()
                 }
 
-                ()
+                if ( !sc.isCanceled ) {
+                    failureReconnect.fold( downstream.onError( exception ) ) {
+                        delay ⇒
+                            logger.debug( s"Initiating reconnect in $delay" )
+                            sc := reconnect( request, listener, sc, delay )
+                            ()
+                    }
+                } else {
+                    logger.debug {
+                        "Not attempting to reconnect because the " +
+                            "Observable has been cancelled"
+                    }
+
+                    downstream.onError( exception )
+                }
             }
 
             override def onClosing(
@@ -89,14 +99,17 @@ object WebSocket {
             ): Unit = {
                 logger.debug( s"WebSocket: Closing ($code)" )
 
-                downstream.onNext {
+                val ack = downstream.onNext {
                     Event.Closing(
                         code,
                         Some( reason ).filter( _.nonEmpty )
                     )
                 }
 
-                ()
+                if ( ack == Stop ) {
+                    logger.info( "#5 onNext returned stop, cancelling" )
+                    sc.cancel()
+                }
             }
 
             override def onClosed(
@@ -106,20 +119,32 @@ object WebSocket {
             ): Unit = {
                 logger.debug( s"WebSocket: Closed ($code)" )
 
-                downstream.onNext {
+                val ack = downstream.onNext {
                     Event.Closed(
                         code,
                         Some( reason ).filter( _.nonEmpty )
                     )
                 }
 
-                completeReconnect.fold( downstream.onComplete() ) { delay ⇒
-                    logger.debug( s"Initiating reconnect in $delay" )
-                    sc := reconnect( request, listener, sc, delay )
-                    ()
+                if ( ack == Stop ) {
+                    logger.info( "#5 onNext returned stop, cancelling" )
+                    sc.cancel()
                 }
 
-                ()
+                if ( !sc.isCanceled ) {
+                    completeReconnect.fold( downstream.onComplete() ) { delay ⇒
+                        logger.debug( s"Initiating reconnect in $delay" )
+                        sc := reconnect( request, listener, sc, delay )
+                        ()
+                    }
+                } else {
+                    logger.debug {
+                        "Not attempting to reconnect because the " +
+                            "Observable has been cancelled"
+                    }
+
+                    downstream.onComplete()
+                }
             }
         }
 

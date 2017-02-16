@@ -48,7 +48,9 @@ object Channel {
 
     object Event {
         case class Available( channel: Channel ) extends Event
-        case class Failure( response: Option[Response.Error] ) extends Event
-        case object Unavailable extends Event
+
+        sealed trait Error extends Event
+        case class Failure( response: Option[Response.Error] ) extends Error
+        case object Unavailable extends Error
     }
 }
