@@ -55,10 +55,10 @@ object Phoenix {
                 decode[Inbound]( message ).valueOr( throw _ )
         }
 
-        var heartbeats = Cancelable.empty
+        var heartbeats: Option[Cancelable] = None
 
         val cancelable = Cancelable { () ⇒
-            heartbeats.cancel()
+            heartbeats.foreach( _.cancel() )
             connection.cancel()
         }
 
@@ -68,8 +68,9 @@ object Phoenix {
             }
         }
 
-        def enableHeartbeat( socket: OkHttpWebSocket ): Cancelable =
-            heartbeat.fold( Cancelable.empty ) { interval ⇒
+        def enableHeartbeat( socket: OkHttpWebSocket ): Option[Cancelable] =
+            heartbeat.map { interval ⇒
+                logger.debug( "Enabling heartbeat" )
                 this.heartbeat( interval ).mapTask { request ⇒
                     send( request )( socket, stream, timeout )
                 }.publish.connect()
@@ -83,10 +84,18 @@ object Phoenix {
 
                 next( available )
             case WebSocket.Event.Failure( _, _ ) ⇒
-                heartbeats.cancel()
+                heartbeats.foreach { heartbeats ⇒
+                    logger.debug( "Cancelling heartbeat" )
+                    heartbeats.cancel()
+                }
+
                 next( Event.Unavailable )
-            case WebSocket.Event.Closing( _, _ ) ⇒
-                heartbeats.cancel()
+            case WebSocket.Event.Closed( _, _ ) ⇒
+                heartbeats.foreach { heartbeats ⇒
+                    logger.debug( "Cancelling heartbeat" )
+                    heartbeats.cancel()
+                }
+
                 next( Event.Unavailable )
             case _ ⇒ //
         }

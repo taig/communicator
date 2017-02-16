@@ -75,20 +75,20 @@ object WebSocket {
                     sc.cancel()
                 }
 
-                if ( !sc.isCanceled ) {
-                    failureReconnect.fold( downstream.onError( exception ) ) {
-                        delay ⇒
-                            logger.debug( s"Initiating reconnect in $delay" )
-                            sc := reconnect( request, listener, sc, delay )
-                            ()
-                    }
-                } else {
+                if ( sc.isCanceled ) {
                     logger.debug {
                         "Not attempting to reconnect because the " +
                             "Observable has been cancelled"
                     }
 
                     downstream.onError( exception )
+                } else {
+                    failureReconnect.fold( downstream.onError( exception ) ) {
+                        delay ⇒
+                            logger.debug( s"Initiating reconnect in $delay" )
+                            sc := reconnect( request, listener, sc, delay )
+                            ()
+                    }
                 }
             }
 
@@ -96,21 +96,7 @@ object WebSocket {
                 socket: OkHttpWebSocket,
                 code:   Int,
                 reason: String
-            ): Unit = {
-                logger.debug( s"WebSocket: Closing ($code)" )
-
-                val ack = downstream.onNext {
-                    Event.Closing(
-                        code,
-                        Some( reason ).filter( _.nonEmpty )
-                    )
-                }
-
-                if ( ack == Stop ) {
-                    logger.info( "#5 onNext returned stop, cancelling" )
-                    sc.cancel()
-                }
-            }
+            ): Unit = {}
 
             override def onClosed(
                 socket: OkHttpWebSocket,
@@ -131,19 +117,19 @@ object WebSocket {
                     sc.cancel()
                 }
 
-                if ( !sc.isCanceled ) {
-                    completeReconnect.fold( downstream.onComplete() ) { delay ⇒
-                        logger.debug( s"Initiating reconnect in $delay" )
-                        sc := reconnect( request, listener, sc, delay )
-                        ()
-                    }
-                } else {
+                if ( sc.isCanceled ) {
                     logger.debug {
                         "Not attempting to reconnect because the " +
                             "Observable has been cancelled"
                     }
 
                     downstream.onComplete()
+                } else {
+                    completeReconnect.fold( downstream.onComplete() ) { delay ⇒
+                        logger.debug( s"Initiating reconnect in $delay" )
+                        sc := reconnect( request, listener, sc, delay )
+                        ()
+                    }
                 }
             }
         }
@@ -161,23 +147,22 @@ object WebSocket {
         implicit
         ohc: OkHttpClient,
         s:   Scheduler
-    ): Cancelable = {
-        Task
-            .delay( ohc.newWebSocket( request, listener ) )
-            .delayExecution( delay )
-            .materialize
-            .foreach {
-                case Success( socket ) ⇒
-                    sc := cancel( socket )
-                    ()
-                case Failure( _ ) ⇒
-                    sc := reconnect( request, listener, sc, delay )
-                    ()
-            }
-    }
+    ): Cancelable = Task
+        .delay( ohc.newWebSocket( request, listener ) )
+        .delayExecution( delay )
+        .materialize
+        .foreach {
+            case Success( socket ) ⇒
+                sc := cancel( socket )
+                ()
+            case Failure( _ ) ⇒
+                sc := reconnect( request, listener, sc, delay )
+                ()
+        }
 
     private def cancel( socket: OkHttpWebSocket ): Cancelable =
         Cancelable { () ⇒
+            logger.debug( "Cancelling (closing) WebSocket connection" )
             socket.close( 1000, null )
             ()
         }
@@ -192,8 +177,6 @@ object WebSocket {
 
         case class Failure( exception: Throwable, response: OkHttpResponse )
             extends Event
-
-        case class Closing( code: Int, reason: Option[String] ) extends Event
 
         case class Closed( code: Int, reason: Option[String] ) extends Event
     }
