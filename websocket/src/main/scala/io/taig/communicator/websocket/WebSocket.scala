@@ -58,10 +58,10 @@ object WebSocket {
             }
         }
 
-        def reconnect( delay: FiniteDuration ): Cancelable = {
+        def reconnect( delay: FiniteDuration ): Unit = {
             logger.debug( s"Attempting reconnect in $delay" )
 
-            cancelable := Task
+            val timer = Task
                 .delay {
                     next( Event.Reconnecting )
                     ohc.newWebSocket( request, listener )
@@ -72,10 +72,15 @@ object WebSocket {
                     case Success( socket ) ⇒
                         cancelable := cancellation( socket )
                         ()
-                    case Failure( _ ) ⇒
-                        cancelable := reconnect( delay )
-                        ()
+                    case Failure( _ ) ⇒ reconnect( delay )
                 }
+
+            cancelable := Cancelable { () ⇒
+                logger.debug( "Cancelling reconnect attempt" )
+                timer.cancel()
+            }
+
+            ()
         }
 
         lazy val listener: OkHttpWebSocketListener = new OkHttpWebSocketListener {
@@ -109,10 +114,8 @@ object WebSocket {
                         }
 
                         downstream.onError( exception )
-                    case Some( delay ) ⇒
-                        cancelable := reconnect( delay )
-                        ()
-                    case None ⇒ downstream.onError( exception )
+                    case Some( delay ) ⇒ reconnect( delay )
+                    case None          ⇒ downstream.onError( exception )
                 }
             }
 
@@ -134,10 +137,8 @@ object WebSocket {
                             "Not attempting to reconnect because the " +
                                 "Observable has been cancelled explicitly"
                         }
-                    case Some( delay ) ⇒
-                        cancelable := reconnect( delay )
-                        ()
-                    case None ⇒ close( socket )
+                    case Some( delay ) ⇒ reconnect( delay )
+                    case None          ⇒ close( socket )
                 }
             }
 
