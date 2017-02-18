@@ -1,16 +1,11 @@
-package io.taig.communicator.phoenix
+package io.taig.communicator.websocket
 
-import io.taig.communicator.OkHttpRequest
 import monix.eval.Task
 
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
 class WebSocketTest extends Suite {
-    override val request = new OkHttpRequest.Builder()
-        .url( "wss://echo.websocket.org" )
-        .build()
-
     it should "open a connection" in {
         WebSocket( request ).share.firstL.runAsync.map {
             _ shouldBe a[WebSocket.Event.Open]
@@ -71,7 +66,7 @@ class WebSocketTest extends Suite {
             }
     }
 
-    it should "not reconnect when canelled explicitly" in {
+    it should "not reconnect when cancelled explicitly" in {
         var count = 0
 
         val observable = WebSocket(

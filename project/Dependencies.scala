@@ -58,7 +58,7 @@ object Dependencies {
 
     val scalatest = "org.scalatest" %% "scalatest" % "3.0.1"
 
-    object slf4j extends Configuration( "org.slf4j", "slf4j", "1.7.22" ) {
+    object slf4j extends Configuration( "org.slf4j", "slf4j", "1.7.23" ) {
         val api = java( "api" )
     }
 }

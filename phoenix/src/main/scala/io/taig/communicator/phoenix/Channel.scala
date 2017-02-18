@@ -4,7 +4,7 @@ import io.circe.Json
 import io.taig.communicator.OkHttpWebSocket
 import io.taig.phoenix.models.{ Event ⇒ PEvent, _ }
 import monix.eval.Task
-import monix.reactive.Observable
+import monix.reactive.{ Observable, OverflowStrategy }
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -24,7 +24,8 @@ object Channel {
         topic:   Topic,
         payload: Json  = Json.Null
     )(
-        phoenix: Observable[Phoenix.Event]
+        phoenix:  Observable[Phoenix.Event],
+        strategy: OverflowStrategy.Synchronous[Event] = OverflowStrategy.Unbounded
     ): Observable[Event] = phoenix.flatMap {
         case Phoenix.Event.Available( phoenix ) ⇒
             import phoenix._

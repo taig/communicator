@@ -1,6 +1,7 @@
 package io.taig.communicator.phoenix
 
 import io.circe.Json
+import io.taig.communicator.websocket.WebSocket
 import io.taig.phoenix.models._
 
 import scala.concurrent.TimeoutException
@@ -10,7 +11,7 @@ import scala.language.postfixOps
 class PhoenixTest extends Suite {
     it should "send a heartbeat" in {
         Phoenix(
-            request,
+            WebSocket( request ),
             heartbeat = Some( 1 second )
         ).share.collect {
                 case Phoenix.Event.Available( phoenix ) ⇒ phoenix
@@ -23,10 +24,7 @@ class PhoenixTest extends Suite {
     }
 
     it should "allow to disable the heartbeat" in {
-        Phoenix(
-            request,
-            heartbeat = None
-        ).share.collect {
+        Phoenix( WebSocket( request ), heartbeat = None ).share.collect {
             case Phoenix.Event.Available( phoenix ) ⇒ phoenix
         }.flatMap( _.stream ).collect {
             case confirmation: Response.Confirmation ⇒ confirmation
@@ -40,8 +38,8 @@ class PhoenixTest extends Suite {
     it should "allow to join a Channel" in {
         val topic = Topic( "echo", "foobar" )
 
-        val phoenix = Phoenix( request ).share
-        val channel = Channel.join( topic )( phoenix )
+        val phoenix = Phoenix( WebSocket( request ) )
+        val channel = Channel.join( topic )( phoenix ).share
 
         channel.collect {
             case Channel.Event.Available( channel ) ⇒ channel
@@ -54,8 +52,10 @@ class PhoenixTest extends Suite {
         val topic = Topic( "echo", "foobar" )
 
         val phoenix = Phoenix(
-            request,
-            failureReconnect = Some( 500 milliseconds )
+            WebSocket(
+                request,
+                failureReconnect = Some( 500 milliseconds )
+            )
         ).share
         val channel = Channel.join( topic )( phoenix )
 
@@ -71,7 +71,7 @@ class PhoenixTest extends Suite {
     it should "fail to join an invalid Channel" in {
         val topic = Topic( "foo", "bar" )
 
-        val phoenix = Phoenix( request ).share
+        val phoenix = Phoenix( WebSocket( request ) ).share
         val channel = Channel.join( topic )( phoenix )
 
         channel.collect {
@@ -84,7 +84,10 @@ class PhoenixTest extends Suite {
     it should "return None when the server omits a response" in {
         val topic = Topic( "echo", "foobar" )
 
-        val phoenix = Phoenix( request, timeout = 1 second ).share
+        val phoenix = Phoenix(
+            WebSocket( request ),
+            timeout = 1 second
+        ).share
         val channel = Channel.join( topic )( phoenix )
 
         channel.collect {

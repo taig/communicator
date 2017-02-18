@@ -8,8 +8,8 @@ import org.scalatest.Assertion
 import scala.concurrent.Future
 import scala.language.implicitConversions
 
-trait Suite extends io.taig.communicator.request.Suite {
-    val request = new OkHttpRequest.Builder()
+trait Suite extends io.taig.communicator.websocket.Suite {
+    override val request = new OkHttpRequest.Builder()
         .url( s"ws://localhost:4000/socket/websocket" )
         .build()
 

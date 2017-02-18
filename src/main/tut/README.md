@@ -99,8 +99,8 @@ val request = new OkHttpRequest.Builder().
 
 val topic = Topic( "echo", "foobar" )
 
-val phoenix = Phoenix( request ).share
-val channel = Channel.join( topic )( phoenix )
+// val phoenix = Phoenix( request ).share
+// val channel = Channel.join( topic )( phoenix )
 
 // TODO
 ```
