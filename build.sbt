@@ -21,9 +21,10 @@ lazy val communicator = project.in( file( "." ) )
 lazy val builder = project
     .settings( Settings.common )
     .settings(
+        coverageEnabled := false,
         libraryDependencies ++=
-        Dependencies.cats.core ::
-        Nil,
+            Dependencies.cats.core ::
+            Nil,
         name := "builder",
         startYear := Some( 2016 )
     )
