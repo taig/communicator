@@ -13,6 +13,24 @@ import scala.concurrent.duration.FiniteDuration
 import scala.util.{ Failure, Success }
 
 object WebSocket {
+    sealed trait Event
+
+    object Event {
+        case object Initializing extends Event
+
+        case class Open( socket: OkHttpWebSocket, response: OkHttpResponse )
+            extends Event
+
+        case class Message( payload: Either[ByteString, String] ) extends Event
+
+        case class Failure( exception: Throwable, response: OkHttpResponse )
+            extends Event
+
+        case class Closing( code: Int, reason: Option[String] ) extends Event
+
+        case class Closed( code: Int, reason: Option[String] ) extends Event
+    }
+
     def apply(
         request:           OkHttpRequest,
         strategy:          OverflowStrategy.Synchronous[Event] = OverflowStrategy.Unbounded,
@@ -141,6 +159,8 @@ object WebSocket {
             }
         }
 
+        next( Event.Initializing )
+
         val socket = ohc.newWebSocket( request, listener )
         cancelable := cancellation( socket )
     }
@@ -179,20 +199,4 @@ object WebSocket {
 
     private def cancellation( socket: OkHttpWebSocket ): Cancelable =
         Cancelable( () ⇒ close( socket ) )
-
-    sealed trait Event
-
-    object Event {
-        case class Open( socket: OkHttpWebSocket, response: OkHttpResponse )
-            extends Event
-
-        case class Message( payload: Either[ByteString, String] ) extends Event
-
-        case class Failure( exception: Throwable, response: OkHttpResponse )
-            extends Event
-
-        case class Closing( code: Int, reason: Option[String] ) extends Event
-
-        case class Closed( code: Int, reason: Option[String] ) extends Event
-    }
 }

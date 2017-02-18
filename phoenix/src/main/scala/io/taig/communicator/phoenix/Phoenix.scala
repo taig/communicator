@@ -28,6 +28,7 @@ object Phoenix {
     sealed trait Event
 
     object Event {
+        case object Initializing extends Event
         case class Available( phoenix: Phoenix ) extends Event
         case object Unavailable extends Event
     }
@@ -82,6 +83,8 @@ object Phoenix {
 
             heartbeats.cancel()
         }
+
+        next( Event.Initializing )
 
         composite += observable.foreach {
             case WebSocket.Event.Open( socket, _ ) ⇒

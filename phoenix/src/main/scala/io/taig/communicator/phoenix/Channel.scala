@@ -27,27 +27,38 @@ object Channel {
         phoenix:  Observable[Phoenix.Event],
         strategy: OverflowStrategy.Synchronous[Event] = OverflowStrategy.Unbounded
     ): Observable[Event] = phoenix.flatMap {
+        case Phoenix.Event.Initializing ⇒
+            Observable.now( Event.Initializing )
         case Phoenix.Event.Available( phoenix ) ⇒
-            import phoenix._
-
-            val request = Request( topic, PEvent.Join, payload )
-            val task = Phoenix.send( request )( socket, stream, timeout )
-
-            Observable.fromTask( task ).map {
-                case Some( Response.Confirmation( _, _, _ ) ) ⇒
-                    val channel = Channel( topic )( socket, stream, timeout )
-                    Event.Available( channel )
-                case Some( error: Response.Error ) ⇒
-                    Event.Failure( Some( error ) )
-                case None ⇒ Event.Failure( None )
-            }
+            join( phoenix, topic, payload )
         case Phoenix.Event.Unavailable ⇒
             Observable.now( Event.Unavailable )
+    }
+
+    private def join(
+        phoenix: Phoenix,
+        topic:   Topic,
+        payload: Json
+    ): Observable[Event] = {
+        import phoenix._
+
+        val request = Request( topic, PEvent.Join, payload )
+        val task = Phoenix.send( request )( socket, stream, timeout )
+
+        Observable.fromTask( task ).map {
+            case Some( Response.Confirmation( _, _, _ ) ) ⇒
+                val channel = Channel( topic )( socket, stream, timeout )
+                Event.Available( channel )
+            case Some( error: Response.Error ) ⇒
+                Event.Failure( Some( error ) )
+            case None ⇒ Event.Failure( None )
+        }
     }
 
     sealed trait Event
 
     object Event {
+        case object Initializing extends Event
         case class Available( channel: Channel ) extends Event
 
         sealed trait Error extends Event
