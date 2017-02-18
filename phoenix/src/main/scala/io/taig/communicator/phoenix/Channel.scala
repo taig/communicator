@@ -27,12 +27,11 @@ object Channel {
         phoenix:  Observable[Phoenix.Event],
         strategy: OverflowStrategy.Synchronous[Event] = OverflowStrategy.Unbounded
     ): Observable[Event] = phoenix.flatMap {
-        case Phoenix.Event.Initializing ⇒
-            Observable.now( Event.Initializing )
+        case Phoenix.Event.Connecting   ⇒ Observable.now( Event.Connecting )
+        case Phoenix.Event.Reconnecting ⇒ Observable.now( Event.Reconnecting )
         case Phoenix.Event.Available( phoenix ) ⇒
             join( phoenix, topic, payload )
-        case Phoenix.Event.Unavailable ⇒
-            Observable.now( Event.Unavailable )
+        case Phoenix.Event.Unavailable ⇒ Observable.now( Event.Unavailable )
     }
 
     private def join(
@@ -58,7 +57,8 @@ object Channel {
     sealed trait Event
 
     object Event {
-        case object Initializing extends Event
+        case object Connecting extends Event
+        case object Reconnecting extends Event
         case class Available( channel: Channel ) extends Event
 
         sealed trait Error extends Event

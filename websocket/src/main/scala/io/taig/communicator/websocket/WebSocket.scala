@@ -3,7 +3,7 @@ package io.taig.communicator.websocket
 import io.taig.communicator.{ OkHttpRequest, OkHttpResponse, OkHttpWebSocket, OkHttpWebSocketListener }
 import monix.eval.Task
 import monix.execution.Ack.Stop
-import monix.execution.{ Cancelable, Scheduler }
+import monix.execution.Cancelable
 import monix.execution.cancelables.MultiAssignmentCancelable
 import monix.reactive.{ Observable, OverflowStrategy }
 import okhttp3.OkHttpClient
@@ -16,14 +16,16 @@ object WebSocket {
     sealed trait Event
 
     object Event {
-        case object Initializing extends Event
+        case object Connecting extends Event
+
+        case object Reconnecting extends Event
 
         case class Open( socket: OkHttpWebSocket, response: OkHttpResponse )
             extends Event
 
         case class Message( payload: Either[ByteString, String] ) extends Event
 
-        case class Failure( exception: Throwable, response: OkHttpResponse )
+        case class Failure( throwable: Throwable, response: OkHttpResponse )
             extends Event
 
         case class Closing( code: Int, reason: Option[String] ) extends Event
@@ -45,43 +47,58 @@ object WebSocket {
         val cancelable = MultiAssignmentCancelable()
 
         def next( event: Event ): Unit = {
+            event match {
+                case Event.Failure( throwable, _ ) ⇒
+                    logger.debug( s"Event: $event", throwable )
+                case event ⇒ logger.debug( s"Event: $event" )
+            }
+
             if ( downstream.onNext( event ) == Stop ) {
                 cancelable.cancel()
             }
+        }
+
+        def reconnect( delay: FiniteDuration ): Cancelable = {
+            logger.debug( s"Attempting reconnect in $delay" )
+
+            cancelable := Task
+                .delay {
+                    next( Event.Reconnecting )
+                    ohc.newWebSocket( request, listener )
+                }
+                .delayExecution( delay )
+                .materialize
+                .foreach {
+                    case Success( socket ) ⇒
+                        cancelable := cancellation( socket )
+                        ()
+                    case Failure( _ ) ⇒
+                        cancelable := reconnect( delay )
+                        ()
+                }
         }
 
         lazy val listener: OkHttpWebSocketListener = new OkHttpWebSocketListener {
             override def onOpen(
                 socket:   OkHttpWebSocket,
                 response: OkHttpResponse
-            ): Unit = {
-                logger.debug( "Received Open event" )
-                next( Event.Open( socket, response ) )
-            }
+            ): Unit = next( Event.Open( socket, response ) )
 
             override def onMessage(
                 socket:  OkHttpWebSocket,
                 message: String
-            ): Unit = {
-                logger.debug( s"Received String message: $message" )
-                next( Event.Message( Right( message ) ) )
-            }
+            ): Unit = next( Event.Message( Right( message ) ) )
 
             override def onMessage(
                 socket:  OkHttpWebSocket,
                 message: ByteString
-            ): Unit = {
-                logger.debug( "Received Byte message" )
-                next( Event.Message( Left( message ) ) )
-            }
+            ): Unit = next( Event.Message( Left( message ) ) )
 
             override def onFailure(
                 socket:    OkHttpWebSocket,
                 exception: Throwable,
                 response:  OkHttpResponse
             ): Unit = {
-                logger.debug( "Encountered socket failure", exception )
-
                 next( Event.Failure( exception, response ) )
 
                 failureReconnect match {
@@ -93,12 +110,7 @@ object WebSocket {
 
                         downstream.onError( exception )
                     case Some( delay ) ⇒
-                        cancelable := reconnect(
-                            request,
-                            listener,
-                            cancelable,
-                            delay
-                        )
+                        cancelable := reconnect( delay )
                         ()
                     case None ⇒ downstream.onError( exception )
                 }
@@ -109,8 +121,6 @@ object WebSocket {
                 code:   Int,
                 reason: String
             ): Unit = {
-                logger.debug( s"Closing ($code)" )
-
                 next {
                     Event.Closing(
                         code,
@@ -125,12 +135,7 @@ object WebSocket {
                                 "Observable has been cancelled explicitly"
                         }
                     case Some( delay ) ⇒
-                        cancelable := reconnect(
-                            request,
-                            listener,
-                            cancelable,
-                            delay
-                        )
+                        cancelable := reconnect( delay )
                         ()
                     case None ⇒ close( socket )
                 }
@@ -141,8 +146,6 @@ object WebSocket {
                 code:   Int,
                 reason: String
             ): Unit = {
-                logger.debug( s"Closed ($code)" )
-
                 next {
                     Event.Closed(
                         code,
@@ -159,36 +162,10 @@ object WebSocket {
             }
         }
 
-        next( Event.Initializing )
+        next( Event.Connecting )
 
         val socket = ohc.newWebSocket( request, listener )
         cancelable := cancellation( socket )
-    }
-
-    private def reconnect(
-        request:    OkHttpRequest,
-        listener:   OkHttpWebSocketListener,
-        cancelable: MultiAssignmentCancelable,
-        delay:      FiniteDuration
-    )(
-        implicit
-        ohc: OkHttpClient,
-        s:   Scheduler
-    ): Cancelable = {
-        logger.debug( s"Attempting reconnect in $delay" )
-
-        Task
-            .delay( ohc.newWebSocket( request, listener ) )
-            .delayExecution( delay )
-            .materialize
-            .foreach {
-                case Success( socket ) ⇒
-                    cancelable := cancellation( socket )
-                    ()
-                case Failure( _ ) ⇒
-                    cancelable := reconnect( request, listener, cancelable, delay )
-                    ()
-            }
     }
 
     private def close( socket: OkHttpWebSocket ): Unit = {

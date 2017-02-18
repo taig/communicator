@@ -7,8 +7,10 @@ import scala.language.postfixOps
 
 class WebSocketTest extends Suite {
     it should "open a connection" in {
-        WebSocket( request ).share.firstL.runAsync.map {
-            _ shouldBe a[WebSocket.Event.Open]
+        WebSocket( request ).share.take( 2 ).toListL.runAsync.map {
+            case List( connecting, open ) ⇒
+                connecting shouldBe WebSocket.Event.Connecting
+                open shouldBe a[WebSocket.Event.Open]
         }
     }
 
