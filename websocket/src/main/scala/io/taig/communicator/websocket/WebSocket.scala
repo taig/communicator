@@ -26,44 +26,35 @@ object WebSocket {
 
         val cancelable = MultiAssignmentCancelable()
 
+        def next( event: Event ): Unit = {
+            if ( downstream.onNext( event ) == Stop ) {
+                cancelable.cancel()
+            }
+        }
+
         lazy val listener: OkHttpWebSocketListener = new OkHttpWebSocketListener {
             override def onOpen(
                 socket:   OkHttpWebSocket,
                 response: OkHttpResponse
             ): Unit = {
-                logger.debug( "Open" )
-
-                val ack = downstream.onNext( Event.Open( socket, response ) )
-
-                if ( ack == Stop ) {
-                    cancelable.cancel()
-                }
+                logger.debug( "Received Open event" )
+                next( Event.Open( socket, response ) )
             }
 
             override def onMessage(
                 socket:  OkHttpWebSocket,
                 message: String
             ): Unit = {
-                logger.debug( s"String-Message: $message" )
-
-                val ack = downstream.onNext( Event.Message( Right( message ) ) )
-
-                if ( ack == Stop ) {
-                    cancelable.cancel()
-                }
+                logger.debug( s"Received String message: $message" )
+                next( Event.Message( Right( message ) ) )
             }
 
             override def onMessage(
                 socket:  OkHttpWebSocket,
                 message: ByteString
             ): Unit = {
-                logger.debug( "Byte-Message" )
-
-                val ack = downstream.onNext( Event.Message( Left( message ) ) )
-
-                if ( ack == Stop ) {
-                    cancelable.cancel()
-                }
+                logger.debug( "Received Byte message" )
+                next( Event.Message( Left( message ) ) )
             }
 
             override def onFailure(
@@ -71,20 +62,15 @@ object WebSocket {
                 exception: Throwable,
                 response:  OkHttpResponse
             ): Unit = {
-                logger.debug( "Failure", exception )
+                logger.debug( "Encountered socket failure", exception )
 
-                val ack = downstream
-                    .onNext( Event.Failure( exception, response ) )
-
-                if ( ack == Stop ) {
-                    cancelable.cancel()
-                }
+                next( Event.Failure( exception, response ) )
 
                 failureReconnect match {
                     case Some( _ ) if cancelable.isCanceled ⇒
                         logger.debug {
                             "Not attempting to reconnect because the " +
-                                "Observable has been cancelled"
+                                "Observable has been cancelled explicitly"
                         }
 
                         downstream.onError( exception )
@@ -107,22 +93,18 @@ object WebSocket {
             ): Unit = {
                 logger.debug( s"Closing ($code)" )
 
-                val ack = downstream.onNext {
+                next {
                     Event.Closing(
                         code,
                         Some( reason ).filter( _.nonEmpty )
                     )
                 }
 
-                if ( ack == Stop ) {
-                    cancelable.cancel()
-                }
-
                 completeReconnect match {
                     case Some( _ ) if cancelable.isCanceled ⇒
                         logger.debug {
                             "Not attempting to reconnect because the " +
-                                "Observable has been cancelled"
+                                "Observable has been cancelled explicitly"
                         }
                     case Some( delay ) ⇒
                         cancelable := reconnect(
@@ -143,15 +125,11 @@ object WebSocket {
             ): Unit = {
                 logger.debug( s"Closed ($code)" )
 
-                val ack = downstream.onNext {
+                next {
                     Event.Closed(
                         code,
                         Some( reason ).filter( _.nonEmpty )
                     )
-                }
-
-                if ( ack == Stop ) {
-                    cancelable.cancel()
                 }
 
                 val complete = completeReconnect.isEmpty ||
@@ -177,7 +155,7 @@ object WebSocket {
         ohc: OkHttpClient,
         s:   Scheduler
     ): Cancelable = {
-        logger.debug( s"Initiating reconnect in $delay" )
+        logger.debug( s"Attempting reconnect in $delay" )
 
         Task
             .delay( ohc.newWebSocket( request, listener ) )
