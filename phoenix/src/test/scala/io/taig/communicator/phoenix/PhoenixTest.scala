@@ -1,7 +1,7 @@
 package io.taig.communicator.phoenix
 
-import cats.syntax.either._
 import io.circe.Json
+import io.taig.communicator.websocket.WebSocket
 import io.taig.phoenix.models._
 
 import scala.concurrent.TimeoutException
@@ -10,63 +10,92 @@ import scala.language.postfixOps
 
 class PhoenixTest extends Suite {
     it should "send a heartbeat" in {
-        for {
-            phoenix ← Phoenix( request )
-            inbound ← phoenix.stream.firstL
-            _ = phoenix.close()
-        } yield inbound match {
-            case Response.Confirmation( topic, payload, _ ) ⇒
-                topic shouldBe Topic.Phoenix
-                payload shouldBe Json.obj()
-            case inbound ⇒ fail( s"Received $inbound" )
-        }
+        Phoenix(
+            WebSocket( request ),
+            heartbeat = Some( 1 second )
+        ).share.collect {
+                case Phoenix.Event.Available( phoenix ) ⇒ phoenix
+            }.flatMap( _.stream ).collect {
+                case confirmation: Response.Confirmation ⇒ confirmation
+            }.firstL.timeout( 10 seconds ).runAsync.map { confirmation ⇒
+                confirmation.topic shouldBe Topic.Phoenix
+                confirmation.payload shouldBe Json.obj()
+            }
     }
 
     it should "allow to disable the heartbeat" in {
-        for {
-            phoenix ← Phoenix( request, heartbeat = None )
-            response ← phoenix.stream
-                .firstOptionL
-                .timeout( 10 seconds )
-                .onErrorRecover { case _: TimeoutException ⇒ None }
-            _ = phoenix.close()
-        } yield response shouldBe None
-    }
-
-    it should "allow to close the connection" in {
-        for {
-            phoenix ← Phoenix( request )
-            _ = phoenix.close()
-            response ← phoenix.stream.firstOptionL
-        } yield response shouldBe None
+        Phoenix( WebSocket( request ), heartbeat = None ).share.collect {
+            case Phoenix.Event.Available( phoenix ) ⇒ phoenix
+        }.flatMap( _.stream ).collect {
+            case confirmation: Response.Confirmation ⇒ confirmation
+        }.firstOptionL
+            .timeout( 10 seconds )
+            .onErrorRecover { case _: TimeoutException ⇒ None }
+            .runAsync
+            .map( _ shouldBe None )
     }
 
     it should "allow to join a Channel" in {
         val topic = Topic( "echo", "foobar" )
 
-        for {
-            phoenix ← Phoenix( request )
-            channel ← phoenix.join( topic )
-            _ = phoenix.close()
-        } yield channel match {
-            case Right( channel ) ⇒
-                channel.topic shouldBe topic
-            case Left( error ) ⇒ fail( s"Received $error" )
+        val phoenix = Phoenix( WebSocket( request ) )
+        val channel = Channel.join( topic )( phoenix ).share
+
+        channel.collect {
+            case Channel.Event.Available( channel ) ⇒ channel
+        }.firstL.timeout( 10 seconds ).runAsync.map { channel ⇒
+            channel.topic shouldBe topic
+        }
+    }
+
+    it should "rejoin a Channel when reconnecting" in {
+        val topic = Topic( "echo", "foobar" )
+
+        val phoenix = Phoenix(
+            WebSocket(
+                request,
+                failureReconnect = Some( 500 milliseconds )
+            )
+        ).share
+        val channel = Channel.join( topic )( phoenix )
+
+        channel.collect {
+            case Channel.Event.Available( channel ) ⇒
+                channel.socket.cancel()
+                channel
+        }.take( 2 ).toListL.timeout( 10 seconds ).runAsync.map {
+            _ should have length 2
         }
     }
 
     it should "fail to join an invalid Channel" in {
         val topic = Topic( "foo", "bar" )
 
-        for {
-            phoenix ← Phoenix( request )
-            channel ← phoenix.join( topic )
-            _ = phoenix.close()
-        } yield channel match {
-            case Left( Some( Response.Error( topic, message, _ ) ) ) ⇒
-                topic shouldBe topic
-                message shouldBe "unmatched topic"
-            case response ⇒ fail( s"Received $response" )
+        val phoenix = Phoenix( WebSocket( request ) ).share
+        val channel = Channel.join( topic )( phoenix )
+
+        channel.collect {
+            case Channel.Event.Failure( response ) ⇒ response
+        }.firstL.timeout( 10 seconds ).runAsync.map {
+            _.map( _.message ) shouldBe Some( "unmatched topic" )
+        }
+    }
+
+    it should "return None when the server omits a response" in {
+        val topic = Topic( "echo", "foobar" )
+
+        val phoenix = Phoenix(
+            WebSocket( request ),
+            timeout = 1 second
+        ).share
+        val channel = Channel.join( topic )( phoenix )
+
+        channel.collect {
+            case Channel.Event.Available( channel ) ⇒ channel
+        }.mapTask { channel ⇒
+            channel.send( Event( "no_reply" ), Json.Null )
+        }.firstL.timeout( 10 seconds ).runAsync.map {
+            _ should not be defined
         }
     }
 }

@@ -99,20 +99,14 @@ val request = new OkHttpRequest.Builder().
 
 val topic = Topic( "echo", "foobar" )
 
-val task = for {
-    phoenix ← Phoenix( request )
-    channel ← phoenix.join( topic )
-    response ← channel match {
-        case Right( channel ) =>
-            channel.send( Event( "echo" ), "foobar".asJson )
-        case Left( error ) => ???
-    }
-    _ = phoenix.close()
-} yield response
+// val phoenix = Phoenix( request ).share
+// val channel = Channel.join( topic )( phoenix )
+
+// TODO
 ```
 
 ```tut:book
-Await.result( task.runAsync, 30 seconds )
+// Await.result( task.runAsync, 30 seconds )
 ```
 
 ## Testing

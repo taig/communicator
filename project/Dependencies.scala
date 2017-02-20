@@ -36,7 +36,7 @@ object Dependencies {
         val parser = scala( "parser" )
     }
 
-    object logback extends Configuration( "ch.qos.logback", "logback", "1.1.9" ) {
+    object logback extends Configuration( "ch.qos.logback", "logback", "1.2.1" ) {
         val classic = java( "classic" )
     }
 
@@ -58,7 +58,7 @@ object Dependencies {
 
     val scalatest = "org.scalatest" %% "scalatest" % "3.0.1"
 
-    object slf4j extends Configuration( "org.slf4j", "slf4j", "1.7.22" ) {
+    object slf4j extends Configuration( "org.slf4j", "slf4j", "1.7.23" ) {
         val api = java( "api" )
     }
 }

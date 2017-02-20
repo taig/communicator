@@ -15,8 +15,20 @@ lazy val communicator = project.in( file( "." ) )
         startYear := Some( 2013 ),
         tutTargetDirectory := file( "." )
     )
-    .aggregate( request, builder, phoenix )
-    .dependsOn( request, builder, phoenix )
+    .aggregate( builder, request, websocket, phoenix )
+    .dependsOn( builder, request, websocket, phoenix )
+
+lazy val builder = project
+    .settings( Settings.common )
+    .settings(
+        coverageEnabled := false,
+        libraryDependencies ++=
+            Dependencies.cats.core ::
+            Nil,
+        name := "builder",
+        startYear := Some( 2016 )
+    )
+    .dependsOn( request )
 
 lazy val request = project
     .settings( Settings.common )
@@ -31,28 +43,26 @@ lazy val request = project
         startYear := Some( 2016 )
     )
 
-lazy val builder = project
+lazy val websocket = project
     .settings( Settings.common )
     .settings(
         libraryDependencies ++=
-            Dependencies.cats.core ::
+            Dependencies.monix.reactive ::
+            Dependencies.slf4j.api ::
+            Dependencies.logback.classic % "test" ::
             Nil,
-        name := "builder",
-        startYear := Some( 2016 )
+        startYear := Some( 2017 )
     )
-    .dependsOn( request )
+    .dependsOn( request % "compile->compile;test->test" )
 
 lazy val phoenix = project
     .settings( Settings.common )
     .settings(
         libraryDependencies ++=
             Dependencies.circe.parser ::
-            Dependencies.monix.reactive ::
             Dependencies.phoenixModels ::
-            Dependencies.slf4j.api ::
-            Dependencies.logback.classic % "test" ::
             Dependencies.monix.cats % "test" ::
             Nil,
         startYear := Some( 2016 )
     )
-    .dependsOn( request % "compile->compile;test->test" )
+    .dependsOn( websocket % "compile->compile;test->test" )
