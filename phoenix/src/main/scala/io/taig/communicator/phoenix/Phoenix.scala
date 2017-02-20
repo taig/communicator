@@ -10,7 +10,7 @@ import io.taig.phoenix.models.{ Event ⇒ PEvent, _ }
 import monix.eval.Task
 import monix.execution.Ack.Stop
 import monix.execution.Cancelable
-import monix.execution.cancelables.{ CompositeCancelable, MultiAssignmentCancelable }
+import monix.execution.cancelables.{ CompositeCancelable, MultiAssignmentCancelable, SerialCancelable }
 import monix.reactive.{ Observable, OverflowStrategy }
 import okhttp3.OkHttpClient
 
@@ -45,7 +45,7 @@ object Phoenix {
     ): Observable[Event] = Observable.create[Event]( strategy ) { downstream ⇒
         import downstream.scheduler
 
-        val heartbeats = MultiAssignmentCancelable()
+        val heartbeats = SerialCancelable()
 
         val observable = websocket.publish
 
@@ -69,28 +69,30 @@ object Phoenix {
             }
         }
 
-        def enableHeartbeat( socket: OkHttpWebSocket ): Cancelable =
-            heartbeat.map { interval ⇒
+        def enableHeartbeat( socket: OkHttpWebSocket ): Unit =
+            heartbeat.foreach { interval ⇒
                 logger.debug( s"Enabling heartbeat ($interval)" )
-                this.heartbeat( interval ).mapTask { request ⇒
+                val cancelable = this.heartbeat( interval ).mapTask { request ⇒
                     send( request )( socket, stream, timeout )
-                }.publish.connect()
-            }.getOrElse( Cancelable.empty )
+                }.subscribe()
+
+                heartbeats := cancelable
+                ()
+            }
 
         def cancelHeartbeat(): Unit = {
             if ( heartbeat.isDefined ) {
                 logger.debug( "Cancelling heartbeat" )
+                heartbeats := Cancelable.empty
+                ()
             }
-
-            heartbeats.cancel()
         }
 
         next( Event.Connecting )
 
         composite += observable.foreach {
             case WebSocket.Event.Open( socket, _ ) ⇒
-                heartbeats := enableHeartbeat( socket )
-
+                enableHeartbeat( socket )
                 val phoenix = Phoenix( socket, stream, timeout )
                 val available = Event.Available( phoenix )
                 next( available )
