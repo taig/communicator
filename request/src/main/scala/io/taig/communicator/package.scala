@@ -17,6 +17,8 @@ package object communicator {
 
     type OkHttpRequestBody = okhttp3.RequestBody
 
+    type OkHttpResponseBody = okhttp3.ResponseBody
+
     type OkHttpMultipartBody = okhttp3.MultipartBody
 
     object OkHttpMultipartBody {

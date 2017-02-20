@@ -9,8 +9,8 @@ import io.taig.communicator.websocket.WebSocket
 import io.taig.phoenix.models.{ Event ⇒ PEvent, _ }
 import monix.eval.Task
 import monix.execution.Ack.Stop
-import monix.execution.Cancelable
-import monix.execution.cancelables.{ CompositeCancelable, MultiAssignmentCancelable, SerialCancelable }
+import monix.execution.{ Cancelable, Scheduler }
+import monix.execution.cancelables.{ CompositeCancelable, SerialCancelable }
 import monix.reactive.{ Observable, OverflowStrategy }
 import okhttp3.OkHttpClient
 
@@ -42,43 +42,31 @@ object Phoenix {
     )(
         implicit
         ohc: OkHttpClient
-    ): Observable[Event] = Observable.create[Event]( strategy ) { downstream ⇒
-        import downstream.scheduler
-
+    ): Observable[Event] = Observable.defer {
         val heartbeats = SerialCancelable()
 
-        val observable = websocket.publish
-
-        val connection = observable.connect()
-
-        val composite = CompositeCancelable( heartbeats, connection )
-
-        val stream = observable.collect {
-            case WebSocket.Event.Message( Right( message ) ) ⇒
-                decode[Inbound]( message ).valueOr( throw _ )
-        }
+        val composite = CompositeCancelable( heartbeats )
 
         val cancelable = Cancelable { () ⇒
             logger.debug( "Closing Phoenix connection" )
             composite.cancel()
         }
 
-        def next( event: Event ): Unit = {
-            if ( downstream.onNext( event ) == Stop ) {
-                cancelable.cancel()
-            }
+        def enableHeartbeat(
+            socket: OkHttpWebSocket,
+            stream: Observable[Inbound]
+        )(
+            implicit
+            s: Scheduler
+        ): Unit = heartbeat.foreach { interval ⇒
+            logger.debug( s"Enabling heartbeat ($interval)" )
+            val cancelable = this.heartbeat( interval ).mapTask { request ⇒
+                send( request )( socket, stream, timeout )
+            }.subscribe()
+
+            heartbeats := cancelable
+            ()
         }
-
-        def enableHeartbeat( socket: OkHttpWebSocket ): Unit =
-            heartbeat.foreach { interval ⇒
-                logger.debug( s"Enabling heartbeat ($interval)" )
-                val cancelable = this.heartbeat( interval ).mapTask { request ⇒
-                    send( request )( socket, stream, timeout )
-                }.subscribe()
-
-                heartbeats := cancelable
-                ()
-            }
 
         def cancelHeartbeat(): Unit = {
             if ( heartbeat.isDefined ) {
@@ -88,26 +76,50 @@ object Phoenix {
             }
         }
 
-        next( Event.Connecting )
+        Observable.create[Event]( strategy ) { downstream ⇒
+            import downstream.scheduler
 
-        composite += observable.foreach {
-            case WebSocket.Event.Open( socket, _ ) ⇒
-                enableHeartbeat( socket )
-                val phoenix = Phoenix( socket, stream, timeout )
-                val available = Event.Available( phoenix )
-                next( available )
-            case WebSocket.Event.Failure( _, _ ) ⇒
-                cancelHeartbeat()
-                next( Event.Unavailable )
-            case WebSocket.Event.Closing( _, _ ) ⇒
-                cancelHeartbeat()
-                next( Event.Unavailable )
-            case WebSocket.Event.Reconnecting ⇒
-                next( Event.Reconnecting )
-            case _ ⇒ //
+            val observable = websocket.publish
+
+            val connection = observable.connect()
+
+            composite += connection
+
+            val stream = observable.collect {
+                case WebSocket.Event.Message( Right( message ) ) ⇒
+                    decode[Inbound]( message ).valueOr( throw _ )
+            }
+
+            def next( event: Event ): Unit = {
+                if ( downstream.onNext( event ) == Stop ) {
+                    cancelable.cancel()
+                }
+            }
+
+            next( Event.Connecting )
+
+            composite += observable.foreach {
+                case WebSocket.Event.Open( socket ) ⇒
+                    enableHeartbeat( socket, stream )
+                    val phoenix = Phoenix( socket, stream, timeout )
+                    val available = Event.Available( phoenix )
+                    next( available )
+                case WebSocket.Event.Failure( _ ) ⇒
+                    cancelHeartbeat()
+                    next( Event.Unavailable )
+                case WebSocket.Event.Closing( _, _ ) ⇒
+                    cancelHeartbeat()
+                    next( Event.Unavailable )
+                case WebSocket.Event.Reconnecting ⇒
+                    next( Event.Reconnecting )
+                case _ ⇒ //
+            }
+
+            cancelable
+        }.doOnEarlyStop { () ⇒
+            logger.debug( "Early stop shutdown triggered" )
+            cancelable.cancel()
         }
-
-        cancelable
     }
 
     def send( request: Request )(

@@ -1,8 +1,7 @@
 package io.taig.communicator.websocket
 
 import io.taig.communicator.{ OkHttpRequest, OkHttpResponse, OkHttpWebSocket, OkHttpWebSocketListener }
-import monix.eval.Task
-import monix.execution.Ack.Stop
+import monix.execution.Ack.{ Continue, Stop }
 import monix.execution.Cancelable
 import monix.execution.cancelables.MultiAssignmentCancelable
 import monix.reactive.{ Observable, OverflowStrategy }
@@ -10,7 +9,6 @@ import okhttp3.OkHttpClient
 import okio.ByteString
 
 import scala.concurrent.duration.FiniteDuration
-import scala.util.{ Failure, Success }
 
 object WebSocket {
     sealed trait Event
@@ -20,13 +18,11 @@ object WebSocket {
 
         case object Reconnecting extends Event
 
-        case class Open( socket: OkHttpWebSocket, response: OkHttpResponse )
-            extends Event
+        case class Open( socket: OkHttpWebSocket ) extends Event
 
         case class Message( payload: Either[ByteString, String] ) extends Event
 
-        case class Failure( throwable: Throwable, response: OkHttpResponse )
-            extends Event
+        case class Failure( throwable: Throwable ) extends Event
 
         case class Closing( code: Int, reason: Option[String] ) extends Event
 
@@ -41,140 +37,235 @@ object WebSocket {
     )(
         implicit
         ohc: OkHttpClient
-    ): Observable[Event] = Observable.create( strategy ) { downstream ⇒
-        import downstream.scheduler
+    ): Observable[Event] = Observable.defer {
+        var socket: OkHttpWebSocket = null
 
-        val cancelable = MultiAssignmentCancelable()
+        val reconnecting = MultiAssignmentCancelable()
 
-        def next( event: Event ): Unit = {
-            event match {
-                case Event.Failure( throwable, _ ) ⇒
-                    logger.debug( s"Event: $event", throwable )
-                case event ⇒ logger.debug( s"Event: $event" )
-            }
+        var continue = true
 
-            if ( downstream.onNext( event ) == Stop ) {
-                cancelable.cancel()
+        def close(): Unit = {
+            continue = false
+
+            reconnecting.cancel()
+
+            if ( socket != null ) {
+                if ( socket.close( 1000, null ) ) {
+                    logger.debug( "Closing WebSocket connection" )
+                } else {
+                    logger.debug( "WebSocket already closed" )
+                }
             }
         }
 
-        def reconnect( delay: FiniteDuration ): Unit = {
-            logger.debug( s"Attempting reconnect in $delay" )
+        def cancel(): Unit = {
+            continue = false
 
-            val timer = Task
-                .delay {
-                    next( Event.Reconnecting )
-                    ohc.newWebSocket( request, listener )
+            reconnecting.cancel()
+
+            if ( socket != null ) {
+                logger.debug( "Cancelling WebSocket connection" )
+                socket.cancel()
+            }
+        }
+
+        Observable.create( strategy ) { downstream ⇒
+            import downstream.scheduler
+
+            def reconnect( delay: FiniteDuration ): Unit = {
+                logger.debug( s"Attempting to reconnect in $delay" )
+
+                if ( socket != null ) {
+                    socket.cancel()
                 }
-                .delayExecution( delay )
-                .materialize
-                .foreach {
-                    case Success( socket ) ⇒
-                        cancelable := cancellation( socket )
+
+                socket = null
+
+                val timer = scheduler.scheduleOnce( delay ) {
+                    val event = Event.Reconnecting
+
+                    reconnecting := Cancelable.empty
+
+                    if ( continue ) {
+                        logger.debug( s"Propagating: $event" )
+
+                        if ( downstream.onNext( event ) == Continue ) {
+                            socket = ohc.newWebSocket( request, listener )
+                        }
+                    } else {
+                        // No socket available, no further reconnect going on.
+                        // There is nothing left to do.
+                        logger.debug( s"Discarding: $event" )
+                    }
+                }
+
+                reconnecting := Cancelable { () ⇒
+                    logger.debug( "Cancelling reconnect attempt" )
+                    timer.cancel()
+                }
+
+                ()
+            }
+
+            lazy val listener: OkHttpWebSocketListener = new OkHttpWebSocketListener {
+                override def onOpen(
+                    socket:   OkHttpWebSocket,
+                    response: OkHttpResponse
+                ): Unit = {
+                    Option( response ).foreach( _.close() )
+
+                    val event = Event.Open( socket )
+
+                    if ( continue ) {
+                        logger.debug( s"Propagating: $event" )
+
+                        if ( downstream.onNext( event ) == Stop ) {
+                            close()
+                        }
+                    } else {
+                        logger.debug( s"Discarding: $event" )
+                        close()
+                    }
+                }
+
+                override def onMessage(
+                    socket:  OkHttpWebSocket,
+                    message: String
+                ): Unit = {
+                    val event = Event.Message( Right( message ) )
+
+                    if ( continue ) {
+                        logger.debug( s"Propagating: $event" )
+
+                        if ( downstream.onNext( event ) == Stop ) {
+                            close()
+                        }
+                    } else {
+                        logger.debug( s"Discarding: $event" )
+                    }
+                }
+
+                override def onMessage(
+                    socket:  OkHttpWebSocket,
+                    message: ByteString
+                ): Unit = {
+                    val event = Event.Message( Left( message ) )
+
+                    if ( continue ) {
+                        logger.debug( s"Propagating: $event" )
+
+                        if ( downstream.onNext( event ) == Stop ) {
+                            close()
+                        }
+                    } else {
+                        logger.debug( s"Discarding: $event" )
+                    }
+                }
+
+                override def onFailure(
+                    socket:    OkHttpWebSocket,
+                    throwable: Throwable,
+                    response:  OkHttpResponse
+                ): Unit = {
+                    Option( response ).foreach( _.close )
+
+                    val event = Event.Failure( throwable )
+
+                    ( continue, failureReconnect ) match {
+                        case ( true, Some( delay ) ) ⇒
+                            logger.debug( s"Propagating: $event" )
+                            downstream.onNext( event )
+                            reconnect( delay )
+                        case ( true, None ) ⇒
+                            logger.debug( s"Propagating: $event" )
+                            downstream.onNext( event )
+                            downstream.onError( throwable )
+                            cancel()
+                        case ( false, delay ) ⇒
+                            logger.debug( s"Discarding: $event" )
+
+                            if ( delay.nonEmpty ) {
+                                logger.debug {
+                                    "Not attempting to reconnect because the " +
+                                        "Observable has been stopped explicitly"
+                                }
+                            }
+
+                            cancel()
+                            downstream.onError( throwable )
+                    }
+                }
+
+                override def onClosing(
+                    socket: OkHttpWebSocket,
+                    code:   Int,
+                    reason: String
+                ): Unit = {
+                    val event = Event.Closing(
+                        code,
+                        Some( reason ).filter( _.nonEmpty )
+                    )
+
+                    ( continue, completeReconnect ) match {
+                        case ( true, Some( delay ) ) ⇒
+                            logger.debug( s"Propagating: $event" )
+                            downstream.onNext( event )
+                            reconnect( delay )
+                        case ( true, None ) ⇒
+                            logger.debug( s"Propagating: $event" )
+                            downstream.onNext( event )
+                            downstream.onComplete()
+                            close()
+                        case ( false, delay ) ⇒
+                            logger.debug( s"Discarding: $event" )
+
+                            if ( delay.nonEmpty ) {
+                                logger.debug {
+                                    "Not attempting to reconnect because the " +
+                                        "Observable has been stopped explicitly"
+                                }
+                            }
+
+                            close()
+                            downstream.onComplete()
+                    }
+                }
+
+                override def onClosed(
+                    socket: OkHttpWebSocket,
+                    code:   Int,
+                    reason: String
+                ): Unit = {
+                    val event = Event.Closed(
+                        code,
+                        Some( reason ).filter( _.nonEmpty )
+                    )
+
+                    if ( continue ) {
+                        logger.debug( s"Propagating: $event" )
+                        downstream.onNext( event )
                         ()
-                    case Failure( _ ) ⇒ reconnect( delay )
-                }
-
-            cancelable := Cancelable { () ⇒
-                logger.debug( "Cancelling reconnect attempt" )
-                timer.cancel()
-            }
-
-            ()
-        }
-
-        lazy val listener: OkHttpWebSocketListener = new OkHttpWebSocketListener {
-            override def onOpen(
-                socket:   OkHttpWebSocket,
-                response: OkHttpResponse
-            ): Unit = next( Event.Open( socket, response ) )
-
-            override def onMessage(
-                socket:  OkHttpWebSocket,
-                message: String
-            ): Unit = next( Event.Message( Right( message ) ) )
-
-            override def onMessage(
-                socket:  OkHttpWebSocket,
-                message: ByteString
-            ): Unit = next( Event.Message( Left( message ) ) )
-
-            override def onFailure(
-                socket:    OkHttpWebSocket,
-                exception: Throwable,
-                response:  OkHttpResponse
-            ): Unit = {
-                next( Event.Failure( exception, response ) )
-
-                failureReconnect match {
-                    case Some( _ ) if cancelable.isCanceled ⇒
-                        logger.debug {
-                            "Not attempting to reconnect because the " +
-                                "Observable has been cancelled explicitly"
-                        }
-
-                        downstream.onError( exception )
-                    case Some( delay ) ⇒ reconnect( delay )
-                    case None          ⇒ downstream.onError( exception )
+                    } else {
+                        logger.debug( s"Discarding: $event" )
+                    }
                 }
             }
 
-            override def onClosing(
-                socket: OkHttpWebSocket,
-                code:   Int,
-                reason: String
-            ): Unit = {
-                next {
-                    Event.Closing(
-                        code,
-                        Some( reason ).filter( _.nonEmpty )
-                    )
-                }
+            logger.debug( s"Propagating: ${Event.Connecting}" )
 
-                completeReconnect match {
-                    case Some( _ ) if cancelable.isCanceled ⇒
-                        logger.debug {
-                            "Not attempting to reconnect because the " +
-                                "Observable has been cancelled explicitly"
-                        }
-                    case Some( delay ) ⇒ reconnect( delay )
-                    case None          ⇒ close( socket )
+            if ( downstream.onNext( Event.Connecting ) == Continue ) {
+                socket = ohc.newWebSocket( request, listener )
+
+                Cancelable { () ⇒
+                    reconnecting.cancel()
+                    close()
                 }
+            } else {
+                Cancelable.empty
             }
-
-            override def onClosed(
-                socket: OkHttpWebSocket,
-                code:   Int,
-                reason: String
-            ): Unit = {
-                next {
-                    Event.Closed(
-                        code,
-                        Some( reason ).filter( _.nonEmpty )
-                    )
-                }
-
-                val complete = completeReconnect.isEmpty ||
-                    ( completeReconnect.isDefined && cancelable.isCanceled )
-
-                if ( complete ) {
-                    downstream.onComplete()
-                }
-            }
-        }
-
-        next( Event.Connecting )
-
-        val socket = ohc.newWebSocket( request, listener )
-        cancelable := cancellation( socket )
-    }
-
-    private def close( socket: OkHttpWebSocket ): Unit = {
-        if ( socket.close( 1000, null ) ) {
-            logger.debug( "Closing WebSocket connection" )
+        }.doOnEarlyStop { () ⇒
+            logger.debug( "Early stop shutdown triggered" )
+            close()
         }
     }
-
-    private def cancellation( socket: OkHttpWebSocket ): Cancelable =
-        Cancelable( () ⇒ close( socket ) )
 }

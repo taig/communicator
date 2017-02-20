@@ -1,9 +1,10 @@
-lazy val communicator = project.in( file( "." ) )
+lazy val root = project.in( file( "." ) )
     .settings( tutSettings ++ Settings.common )
     .settings(
         aggregate in tut := false,
         autoScalaLibrary := false,
         description := "An OkHttp wrapper for Scala",
+        fork in tut := true,
         name := "communicator",
         managedSources := Seq.empty,
         normalizedName := name.value,

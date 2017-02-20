@@ -31,7 +31,6 @@ import io.taig.phoenix.models._
 import io.taig.communicator._; import request._
 import okhttp3.OkHttpClient
 import scala._; import util._; import concurrent._; import duration._
-import language.postfixOps
 
 // To build request tasks, an implicit OkHttpClient should be in scope
 implicit val client = new OkHttpClient()
@@ -47,7 +46,7 @@ val response = request.runAsync
 ```
 
 ```tut:book
-Await.result( response, 30 seconds )
+Await.result( response, 30.seconds )
 ```
 
 ## Usage
@@ -82,14 +81,12 @@ val parse: Task[Response.With[String]] = request.parse[String]
 ### Phoenix Channels
 
 ```tut:reset:silent
-import monix.eval.Task
 import monix.execution.Scheduler.Implicits.global
-import io.circe.syntax._
-import io.taig.communicator._; import phoenix._
+import io.taig.communicator._; import websocket._; import phoenix._
 import io.taig.phoenix.models._
-import okhttp3.OkHttpClient
+import okhttp3.{ConnectionPool, OkHttpClient}
 import scala._; import util._; import concurrent._; import duration._
-import language.postfixOps
+import java.util.concurrent.TimeUnit
 
 implicit val client = new OkHttpClient()
 
@@ -99,14 +96,17 @@ val request = new OkHttpRequest.Builder().
 
 val topic = Topic( "echo", "foobar" )
 
-// val phoenix = Phoenix( request ).share
-// val channel = Channel.join( topic )( phoenix )
+val websocket = WebSocket( request )
+val phoenix = Phoenix( websocket )
+val channel = Channel.join( topic )( phoenix )
 
-// TODO
+val task = channel.collect {
+    case Channel.Event.Available( channel ) ⇒ channel
+}.firstL.map( _.topic )
 ```
 
 ```tut:book
-// Await.result( task.runAsync, 30 seconds )
+// Await.result( task.runAsync, 90.seconds )
 ```
 
 ## Testing

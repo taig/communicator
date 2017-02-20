@@ -1,5 +1,12 @@
 # Changelog
 
+## 3.2.0
+
+_2017-02-21_
+
+ * Improve Phoenix resource management
+ * Introuce `websocket` module
+
 ## 3.1.1
 
 _2017-01-30_
