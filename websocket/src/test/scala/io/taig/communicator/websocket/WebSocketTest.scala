@@ -7,7 +7,13 @@ import scala.language.postfixOps
 
 class WebSocketTest extends Suite {
     it should "open a connection" in {
-        WebSocket( request ).share.take( 2 ).toListL.runAsync.map {
+        WebSocket( request ).firstL.runAsync.map {
+            _ shouldBe WebSocket.Event.Connecting
+        }
+    }
+
+    it should "establish a connection" in {
+        WebSocket( request ).take( 2 ).toListL.runAsync.map {
             case List( connecting, open ) ⇒
                 connecting shouldBe WebSocket.Event.Connecting
                 open shouldBe a[WebSocket.Event.Open]
@@ -22,7 +28,7 @@ class WebSocketTest extends Suite {
         }.take( 2 ).toListL
 
         val send: Task[Unit] = observable.collect {
-            case WebSocket.Event.Open( socket, _ ) ⇒ socket
+            case WebSocket.Event.Open( socket ) ⇒ socket
         }.firstL.foreachL { socket ⇒
             socket.send( "foo" )
             socket.send( "bar" )
@@ -42,8 +48,8 @@ class WebSocketTest extends Suite {
         WebSocket(
             request,
             failureReconnect = Some( 100 milliseconds )
-        ).share.collect {
-                case WebSocket.Event.Open( socket, _ ) ⇒
+        ).collect {
+                case WebSocket.Event.Open( socket ) ⇒
                     socket.cancel()
                     count += 1
                     count
@@ -58,8 +64,8 @@ class WebSocketTest extends Suite {
         WebSocket(
             request,
             completeReconnect = Some( 100 milliseconds )
-        ).share.collect {
-                case WebSocket.Event.Open( socket, _ ) ⇒
+        ).collect {
+                case WebSocket.Event.Open( socket ) ⇒
                     socket.close( 1000, null )
                     count += 1
                     count
@@ -80,7 +86,7 @@ class WebSocketTest extends Suite {
         val subscription = observable.connect()
 
         observable.collect {
-            case WebSocket.Event.Open( socket, _ ) ⇒
+            case WebSocket.Event.Open( socket ) ⇒
                 if ( count == 0 ) {
                     socket.close( 1000, null )
                 }

@@ -31,7 +31,6 @@ import io.taig.phoenix.models._
 import io.taig.communicator._; import request._
 import okhttp3.OkHttpClient
 import scala._; import util._; import concurrent._; import duration._
-import language.postfixOps
 
 // To build request tasks, an implicit OkHttpClient should be in scope
 implicit val client = new OkHttpClient()
@@ -47,7 +46,7 @@ val response = request.runAsync
 ```
 
 ```scala
-Await.result( response, 30 seconds )
+Await.result( response, 30.seconds )
 // res8: io.taig.communicator.request.Response.With[String] =
 // >>> http://taig.io/
 // [No headers]
@@ -56,20 +55,20 @@ Await.result( response, 30 seconds )
 // Content-Type: text/html; charset=utf-8
 // Last-Modified: Tue, 24 Feb 2015 15:20:41 GMT
 // Access-Control-Allow-Origin: *
-// Expires: Mon, 30 Jan 2017 08:36:12 GMT
+// Expires: Tue, 21 Feb 2017 10:44:07 GMT
 // Cache-Control: max-age=600
-// X-GitHub-Request-Id: 4260:19EBB:6A624F6:893305E:588EF8A3
+// X-GitHub-Request-Id: 29CC:1EBB1:4BC27F3:610BA5E:58AC179F
 // Accept-Ranges: bytes
-// Date: Mon, 30 Jan 2017 08:42:48 GMT
+// Date: Tue, 21 Feb 2017 10:46:12 GMT
 // Via: 1.1 varnish
-// Age: 0
+// Age: 233
 // Connection: keep-alive
-// X-Served-By: cache-fra1227-FRA
-// X-Cache: MISS
-// X-Cache-Hits: 0
-// X-Timer: S1485765768.642275,VS0,VE91
+// X-Served-By: cache-fra1249-FRA
+// X-Cache: HIT
+// X-Cache-Hits: 1
+// X-Timer: S1487673972.816600,VS0,VE0
 // Vary: Accept-Encoding
-// X-Fastly-Request-ID: 02db8fa864c388925bd50ace5cb429853f082953
+// X-Fastly-Request-ID: 05cb76b2c4bc306e91c37a5a780a0e7b49653c65
 ```
 
 ## Usage
@@ -104,14 +103,12 @@ val parse: Task[Response.With[String]] = request.parse[String]
 ### Phoenix Channels
 
 ```scala
-import monix.eval.Task
 import monix.execution.Scheduler.Implicits.global
-import io.circe.syntax._
-import io.taig.communicator._; import phoenix._
+import io.taig.communicator._; import websocket._; import phoenix._
 import io.taig.phoenix.models._
-import okhttp3.OkHttpClient
+import okhttp3.{ConnectionPool, OkHttpClient}
 import scala._; import util._; import concurrent._; import duration._
-import language.postfixOps
+import java.util.concurrent.TimeUnit
 
 implicit val client = new OkHttpClient()
 
@@ -121,24 +118,17 @@ val request = new OkHttpRequest.Builder().
 
 val topic = Topic( "echo", "foobar" )
 
-val task = for {
-    phoenix ← Phoenix( request )
-    channel ← phoenix.join( topic )
-    response ← channel match {
-        case Right( channel ) =>
-            channel.send( Event( "echo" ), "foobar".asJson )
-        case Left( error ) => ???
-    }
-    _ = phoenix.close()
-} yield response
+val websocket = WebSocket( request )
+val phoenix = Phoenix( websocket )
+val channel = Channel.join( topic )( phoenix )
+
+val task = channel.collect {
+    case Channel.Event.Available( channel ) ⇒ channel
+}.firstL.map( _.topic )
 ```
 
 ```scala
-Await.result( task.runAsync, 30 seconds )
-// res4: Option[io.taig.phoenix.models.Response] =
-// Some(Confirmation(Topic(echo:foobar),{
-//   "payload" : "foobar"
-// },Ref(1)))
+// Await.result( task.runAsync, 90.seconds )
 ```
 
 ## Testing
