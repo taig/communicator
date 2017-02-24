@@ -101,4 +101,12 @@ class WebSocketTest extends Suite {
             _ should contain theSameElementsAs List( 1, 2 )
         }
     }
+
+    it should "release resources when stopped early" in {
+        WebSocket( request ).collect {
+            case WebSocket.Event.Open( socket ) ⇒ socket
+        }.firstL.runAsync.map {
+            _.close( 1000, null ) shouldBe false
+        }
+    }
 }
