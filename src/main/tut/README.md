@@ -2,7 +2,7 @@
 
 [![CircleCI](https://circleci.com/gh/Taig/communicator/tree/master.svg?style=shield)](https://circleci.com/gh/Taig/communicator/tree/master)
 [![codecov](https://codecov.io/gh/Taig/communicator/branch/master/graph/badge.svg)](https://codecov.io/gh/Taig/communicator)
-[![Maven](https://img.shields.io/maven-central/v/io.taig/communicator_2.12.svg)](http://search.maven.org/#artifactdetails%7Cio.taig%7Ccommunicator_2.12%7C3.1.1%7Cjar)
+[![Maven](https://img.shields.io/maven-central/v/io.taig/communicator_2.12.svg)](http://search.maven.org/#artifactdetails%7Cio.taig%7Ccommunicator_2.12%7C3.2.0%7Cjar)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/Taig/Communicator/master/LICENSE)
 
 > A [monix][1] wrapper for [OkHttp][2]
@@ -13,14 +13,14 @@ Communicator provides a simple way to construct OkHttp requests as `monix.Task`s
 
 ```scala
 libraryDependencies ++=
-    "io.taig" %% "communicator-common" % "3.1.1" ::
-    "io.taig" %% "communicator-request" % "3.1.1" ::
-    "io.taig" %% "communicator-phoenix" % "3.1.1" ::
+    "io.taig" %% "communicator-common" % "3.2.0" ::
+    "io.taig" %% "communicator-request" % "3.2.0" ::
+    "io.taig" %% "communicator-phoenix" % "3.2.0" ::
     Nil
 ```
 
 ```scala
-libraryDependencies += "io.taig" %% "communicator" % "3.1.1"
+libraryDependencies += "io.taig" %% "communicator" % "3.2.0"
 ```
 
 ## Quickstart
@@ -107,6 +107,42 @@ val task = channel.collect {
 
 ```tut:book
 // Await.result( task.runAsync, 90.seconds )
+```
+
+## Android
+
+To use Communicator on the Android platform please extend your ProGuard rules by the following instructions:
+
+```scala
+proguardOptions ++=
+    "-keepattributes EnclosingMethod,InnerClasses,Signature" ::
+    "-dontwarn org.w3c.dom.bootstrap.DOMImplementationRegistry" ::
+    "-dontwarn javax.xml.bind.DatatypeConverter" ::
+    "-dontnote org.joda.time.DateTimeZone" ::
+    "-dontnote scala.concurrent.stm.impl.STMImpl$" ::
+    "-dontnote okhttp3.internal.**" ::
+    "-dontwarn io.circe.generic.util.macros.**" ::
+    "-dontwarn monix.execution.internals.**" ::
+    "-dontnote monix.execution.internals.**" ::
+    "-dontwarn okio.**" ::
+    "-dontwarn org.jctools.**" ::
+    "-dontwarn org.slf4j.**" ::
+    Nil
+```
+
+You might also use existing platform `Executor`s to provide a monix `Scheduler`:
+
+```scala
+import android.os.AsyncTask
+import android.util.Log
+import monix.execution.Scheduler
+
+implicit val PoolScheduler: Scheduler = Scheduler {
+    ExecutionContext.fromExecutor(
+        AsyncTask.THREAD_POOL_EXECUTOR,
+        t ⇒ Log.e( "PoolScheduler", "Failure during asynchronous operation", t )
+    )
+}
 ```
 
 ## Testing
