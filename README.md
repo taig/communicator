@@ -59,16 +59,16 @@ Await.result( response, 30.seconds )
 // Cache-Control: max-age=600
 // X-GitHub-Request-Id: B8A8:F8D5:4E2309:64F386:58AFD90C
 // Accept-Ranges: bytes
-// Date: Fri, 24 Feb 2017 12:45:51 GMT
+// Date: Fri, 24 Feb 2017 12:48:22 GMT
 // Via: 1.1 varnish
-// Age: 0
+// Age: 151
 // Connection: keep-alive
-// X-Served-By: cache-fra1225-FRA
+// X-Served-By: cache-fra1245-FRA
 // X-Cache: HIT
 // X-Cache-Hits: 1
-// X-Timer: S1487940351.523424,VS0,VE92
+// X-Timer: S1487940502.148613,VS0,VE0
 // Vary: Accept-Encoding
-// X-Fastly-Request-ID: 893f042bbff10d497bc215285c5a46d9465b7ffb
+// X-Fastly-Request-ID: e4be436ad2bf1cb5316fc7a4905209f85bbbbda3
 ```
 
 ## Usage
@@ -137,15 +137,10 @@ To use Communicator on the Android platform please extend your ProGuard rules by
 
 ```scala
 proguardOptions ++=
-    "-keepattributes EnclosingMethod,InnerClasses,Signature" ::
-    "-dontwarn org.w3c.dom.bootstrap.DOMImplementationRegistry" ::
-    "-dontwarn javax.xml.bind.DatatypeConverter" ::
-    "-dontnote org.joda.time.DateTimeZone" ::
-    "-dontnote scala.concurrent.stm.impl.STMImpl$" ::
     "-dontnote okhttp3.internal.**" ::
+    "-dontnote monix.execution.internals.**" ::
     "-dontwarn io.circe.generic.util.macros.**" ::
     "-dontwarn monix.execution.internals.**" ::
-    "-dontnote monix.execution.internals.**" ::
     "-dontwarn okio.**" ::
     "-dontwarn org.jctools.**" ::
     "-dontwarn org.slf4j.**" ::

@@ -115,15 +115,10 @@ To use Communicator on the Android platform please extend your ProGuard rules by
 
 ```scala
 proguardOptions ++=
-    "-keepattributes EnclosingMethod,InnerClasses,Signature" ::
-    "-dontwarn org.w3c.dom.bootstrap.DOMImplementationRegistry" ::
-    "-dontwarn javax.xml.bind.DatatypeConverter" ::
-    "-dontnote org.joda.time.DateTimeZone" ::
-    "-dontnote scala.concurrent.stm.impl.STMImpl$" ::
     "-dontnote okhttp3.internal.**" ::
+    "-dontnote monix.execution.internals.**" ::
     "-dontwarn io.circe.generic.util.macros.**" ::
     "-dontwarn monix.execution.internals.**" ::
-    "-dontnote monix.execution.internals.**" ::
     "-dontwarn okio.**" ::
     "-dontwarn org.jctools.**" ::
     "-dontwarn org.slf4j.**" ::
