@@ -3,7 +3,7 @@ lazy val root = project.in( file( "." ) )
     .settings(
         aggregate in tut := false,
         autoScalaLibrary := false,
-        description := "An OkHttp wrapper for Scala",
+        description := "A monix wrapper for OkHttp",
         fork in tut := true,
         name := "communicator",
         managedSources := Seq.empty,

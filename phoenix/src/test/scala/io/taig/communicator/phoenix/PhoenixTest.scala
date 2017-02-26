@@ -52,9 +52,9 @@ class PhoenixTest extends Suite {
         val topic = Topic( "echo", "foobar" )
 
         val phoenix = Phoenix(
-            WebSocket(
+            WebSocket.fromRequest(
                 request,
-                failureReconnect = Some( 500 milliseconds )
+                errorReconnect = _ ⇒ Some( 500 milliseconds )
             )
         )
         val channel = Channel.join( topic )( phoenix )

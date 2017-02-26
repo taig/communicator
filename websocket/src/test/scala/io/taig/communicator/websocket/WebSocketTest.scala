@@ -6,7 +6,7 @@ import scala.concurrent.duration._
 import scala.language.postfixOps
 
 class WebSocketTest extends Suite {
-    it should "open a connection" in {
+    it should "start a connection" in {
         WebSocket( request ).firstL.runAsync.map {
             _ shouldBe WebSocket.Event.Connecting
         }
@@ -45,49 +45,49 @@ class WebSocketTest extends Suite {
     it should "reconnect after failure" in {
         var count = 0
 
-        WebSocket(
+        WebSocket.fromRequest(
             request,
-            failureReconnect = Some( 100 milliseconds )
+            errorReconnect = _ ⇒ Some( 100 milliseconds )
         ).collect {
-                case WebSocket.Event.Open( socket ) ⇒
-                    socket.cancel()
-                    count += 1
-                    count
-            }.take( 2 ).toListL.timeout( 10 seconds ).runAsync.map {
-                _ should contain theSameElementsAs List( 1, 2 )
-            }
+            case WebSocket.Event.Open( socket ) ⇒
+                socket.cancel()
+                count += 1
+                count
+        }.take( 2 ).toListL.timeout( 10 seconds ).runAsync.map {
+            _ should contain theSameElementsAs List( 1, 2 )
+        }
     }
 
     it should "reconnect after complete" in {
         var count = 0
 
-        WebSocket(
+        WebSocket.fromRequest(
             request,
-            completeReconnect = Some( 100 milliseconds )
+            completeReconnect = _ ⇒ Some( 100 milliseconds )
         ).collect {
-                case WebSocket.Event.Open( socket ) ⇒
-                    socket.close( 1000, null )
-                    count += 1
-                    count
-            }.take( 2 ).toListL.timeout( 10 seconds ).runAsync.map {
-                _ should contain theSameElementsAs List( 1, 2 )
-            }
+            case WebSocket.Event.Open( socket ) ⇒
+                socket.close( 1000, null )
+                count += 1
+                count
+        }.take( 2 ).toListL.timeout( 10 seconds ).runAsync.map {
+            _ should contain theSameElementsAs List( 1, 2 )
+        }
     }
 
     it should "not reconnect when cancelled explicitly" in {
         var count = 0
 
-        val observable = WebSocket(
+        val observable = WebSocket.fromRequest(
             request,
-            failureReconnect  = Some( 100 milliseconds ),
-            completeReconnect = Some( 100 milliseconds )
+            errorReconnect    = _ ⇒ Some( 100 milliseconds ),
+            completeReconnect = _ ⇒ Some( 100 milliseconds )
         ).publish
 
         val subscription = observable.connect()
 
         observable.collect {
             case WebSocket.Event.Open( socket ) ⇒
-                if ( count == 0 ) {
+                if ( count < 1 ) {
                     socket.close( 1000, null )
                 }
 
@@ -99,6 +99,15 @@ class WebSocketTest extends Suite {
                 count
         }.take( 3 ).toListL.timeout( 10 seconds ).runAsync.map {
             _ should contain theSameElementsAs List( 1, 2 )
+        }
+    }
+
+    it should "release resources when stopped early" in {
+        WebSocket( request ).collect {
+            case WebSocket.Event.Open( socket ) ⇒ socket
+        }.firstL.runAsync.map { socket ⇒
+            Thread.sleep( 500 )
+            socket.close( 1000, null ) shouldBe false
         }
     }
 }
