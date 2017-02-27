@@ -237,22 +237,10 @@ object WebSocket {
     ): Observable[Event] = {
         var counter = retries
 
-        // flat merge switch
         Observable.fromTask( request ).mergeMap { r ⇒
             WebSocket( r, strategy ).mergeMapDelayErrors {
                 case Event.Failure( throwable ) ⇒
-                    errorReconnect( retries ) match {
-                        case Some( delay ) ⇒
-                            fromTaskCounting(
-                                request,
-                                strategy,
-                                errorReconnect,
-                                completeReconnect,
-                                counter + 1
-                            ).delaySubscription( delay )
-                        case None ⇒
-                            Observable.raiseError( throwable )
-                    }
+                    Observable.raiseError( throwable )
                 case Event.Closed( _, _ ) ⇒ completeReconnect( retries ) match {
                     case Some( delay ) ⇒
                         fromTaskCounting(
@@ -265,6 +253,18 @@ object WebSocket {
                     case None ⇒ Observable.empty
                 }
                 case event ⇒ Observable.now( event )
+            }
+        }.onErrorHandleWith { throwable ⇒
+            errorReconnect( retries ) match {
+                case Some( delay ) ⇒
+                    fromTaskCounting(
+                        request,
+                        strategy,
+                        errorReconnect,
+                        completeReconnect,
+                        counter + 1
+                    ).delaySubscription( delay )
+                case None ⇒ Observable.raiseError( throwable )
             }
         }.doOnNext {
             case Event.Open( _ ) ⇒ counter = 1

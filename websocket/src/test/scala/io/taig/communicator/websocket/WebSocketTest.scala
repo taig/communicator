@@ -74,6 +74,29 @@ class WebSocketTest extends Suite {
         }
     }
 
+    it should "reconnect on Task failure" in {
+        var count = 0
+
+        val task = Task.defer {
+            if ( count == 0 ) {
+                count += 1
+                Task.raiseError( new IllegalStateException( "" ) )
+            } else {
+                Task.now( request )
+            }
+        }
+
+        WebSocket.fromTask(
+            task,
+            errorReconnect    = _ ⇒ Some( 100 milliseconds ),
+            completeReconnect = _ ⇒ Some( 100 milliseconds )
+        ).collect {
+            case WebSocket.Event.Open( _ ) ⇒ true
+        }.firstL.timeout( 10 seconds ).runAsync.map {
+            _ shouldBe true
+        }
+    }
+
     it should "not reconnect when cancelled explicitly" in {
         var count = 0
 
