@@ -17,7 +17,6 @@ object WebSocket {
     sealed trait Event
 
     object Event {
-
         case object Connecting extends Event
 
         case object Reconnecting extends Event
@@ -31,12 +30,20 @@ object WebSocket {
         case class Closing( code: Int, reason: Option[String] ) extends Event
 
         case class Closed( code: Int, reason: Option[String] ) extends Event
-
     }
 
     def apply(
         request:  OkHttpRequest,
         strategy: OverflowStrategy.Synchronous[Event] = OverflowStrategy.Unbounded
+    )(
+        implicit
+        ohc: OkHttpClient
+    ): Observable[Event] = WebSocket( request, strategy, Event.Connecting )
+
+    private def apply(
+        request:  OkHttpRequest,
+        strategy: OverflowStrategy.Synchronous[Event],
+        status:   Event
     )(
         implicit
         ohc: OkHttpClient
@@ -180,9 +187,9 @@ object WebSocket {
 
             socket = new RealWebSocket( request, listener, new SecureRandom )
 
-            logger.debug( s"Propagating: ${Event.Connecting}" )
+            logger.debug( s"Propagating: $status" )
 
-            if ( downstream.onNext( Event.Connecting ) == Continue ) {
+            if ( downstream.onNext( status ) == Continue ) {
                 socket.connect( ohc )
                 Cancelable { () ⇒
                     logger.debug( "Explicitly cancel Observable" )
@@ -230,41 +237,48 @@ object WebSocket {
         strategy:          OverflowStrategy.Synchronous[Event],
         errorReconnect:    Int ⇒ Option[FiniteDuration],
         completeReconnect: Int ⇒ Option[FiniteDuration],
-        retries:           Int                                 = 1
+        retries:           Int                                 = 1,
+        status:            Event                               = Event.Connecting
     )(
         implicit
         ohc: OkHttpClient
     ): Observable[Event] = {
         var counter = retries
 
-        // flat merge switch
         Observable.fromTask( request ).mergeMap { r ⇒
-            WebSocket( r, strategy ).mergeMapDelayErrors {
+            WebSocket( r, strategy, status ).mergeMapDelayErrors {
                 case Event.Failure( throwable ) ⇒
-                    errorReconnect( retries ) match {
-                        case Some( delay ) ⇒
-                            fromTaskCounting(
-                                request,
-                                strategy,
-                                errorReconnect,
-                                completeReconnect,
-                                counter + 1
-                            ).delaySubscription( delay )
-                        case None ⇒
-                            Observable.raiseError( throwable )
-                    }
+                    Observable.raiseError( throwable )
                 case Event.Closed( _, _ ) ⇒ completeReconnect( retries ) match {
                     case Some( delay ) ⇒
+                        logger.debug( s"Attempting to reconnect in $delay" )
+
                         fromTaskCounting(
                             request,
                             strategy,
                             errorReconnect,
                             completeReconnect,
-                            counter + 1
+                            counter + 1,
+                            Event.Reconnecting
                         ).delaySubscription( delay )
                     case None ⇒ Observable.empty
                 }
                 case event ⇒ Observable.now( event )
+            }
+        }.onErrorHandleWith { throwable ⇒
+            errorReconnect( retries ) match {
+                case Some( delay ) ⇒
+                    logger.debug( s"Attempting to reconnect in $delay" )
+
+                    fromTaskCounting(
+                        request,
+                        strategy,
+                        errorReconnect,
+                        completeReconnect,
+                        counter + 1,
+                        Event.Reconnecting
+                    ).delaySubscription( delay )
+                case None ⇒ Observable.raiseError( throwable )
             }
         }.doOnNext {
             case Event.Open( _ ) ⇒ counter = 1
