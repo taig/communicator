@@ -251,6 +251,8 @@ object WebSocket {
                     Observable.raiseError( throwable )
                 case Event.Closed( _, _ ) ⇒ completeReconnect( retries ) match {
                     case Some( delay ) ⇒
+                        logger.debug( s"Attempting to reconnect in $delay" )
+
                         fromTaskCounting(
                             request,
                             strategy,
@@ -266,6 +268,8 @@ object WebSocket {
         }.onErrorHandleWith { throwable ⇒
             errorReconnect( retries ) match {
                 case Some( delay ) ⇒
+                    logger.debug( s"Attempting to reconnect in $delay" )
+
                     fromTaskCounting(
                         request,
                         strategy,
