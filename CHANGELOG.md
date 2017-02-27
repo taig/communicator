@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.2.1
+
+_2017-02-27_
+
+ * Fix reconnect not being triggered on Task failure
+ * Log when reconnect attempt is scheduled
+ * Properly propagate Reconnecting event
+
 ## 3.2.0
 
 _2017-02-21_

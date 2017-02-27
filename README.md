@@ -2,7 +2,7 @@
 
 [![CircleCI](https://circleci.com/gh/Taig/communicator/tree/master.svg?style=shield)](https://circleci.com/gh/Taig/communicator/tree/master)
 [![codecov](https://codecov.io/gh/Taig/communicator/branch/master/graph/badge.svg)](https://codecov.io/gh/Taig/communicator)
-[![Maven](https://img.shields.io/maven-central/v/io.taig/communicator_2.12.svg)](http://search.maven.org/#artifactdetails%7Cio.taig%7Ccommunicator_2.12%7C3.2.0%7Cjar)
+[![Maven](https://img.shields.io/maven-central/v/io.taig/communicator_2.12.svg)](http://search.maven.org/#artifactdetails%7Cio.taig%7Ccommunicator_2.12%7C3.2.1%7Cjar)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/Taig/Communicator/master/LICENSE)
 
 > A [monix][1] wrapper for [OkHttp][2]
@@ -13,14 +13,14 @@ Communicator provides a simple way to construct OkHttp requests as `monix.Task`s
 
 ```scala
 libraryDependencies ++=
-    "io.taig" %% "communicator-common" % "3.2.0" ::
-    "io.taig" %% "communicator-request" % "3.2.0" ::
-    "io.taig" %% "communicator-phoenix" % "3.2.0" ::
+    "io.taig" %% "communicator-common" % "3.2.1" ::
+    "io.taig" %% "communicator-request" % "3.2.1" ::
+    "io.taig" %% "communicator-phoenix" % "3.2.1" ::
     Nil
 ```
 
 ```scala
-libraryDependencies += "io.taig" %% "communicator" % "3.2.0"
+libraryDependencies += "io.taig" %% "communicator" % "3.2.1"
 ```
 
 ## Quickstart
@@ -55,20 +55,20 @@ Await.result( response, 30.seconds )
 // Content-Type: text/html; charset=utf-8
 // Last-Modified: Tue, 24 Feb 2015 15:20:41 GMT
 // Access-Control-Allow-Origin: *
-// Expires: Fri, 24 Feb 2017 07:06:13 GMT
+// Expires: Mon, 27 Feb 2017 11:18:32 GMT
 // Cache-Control: max-age=600
-// X-GitHub-Request-Id: B8A8:F8D5:4E2309:64F386:58AFD90C
+// X-GitHub-Request-Id: 6822:72CF:57B247:7A42BF:58B408B0
 // Accept-Ranges: bytes
-// Date: Fri, 24 Feb 2017 12:48:22 GMT
+// Date: Mon, 27 Feb 2017 13:23:47 GMT
 // Via: 1.1 varnish
-// Age: 151
+// Age: 336
 // Connection: keep-alive
-// X-Served-By: cache-fra1245-FRA
+// X-Served-By: cache-fra1226-FRA
 // X-Cache: HIT
 // X-Cache-Hits: 1
-// X-Timer: S1487940502.148613,VS0,VE0
+// X-Timer: S1488201827.333798,VS0,VE0
 // Vary: Accept-Encoding
-// X-Fastly-Request-ID: e4be436ad2bf1cb5316fc7a4905209f85bbbbda3
+// X-Fastly-Request-ID: 0f433ad5b76941332250692a30172467273ecc2e
 ```
 
 ## Usage
