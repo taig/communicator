@@ -3,15 +3,17 @@ package io.taig.communicator.websocket
 import java.security.SecureRandom
 
 import io.taig.communicator.{ OkHttpRequest, OkHttpResponse, OkHttpWebSocket, OkHttpWebSocketListener }
-import monix.eval.Task
 import monix.execution.Ack.{ Continue, Stop }
 import monix.execution.Cancelable
-import monix.reactive.{ Observable, OverflowStrategy }
+import monix.execution.cancelables.SerialCancelable
+import monix.reactive.observers.Subscriber
+import monix.reactive.{ Notification, Observable, OverflowStrategy }
 import okhttp3.OkHttpClient
 import okhttp3.internal.ws.RealWebSocket
 import okio.ByteString
 
 import scala.concurrent.duration.FiniteDuration
+import scala.util.Random
 
 object WebSocket {
     sealed trait Event
@@ -32,14 +34,6 @@ object WebSocket {
         case class Closed( code: Int, reason: Option[String] ) extends Event
     }
 
-    def apply(
-        request:  OkHttpRequest,
-        strategy: OverflowStrategy.Synchronous[Event] = OverflowStrategy.Unbounded
-    )(
-        implicit
-        ohc: OkHttpClient
-    ): Observable[Event] = WebSocket( request, strategy, Event.Connecting )
-
     private def apply(
         request:  OkHttpRequest,
         strategy: OverflowStrategy.Synchronous[Event],
@@ -48,28 +42,30 @@ object WebSocket {
         implicit
         ohc: OkHttpClient
     ): Observable[Event] = Observable.defer {
-        var continue = true
+        val id = Random.nextInt( 10000 )
+        logger.debug( s"Creating WebSocket ($id)" )
 
+        var continue = true
         var socket: RealWebSocket = null
 
         def close(): Unit = if ( continue ) {
             continue = false
 
             if ( socket.close( 1000, null ) ) {
-                logger.debug( "Closing WebSocket connection" )
+                logger.debug( s"Closing WebSocket connection ($id)" )
             } else {
-                logger.debug( "WebSocket already closed" )
+                logger.debug( s"WebSocket already closed ($id)" )
             }
         }
 
         def cancel(): Unit = if ( continue ) {
             continue = false
 
-            logger.debug( "Cancelling WebSocket connection" )
+            logger.debug( s"Cancelling WebSocket connection ($id)" )
             socket.cancel()
         }
 
-        Observable.create( strategy ) { downstream ⇒
+        Observable.create( strategy ) { subscriber ⇒
             lazy val listener: OkHttpWebSocketListener = new OkHttpWebSocketListener {
                 override def onOpen(
                     socket:   OkHttpWebSocket,
@@ -80,14 +76,12 @@ object WebSocket {
                     val event = Event.Open( socket )
 
                     if ( continue ) {
-                        logger.debug( s"Propagating: $event" )
+                        logger.debug( s"Propagating: $event ($id)" )
 
-                        if ( downstream.onNext( event ) == Stop ) {
+                        if ( subscriber.onNext( event ) == Stop ) {
                             close()
                         }
-                    } else {
-                        logger.debug( s"Discarding: $event" )
-                    }
+                    } else logger.debug( s"Discarding: $event ($id)" )
                 }
 
                 override def onMessage(
@@ -97,14 +91,12 @@ object WebSocket {
                     val event = Event.Message( Right( message ) )
 
                     if ( continue ) {
-                        logger.debug( s"Propagating: $event" )
+                        logger.debug( s"Propagating: $event ($id)" )
 
-                        if ( downstream.onNext( event ) == Stop ) {
+                        if ( subscriber.onNext( event ) == Stop ) {
                             close()
                         }
-                    } else {
-                        logger.debug( s"Discarding: $event" )
-                    }
+                    } else logger.debug( s"Discarding: $event ($id)" )
                 }
 
                 override def onMessage(
@@ -114,14 +106,12 @@ object WebSocket {
                     val event = Event.Message( Left( message ) )
 
                     if ( continue ) {
-                        logger.debug( s"Propagating: $event" )
+                        logger.debug( s"Propagating: $event ($id)" )
 
-                        if ( downstream.onNext( event ) == Stop ) {
+                        if ( subscriber.onNext( event ) == Stop ) {
                             close()
                         }
-                    } else {
-                        logger.debug( s"Discarding: $event" )
-                    }
+                    } else logger.debug( s"Discarding: $event ($id)" )
                 }
 
                 override def onFailure(
@@ -134,14 +124,12 @@ object WebSocket {
                     val event = Event.Failure( throwable )
 
                     if ( continue ) {
-                        logger.debug( s"Propagating: $event" )
-                        downstream.onNext( event )
+                        logger.debug( s"Propagating: $event ($id)" )
+                        subscriber.onNext( event )
                         cancel()
-                    } else {
-                        logger.debug( s"Discarding: $event" )
-                    }
+                    } else logger.debug( s"Discarding: $event ($id)" )
 
-                    downstream.onError( throwable )
+                    subscriber.onError( throwable )
                 }
 
                 override def onClosing(
@@ -155,12 +143,11 @@ object WebSocket {
                     )
 
                     if ( continue ) {
-                        logger.debug( s"Propagating: $event" )
-                        downstream.onNext( event )
-                        ()
-                    } else {
-                        logger.debug( s"Discarding: $event" )
-                    }
+                        logger.debug( s"Propagating: $event ($id)" )
+                        if ( subscriber.onNext( event ) == Stop ) {
+                            continue = false
+                        }
+                    } else logger.debug( s"Discarding: $event ($id)" )
                 }
 
                 override def onClosed(
@@ -174,115 +161,107 @@ object WebSocket {
                     )
 
                     if ( continue ) {
-                        logger.debug( s"Propagating: $event" )
-                        downstream.onNext( event )
+                        logger.debug( s"Propagating: $event ($id)" )
+                        subscriber.onNext( event )
                         ()
-                    } else {
-                        logger.debug( s"Discarding: $event" )
-                    }
+                    } else logger.debug( s"Discarding: $event ($id)" )
 
-                    downstream.onComplete()
+                    subscriber.onComplete()
                 }
             }
 
             socket = new RealWebSocket( request, listener, new SecureRandom )
 
-            logger.debug( s"Propagating: $status" )
+            logger.debug( s"Propagating: $status ($id)" )
 
-            if ( downstream.onNext( status ) == Continue ) {
+            if ( subscriber.onNext( status ) == Continue ) {
                 socket.connect( ohc )
                 Cancelable { () ⇒
-                    logger.debug( "Explicitly cancel Observable" )
+                    logger.debug( s"Shutdown WebSocket Observable ($id)" )
                     close()
                 }
             } else Cancelable( () ⇒ cancel() )
-        }.doOnEarlyStop { () ⇒
-            logger.debug( "Initiate early stop shutdown" )
-            close()
         }
     }
 
-    def fromRequest(
+    def apply(
         request:           OkHttpRequest,
         strategy:          OverflowStrategy.Synchronous[Event] = OverflowStrategy.Unbounded,
-        errorReconnect:    Int ⇒ Option[FiniteDuration]        = _ ⇒ Default.errorReconnect,
-        completeReconnect: Int ⇒ Option[FiniteDuration]        = _ ⇒ Default.completeReconnect
+        errorReconnect:    Int ⇒ Option[FiniteDuration]        = Default.errorReconnect,
+        completeReconnect: Int ⇒ Option[FiniteDuration]        = Default.completeReconnect
     )(
         implicit
         ohc: OkHttpClient
-    ): Observable[Event] = fromTask(
-        Task.now( request ),
-        strategy,
-        errorReconnect,
-        completeReconnect
-    )
+    ): Observable[Event] = Observable.create( strategy ) { subscriber ⇒
+        val cancelable = SerialCancelable()
 
-    def fromTask(
-        request:           Task[OkHttpRequest],
-        strategy:          OverflowStrategy.Synchronous[Event] = OverflowStrategy.Unbounded,
-        errorReconnect:    Int ⇒ Option[FiniteDuration]        = _ ⇒ Default.errorReconnect,
-        completeReconnect: Int ⇒ Option[FiniteDuration]        = _ ⇒ Default.completeReconnect
+        subscribe( subscriber )(
+            request,
+            strategy,
+            errorReconnect,
+            completeReconnect,
+            Event.Connecting,
+            1,
+            cancelable
+        )
+
+        cancelable
+    }
+
+    private def subscribe(
+        subscriber: Subscriber.Sync[Event]
     )(
-        implicit
-        ohc: OkHttpClient
-    ): Observable[Event] = fromTaskCounting(
-        request,
-        strategy,
-        errorReconnect,
-        completeReconnect
-    )
-
-    private def fromTaskCounting(
-        request:           Task[OkHttpRequest],
+        request:           OkHttpRequest,
         strategy:          OverflowStrategy.Synchronous[Event],
         errorReconnect:    Int ⇒ Option[FiniteDuration],
         completeReconnect: Int ⇒ Option[FiniteDuration],
-        retries:           Int                                 = 1,
-        status:            Event                               = Event.Connecting
+        status:            Event,
+        retries:           Int,
+        cancelable:        SerialCancelable
     )(
         implicit
         ohc: OkHttpClient
-    ): Observable[Event] = {
+    ): Cancelable = {
+        import subscriber.scheduler
+
         var counter = retries
 
-        Observable.fromTask( request ).mergeMap { r ⇒
-            WebSocket( r, strategy, status ).mergeMapDelayErrors {
-                case Event.Failure( throwable ) ⇒
-                    Observable.raiseError( throwable )
-                case Event.Closed( _, _ ) ⇒ completeReconnect( retries ) match {
-                    case Some( delay ) ⇒
-                        logger.debug( s"Attempting to reconnect in $delay" )
+        def reconnect( delay: FiniteDuration ): Unit = {
+            cancelable := scheduler.scheduleOnce( delay ) {
+                subscribe( subscriber )(
+                    request,
+                    strategy,
+                    errorReconnect,
+                    completeReconnect,
+                    Event.Reconnecting,
+                    counter + 1,
+                    cancelable
+                )
+                ()
+            }
 
-                        fromTaskCounting(
-                            request,
-                            strategy,
-                            errorReconnect,
-                            completeReconnect,
-                            counter + 1,
-                            Event.Reconnecting
-                        ).delaySubscription( delay )
-                    case None ⇒ Observable.empty
+            logger.debug( s"Attempting to reconnect in $delay (retry #$counter)" )
+        }
+
+        cancelable := WebSocket( request, strategy, status ).materialize.foreach {
+            case Notification.OnNext( event ) ⇒
+                if ( event.isInstanceOf[Event.Open] ) {
+                    counter = 1
                 }
-                case event ⇒ Observable.now( event )
-            }
-        }.onErrorHandleWith { throwable ⇒
-            errorReconnect( retries ) match {
-                case Some( delay ) ⇒
-                    logger.debug( s"Attempting to reconnect in $delay" )
 
-                    fromTaskCounting(
-                        request,
-                        strategy,
-                        errorReconnect,
-                        completeReconnect,
-                        counter + 1,
-                        Event.Reconnecting
-                    ).delaySubscription( delay )
-                case None ⇒ Observable.raiseError( throwable )
-            }
-        }.doOnNext {
-            case Event.Open( _ ) ⇒ counter = 1
-            case _               ⇒ //
+                if ( subscriber.onNext( event ) == Stop ) {
+                    cancelable.cancel()
+                }
+            case Notification.OnError( throwable ) ⇒
+                errorReconnect( retries ) match {
+                    case Some( delay ) if !cancelable.isCanceled ⇒ reconnect( delay )
+                    case _                                       ⇒ subscriber.onError( throwable )
+                }
+            case Notification.OnComplete ⇒
+                completeReconnect( retries ) match {
+                    case Some( delay ) if !cancelable.isCanceled ⇒ reconnect( delay )
+                    case _                                       ⇒ subscriber.onComplete()
+                }
         }
     }
 }

@@ -55,20 +55,20 @@ Await.result( response, 30.seconds )
 // Content-Type: text/html; charset=utf-8
 // Last-Modified: Tue, 24 Feb 2015 15:20:41 GMT
 // Access-Control-Allow-Origin: *
-// Expires: Mon, 27 Feb 2017 11:18:32 GMT
+// Expires: Thu, 02 Mar 2017 15:11:28 GMT
 // Cache-Control: max-age=600
-// X-GitHub-Request-Id: 6822:72CF:57B247:7A42BF:58B408B0
+// X-GitHub-Request-Id: 2276:F8D5:459728D:59C520D:58B833C8
 // Accept-Ranges: bytes
-// Date: Mon, 27 Feb 2017 13:23:47 GMT
+// Date: Thu, 02 Mar 2017 16:28:13 GMT
 // Via: 1.1 varnish
-// Age: 336
+// Age: 0
 // Connection: keep-alive
-// X-Served-By: cache-fra1226-FRA
-// X-Cache: HIT
-// X-Cache-Hits: 1
-// X-Timer: S1488201827.333798,VS0,VE0
+// X-Served-By: cache-fra1241-FRA
+// X-Cache: MISS
+// X-Cache-Hits: 0
+// X-Timer: S1488472093.287331,VS0,VE102
 // Vary: Accept-Encoding
-// X-Fastly-Request-ID: 0f433ad5b76941332250692a30172467273ecc2e
+// X-Fastly-Request-ID: dc1f0b1267574482a6673a63d9cc5814b046d617
 ```
 
 ## Usage
