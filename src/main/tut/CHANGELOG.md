@@ -1,5 +1,12 @@
 # Changelog
 
+## 3.2.2
+
+_2017-03-07_
+
+ * Make `Response.apply` public
+ * Improve websocket resource handling / cleanup
+
 ## 3.2.1
 
 _2017-02-27_
