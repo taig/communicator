@@ -4,6 +4,7 @@ import io.circe.Json
 import io.taig.communicator.OkHttpWebSocket
 import io.taig.phoenix.models.{ Event ⇒ PEvent, _ }
 import monix.eval.Task
+import monix.execution.Cancelable
 import monix.reactive.{ Observable, OverflowStrategy }
 import org.slf4j.LoggerFactory
 
@@ -13,9 +14,11 @@ case class Channel( topic: Topic )(
         val socket:  OkHttpWebSocket,
         val timeout: FiniteDuration
 ) {
-    def send( event: PEvent, payload: Json ): Task[Option[Response]] = {
+    def send( event: PEvent, payload: Json )(
+        responses: Observable[Response]
+    ): Task[Option[Response]] = {
         val request = Request( topic, event, payload )
-        Phoenix.send( request )( socket, null, timeout )
+        Phoenix.send( request )( socket, responses, timeout )
     }
 }
 
@@ -69,10 +72,15 @@ object Channel {
                     Observable.now( Event.Message( value ) )
                 else Observable.empty
             case Phoenix.Event.Unavailable ⇒ Observable.now( Event.Unavailable )
+        }.doOnNext { event ⇒
+            logger.debug( s"Propagating: $event" )
         }.subscribe( subscriber )
 
-        stream.connect()
-    }.doOnNext { event ⇒
-        logger.debug( s"Propagating: $event" )
+        val subscription = stream.connect()
+
+        Cancelable { () ⇒
+            logger.debug( "Shutdown Channel Observable" )
+            subscription.cancel()
+        }
     }
 }
