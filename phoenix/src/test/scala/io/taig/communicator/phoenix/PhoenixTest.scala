@@ -119,14 +119,10 @@ class PhoenixTest extends Suite {
         val phoenix = Phoenix( websocket, timeout = 1 second )
         val channel = Channel.join( phoenix, topic ).share
 
-        val responses = channel.collect {
-            case Channel.Event.Message( response: Response ) ⇒ response
-        }
-
         channel.collect {
             case Channel.Event.Available( channel ) ⇒ channel
         }.mapTask { channel ⇒
-            channel.send( Event( "no_reply" ), Json.Null )( responses )
+            channel.send( Event( "no_reply" ), Json.Null )
         }.firstL.timeout( 10 seconds ).runAsync.map {
             _ should not be defined
         }

@@ -1,6 +1,6 @@
 package io.taig.communicator.phoenix
 
-import io.circe.Json
+import io.circe.{ Json, Printer }
 import io.taig.communicator.OkHttpWebSocket
 import io.taig.phoenix.models.{ Event ⇒ PEvent, _ }
 import monix.eval.Task
@@ -11,11 +11,13 @@ import org.slf4j.LoggerFactory
 import scala.concurrent.duration.FiniteDuration
 
 case class Channel( topic: Topic )(
-        val socket:  OkHttpWebSocket,
-        val timeout: FiniteDuration
+        val socket:    OkHttpWebSocket,
+        val responses: Observable[Response],
+        val timeout:   FiniteDuration
 ) {
     def send( event: PEvent, payload: Json )(
-        responses: Observable[Response]
+        implicit
+        p: Printer = Default.printer
     ): Task[Option[Response]] = {
         val request = Request( topic, event, payload )
         Phoenix.send( request )( socket, responses, timeout )
@@ -61,7 +63,7 @@ object Channel {
                 val task = Phoenix.send( request )( socket, responses, timeout )
                 Observable.fromTask( task ).map {
                     case Some( Response.Confirmation( _, _, _ ) ) ⇒
-                        val channel = Channel( topic )( socket, timeout )
+                        val channel = Channel( topic )( socket, responses, timeout )
                         Event.Available( channel )
                     case Some( error: Response.Error ) ⇒
                         Event.Failure( Some( error ) )

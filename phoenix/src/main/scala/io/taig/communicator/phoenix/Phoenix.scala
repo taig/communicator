@@ -5,13 +5,11 @@ import io.circe.Printer
 import io.circe.parser.decode
 import io.circe.syntax._
 import io.taig.communicator.OkHttpWebSocket
-import io.taig.communicator.phoenix.Phoenix.Event
 import io.taig.communicator.websocket.WebSocket
 import io.taig.phoenix.models.{ Inbound, Request, Response, Topic, Event ⇒ PEvent }
 import monix.eval.Task
-import monix.execution.{ Cancelable, Scheduler }
 import monix.execution.cancelables.SerialCancelable
-import monix.reactive.observers.Subscriber
+import monix.execution.{ Cancelable, Scheduler }
 import monix.reactive.{ Observable, OverflowStrategy }
 import okhttp3.OkHttpClient
 import org.slf4j.LoggerFactory
@@ -131,7 +129,7 @@ object Phoenix {
         timeout:   FiniteDuration
     )(
         implicit
-        p: Printer = Printer.noSpaces
+        p: Printer = Default.printer
     ): Task[Option[Response]] = Task.create { ( scheduler, callback ) ⇒
         val cancelable = responses
             .filter( _.ref == request.ref )
