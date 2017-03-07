@@ -2,7 +2,7 @@
 
 [![CircleCI](https://circleci.com/gh/Taig/communicator/tree/master.svg?style=shield)](https://circleci.com/gh/Taig/communicator/tree/master)
 [![codecov](https://codecov.io/gh/Taig/communicator/branch/master/graph/badge.svg)](https://codecov.io/gh/Taig/communicator)
-[![Maven](https://img.shields.io/maven-central/v/io.taig/communicator_2.12.svg)](http://search.maven.org/#artifactdetails%7Cio.taig%7Ccommunicator_2.12%7C3.2.1%7Cjar)
+[![Maven](https://img.shields.io/maven-central/v/io.taig/communicator_2.12.svg)](http://search.maven.org/#artifactdetails%7Cio.taig%7Ccommunicator_2.12%7C3.2.2%7Cjar)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/Taig/Communicator/master/LICENSE)
 
 > A [monix][1] wrapper for [OkHttp][2]
@@ -13,14 +13,14 @@ Communicator provides a simple way to construct OkHttp requests as `monix.Task`s
 
 ```scala
 libraryDependencies ++=
-    "io.taig" %% "communicator-common" % "3.2.1" ::
-    "io.taig" %% "communicator-request" % "3.2.1" ::
-    "io.taig" %% "communicator-phoenix" % "3.2.1" ::
+    "io.taig" %% "communicator-common" % "3.2.2" ::
+    "io.taig" %% "communicator-request" % "3.2.2" ::
+    "io.taig" %% "communicator-phoenix" % "3.2.2" ::
     Nil
 ```
 
 ```scala
-libraryDependencies += "io.taig" %% "communicator" % "3.2.1"
+libraryDependencies += "io.taig" %% "communicator" % "3.2.2"
 ```
 
 ## Quickstart
@@ -55,20 +55,20 @@ Await.result( response, 30.seconds )
 // Content-Type: text/html; charset=utf-8
 // Last-Modified: Tue, 24 Feb 2015 15:20:41 GMT
 // Access-Control-Allow-Origin: *
-// Expires: Tue, 07 Mar 2017 12:13:33 GMT
+// Expires: Tue, 07 Mar 2017 13:14:33 GMT
 // Cache-Control: max-age=600
-// X-GitHub-Request-Id: BCC0:2A686:22410D2:2CC3C96:58BEA195
+// X-GitHub-Request-Id: 5D8A:181F:1B00A99:251073E:58BEAFDC
 // Accept-Ranges: bytes
-// Date: Tue, 07 Mar 2017 12:07:10 GMT
+// Date: Tue, 07 Mar 2017 15:55:57 GMT
 // Via: 1.1 varnish
-// Age: 35
+// Age: 0
 // Connection: keep-alive
-// X-Served-By: cache-fra1227-FRA
+// X-Served-By: cache-fra1236-FRA
 // X-Cache: HIT
 // X-Cache-Hits: 1
-// X-Timer: S1488888430.798148,VS0,VE0
+// X-Timer: S1488902156.943359,VS0,VE94
 // Vary: Accept-Encoding
-// X-Fastly-Request-ID: 7f944b757deaa312263efc95f15c7b864776b5fe
+// X-Fastly-Request-ID: e33821122553fe92bfbdadf46b23cade4a90b6b4
 ```
 
 ## Usage
@@ -128,8 +128,7 @@ val task = channel.collect {
 ```
 
 ```scala
-Await.result( task.runAsync, 90.seconds )
-// res5: io.taig.phoenix.models.Topic = Topic(echo:foobar)
+// Await.result( task.runAsync, 90.seconds )
 ```
 
 ## Android
