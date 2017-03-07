@@ -98,7 +98,7 @@ val topic = Topic( "echo", "foobar" )
 
 val websocket = WebSocket( request )
 val phoenix = Phoenix( websocket )
-val channel = Channel.join( topic )( phoenix )
+val channel = Channel.join( phoenix, topic )
 
 val task = channel.collect {
     case Channel.Event.Available( channel ) ⇒ channel

@@ -6,13 +6,13 @@ import io.circe.parser.decode
 import io.circe.syntax._
 import io.taig.communicator.OkHttpWebSocket
 import io.taig.communicator.websocket.WebSocket
-import io.taig.phoenix.models.{ Event ⇒ PEvent, _ }
+import io.taig.phoenix.models.{ Inbound, Request, Response, Topic, Event ⇒ PEvent }
 import monix.eval.Task
-import monix.execution.Ack.Stop
+import monix.execution.cancelables.SerialCancelable
 import monix.execution.{ Cancelable, Scheduler }
-import monix.execution.cancelables.{ CompositeCancelable, SerialCancelable }
 import monix.reactive.{ Observable, OverflowStrategy }
 import okhttp3.OkHttpClient
+import org.slf4j.LoggerFactory
 
 import scala.concurrent.TimeoutException
 import scala.concurrent.duration._
@@ -20,17 +20,26 @@ import scala.language.postfixOps
 
 case class Phoenix(
     socket:  OkHttpWebSocket,
-    stream:  Observable[Inbound],
     timeout: FiniteDuration
 )
 
 object Phoenix {
-    sealed trait Event
+    private[phoenix] val logger = LoggerFactory.getLogger( "phoenix" )
+
+    sealed trait Action extends Product with Serializable
+
+    object Action {
+        case class Forward( event: Event ) extends Action
+        case class Heartbeat( request: Request, phoenix: Phoenix ) extends Action
+    }
+
+    sealed trait Event extends Product with Serializable
 
     object Event {
         case object Connecting extends Event
         case object Reconnecting extends Event
         case class Available( phoenix: Phoenix ) extends Event
+        case class Message( value: Inbound ) extends Event
         case object Unavailable extends Event
     }
 
@@ -45,110 +54,99 @@ object Phoenix {
     ): Observable[Event] = Observable.defer {
         val heartbeats = SerialCancelable()
 
-        val composite = CompositeCancelable( heartbeats )
-
-        val cancelable = Cancelable { () ⇒
-            logger.debug( "Closing Phoenix connection" )
-            composite.cancel()
-        }
-
-        def enableHeartbeat(
-            socket: OkHttpWebSocket,
-            stream: Observable[Inbound]
+        def startHeartbeat(
+            phoenix:   Phoenix,
+            responses: Observable[Response]
         )(
             implicit
             s: Scheduler
         ): Unit = heartbeat.foreach { interval ⇒
-            logger.debug( s"Enabling heartbeat ($interval)" )
-            val cancelable = this.heartbeat( interval ).mapTask { request ⇒
-                send( request )( socket, stream, timeout )
+            logger.debug( s"Starting heartbeat ($interval)" )
+            heartbeats := Phoenix.heartbeat( interval ).mapTask { request ⇒
+                Phoenix.send( request )( phoenix.socket, responses, phoenix.timeout )
             }.subscribe()
-
-            heartbeats := cancelable
-            ()
         }
 
-        def cancelHeartbeat(): Unit = {
-            if ( heartbeat.isDefined ) {
-                logger.debug( "Cancelling heartbeat" )
+        def stopHeartbeat(): Unit =
+            if ( heartbeat.isDefined && !heartbeats.isCanceled ) {
+                logger.debug( s"Stopping heartbeat" )
                 heartbeats := Cancelable.empty
                 ()
             }
-        }
 
-        Observable.create[Event]( strategy ) { downstream ⇒
-            import downstream.scheduler
-
-            val observable = websocket.publish
-
-            val connection = observable.connect()
-
-            composite += connection
-
-            val stream = observable.collect {
-                case WebSocket.Event.Message( Right( message ) ) ⇒
-                    decode[Inbound]( message ).valueOr( throw _ )
+        def cancelHeartbeat(): Unit =
+            if ( heartbeat.isDefined && !heartbeats.isCanceled ) {
+                logger.debug( s"Cancelling heartbeat" )
+                heartbeats.cancel()
             }
 
-            def next( event: Event ): Unit = {
-                if ( downstream.onNext( event ) == Stop ) {
-                    cancelable.cancel()
-                }
-            }
+        Observable.create( strategy ) { subscriber ⇒
+            import subscriber.scheduler
 
-            next( Event.Connecting )
-
-            composite += observable.foreach {
+            val observable = websocket.collect {
+                case WebSocket.Event.Connecting   ⇒ Event.Connecting
+                case WebSocket.Event.Reconnecting ⇒ Event.Reconnecting
                 case WebSocket.Event.Open( socket ) ⇒
-                    enableHeartbeat( socket, stream )
-                    val phoenix = Phoenix( socket, stream, timeout )
-                    val available = Event.Available( phoenix )
-                    next( available )
-                case WebSocket.Event.Failure( _ ) ⇒
-                    cancelHeartbeat()
-                    next( Event.Unavailable )
-                case WebSocket.Event.Closing( _, _ ) ⇒
-                    cancelHeartbeat()
-                    next( Event.Unavailable )
-                case WebSocket.Event.Reconnecting ⇒
-                    next( Event.Reconnecting )
-                case _ ⇒ //
+                    val phoenix = Phoenix( socket, timeout )
+                    Event.Available( phoenix )
+                case WebSocket.Event.Message( Right( message ) ) ⇒
+                    val value = decode[Inbound]( message ).valueOr( throw _ )
+                    Event.Message( value )
+                case _: WebSocket.Event.Failure | _: WebSocket.Event.Closing ⇒
+                    Event.Unavailable
+            }.publish
+
+            val responses = observable.collect {
+                case Event.Message( response: Response ) ⇒ response
             }
 
-            cancelable
-        }.doOnEarlyStop { () ⇒
-            logger.debug( "Early stop shutdown triggered" )
-            cancelable.cancel()
+            val subscription = observable.connect()
+
+            observable.doOnNext { event ⇒
+                logger.debug( s"Propagating: $event" )
+
+                event match {
+                    case Event.Available( phoenix ) ⇒
+                        startHeartbeat( phoenix, responses )
+                    case Event.Unavailable ⇒ stopHeartbeat()
+                    case _                 ⇒ //
+                }
+            }.subscribe( subscriber )
+
+            Cancelable { () ⇒
+                logger.debug( "Shutdown Phoenix Observable" )
+                cancelHeartbeat()
+                subscription.cancel()
+            }
+        }.doOnTerminate { _ ⇒
+            cancelHeartbeat()
         }
     }
 
     def send( request: Request )(
-        socket:  OkHttpWebSocket,
-        stream:  Observable[Inbound],
-        timeout: FiniteDuration
+        socket:    OkHttpWebSocket,
+        responses: Observable[Response],
+        timeout:   FiniteDuration
     )(
         implicit
-        p: Printer = Printer.noSpaces
-    ): Task[Option[Response]] = {
-        val response = stream
-            .collect { case response: Response ⇒ response }
+        p: Printer = Default.printer
+    ): Task[Option[Response]] = Task.create { ( scheduler, callback ) ⇒
+        val cancelable = responses
             .filter( _.ref == request.ref )
+            .doOnSubscribe { () ⇒
+                val json = request.asJson
+                logger.debug( s"Sending message: ${json.spaces4}" )
+                socket.send( p.pretty( json ) )
+                ()
+            }
             .headOptionL
             .timeout( timeout )
             .onErrorRecover { case _: TimeoutException ⇒ None }
+            .runAsync( scheduler )
 
-        Task.create { ( scheduler, callback ) ⇒
-            val cancelable = response.runAsync( scheduler )
-            cancelable.onComplete( callback( _ ) )( scheduler )
+        cancelable.onComplete( callback( _ ) )( scheduler )
 
-            val json = request.asJson
-
-            logger.debug( s"Sending message: ${json.spaces4}" )
-
-            socket.send( p.pretty( json ) )
-
-            cancelable
-        }
+        cancelable
     }
 
     def heartbeat( interval: FiniteDuration ): Observable[Request] =

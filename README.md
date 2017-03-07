@@ -55,20 +55,20 @@ Await.result( response, 30.seconds )
 // Content-Type: text/html; charset=utf-8
 // Last-Modified: Tue, 24 Feb 2015 15:20:41 GMT
 // Access-Control-Allow-Origin: *
-// Expires: Mon, 27 Feb 2017 11:18:32 GMT
+// Expires: Tue, 07 Mar 2017 12:13:33 GMT
 // Cache-Control: max-age=600
-// X-GitHub-Request-Id: 6822:72CF:57B247:7A42BF:58B408B0
+// X-GitHub-Request-Id: BCC0:2A686:22410D2:2CC3C96:58BEA195
 // Accept-Ranges: bytes
-// Date: Mon, 27 Feb 2017 13:23:47 GMT
+// Date: Tue, 07 Mar 2017 12:07:10 GMT
 // Via: 1.1 varnish
-// Age: 336
+// Age: 35
 // Connection: keep-alive
-// X-Served-By: cache-fra1226-FRA
+// X-Served-By: cache-fra1227-FRA
 // X-Cache: HIT
 // X-Cache-Hits: 1
-// X-Timer: S1488201827.333798,VS0,VE0
+// X-Timer: S1488888430.798148,VS0,VE0
 // Vary: Accept-Encoding
-// X-Fastly-Request-ID: 0f433ad5b76941332250692a30172467273ecc2e
+// X-Fastly-Request-ID: 7f944b757deaa312263efc95f15c7b864776b5fe
 ```
 
 ## Usage
@@ -120,7 +120,7 @@ val topic = Topic( "echo", "foobar" )
 
 val websocket = WebSocket( request )
 val phoenix = Phoenix( websocket )
-val channel = Channel.join( topic )( phoenix )
+val channel = Channel.join( phoenix, topic )
 
 val task = channel.collect {
     case Channel.Event.Available( channel ) ⇒ channel
@@ -128,7 +128,8 @@ val task = channel.collect {
 ```
 
 ```scala
-// Await.result( task.runAsync, 90.seconds )
+Await.result( task.runAsync, 90.seconds )
+// res5: io.taig.phoenix.models.Topic = Topic(echo:foobar)
 ```
 
 ## Android

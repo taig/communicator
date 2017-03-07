@@ -7,13 +7,13 @@ import scala.language.postfixOps
 
 class WebSocketTest extends Suite {
     it should "start a connection" in {
-        WebSocket( request ).firstL.runAsync.map {
+        WebSocket( request ).share.firstL.runAsync.map {
             _ shouldBe WebSocket.Event.Connecting
         }
     }
 
     it should "establish a connection" in {
-        WebSocket( request ).take( 2 ).toListL.runAsync.map {
+        WebSocket( request ).share.take( 2 ).toListL.runAsync.map {
             case List( connecting, open ) ⇒
                 connecting shouldBe WebSocket.Event.Connecting
                 open shouldBe a[WebSocket.Event.Open]
@@ -45,12 +45,12 @@ class WebSocketTest extends Suite {
     it should "reconnect after failure" in {
         var count = 0
 
-        WebSocket.fromRequest(
+        WebSocket(
             request,
             errorReconnect = _ ⇒ Some( 100 milliseconds )
-        ).collect {
+        ).share.collect {
             case WebSocket.Event.Open( socket ) ⇒
-                socket.cancel()
+                if ( count == 0 ) socket.cancel()
                 count += 1
                 count
         }.take( 2 ).toListL.timeout( 10 seconds ).runAsync.map {
@@ -61,12 +61,12 @@ class WebSocketTest extends Suite {
     it should "reconnect after complete" in {
         var count = 0
 
-        WebSocket.fromRequest(
+        WebSocket(
             request,
             completeReconnect = _ ⇒ Some( 100 milliseconds )
-        ).collect {
+        ).share.collect {
             case WebSocket.Event.Open( socket ) ⇒
-                socket.close( 1000, null )
+                if ( count == 0 ) socket.close( 1000, null )
                 count += 1
                 count
         }.take( 2 ).toListL.timeout( 10 seconds ).runAsync.map {
@@ -74,33 +74,10 @@ class WebSocketTest extends Suite {
         }
     }
 
-    it should "reconnect on Task failure" in {
-        var count = 0
-
-        val task = Task.defer {
-            if ( count == 0 ) {
-                count += 1
-                Task.raiseError( new IllegalStateException( "" ) )
-            } else {
-                Task.now( request )
-            }
-        }
-
-        WebSocket.fromTask(
-            task,
-            errorReconnect    = _ ⇒ Some( 100 milliseconds ),
-            completeReconnect = _ ⇒ Some( 100 milliseconds )
-        ).collect {
-            case WebSocket.Event.Open( _ ) ⇒ true
-        }.firstL.timeout( 10 seconds ).runAsync.map {
-            _ shouldBe true
-        }
-    }
-
     it should "not reconnect when cancelled explicitly" in {
         var count = 0
 
-        val observable = WebSocket.fromRequest(
+        val observable = WebSocket(
             request,
             errorReconnect    = _ ⇒ Some( 100 milliseconds ),
             completeReconnect = _ ⇒ Some( 100 milliseconds )
@@ -122,15 +99,6 @@ class WebSocketTest extends Suite {
                 count
         }.take( 3 ).toListL.timeout( 10 seconds ).runAsync.map {
             _ should contain theSameElementsAs List( 1, 2 )
-        }
-    }
-
-    it should "release resources when stopped early" in {
-        WebSocket( request ).collect {
-            case WebSocket.Event.Open( socket ) ⇒ socket
-        }.firstL.runAsync.map { socket ⇒
-            Thread.sleep( 500 )
-            socket.close( 1000, null ) shouldBe false
         }
     }
 }
