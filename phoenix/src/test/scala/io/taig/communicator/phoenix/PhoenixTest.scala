@@ -52,31 +52,32 @@ class PhoenixTest extends Suite {
         }
     }
 
-    //    it should "send a heartbeat" in {
-    //        Phoenix(
-    //            WebSocket( request ),
-    //            heartbeat = Some( 1 second )
-    //        ).collect {
-    //                case Phoenix.Event.Available( phoenix ) ⇒ phoenix
-    //            }.flatMap( _.stream ).collect {
-    //                case confirmation: Response.Confirmation ⇒ confirmation
-    //            }.firstL.timeout( 10 seconds ).runAsync.map { confirmation ⇒
-    //                confirmation.topic shouldBe Topic.Phoenix
-    //                confirmation.payload shouldBe Json.obj()
-    //            }
-    //    }
-    //
-    //    it should "allow to disable the heartbeat" in {
-    //        Phoenix( WebSocket( request ), heartbeat = None ).collect {
-    //            case Phoenix.Event.Available( phoenix ) ⇒ phoenix
-    //        }.flatMap( _.stream ).collect {
-    //            case confirmation: Response.Confirmation ⇒ confirmation
-    //        }.firstOptionL
-    //            .timeout( 10 seconds )
-    //            .onErrorRecover { case _: TimeoutException ⇒ None }
-    //            .runAsync
-    //            .map( _ shouldBe None )
-    //    }
+    it should "send a heartbeat" in {
+        val websocket = WebSocket( request )
+        val phoenix = Phoenix( websocket, heartbeat = Some( 1 second ) ).share
+
+        phoenix.collect {
+            case Phoenix.Event.Message( confirmation: Response.Confirmation ) ⇒
+                confirmation
+        }.firstL.timeout( 10 seconds ).runAsync.map { confirmation ⇒
+            confirmation.topic shouldBe Topic.Phoenix
+            confirmation.payload shouldBe Json.obj()
+        }
+    }
+
+    it should "allow to disable the heartbeat" in {
+        val websocket = WebSocket( request )
+        val phoenix = Phoenix( websocket, heartbeat = None ).share
+
+        phoenix.collect {
+            case Phoenix.Event.Message( confirmation: Response.Confirmation ) ⇒
+                confirmation
+        }.firstOptionL
+            .timeout( 10 seconds )
+            .onErrorRecover { case _: TimeoutException ⇒ None }
+            .runAsync
+            .map( _ shouldBe None )
+    }
 
     it should "rejoin a Channel when reconnecting" in {
         var counter = 0
