@@ -73,6 +73,7 @@ object Phoenix {
             if ( heartbeat.isDefined && !heartbeats.isCanceled ) {
                 logger.debug( s"Stopping heartbeat" )
                 heartbeats := Cancelable.empty
+                ()
             }
 
         def cancelHeartbeat(): Unit =
