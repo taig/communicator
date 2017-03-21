@@ -64,7 +64,7 @@ object Request {
             scheduler.execute { () ⇒
                 try {
                     val response = call.execute()
-                    callback.onSuccess( Response.untouched( response ) )
+                    callback.onSuccess( Response.raw( response ) )
                 } catch {
                     case exception: Throwable ⇒
                         if ( !canceled && exception.getMessage != "Canceled" ) {

@@ -77,7 +77,7 @@ object Response {
             override def body: T = _body
         }
 
-    def untouched( response: OkHttpResponse ): Response[Unit] =
+    def raw( response: OkHttpResponse ): Response[Unit] =
         Response[Unit]( response, () )
 
     def unapply[T]( response: Response[T] ): Option[( Int, T )] =
