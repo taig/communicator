@@ -50,25 +50,13 @@ class ResponseTest extends Suite {
 
     it should "unapply a Response" in {
         val builder = http { server ⇒
-            server.enqueue( new MockResponse().setResponseCode( 404 ) )
-        }
-
-        val request = builder.build()
-
-        Request( request ).runAsync.map {
-            case Response( code ) ⇒ code shouldBe 404
-        }
-    }
-
-    it should "unapply a Response.With" in {
-        val builder = http { server ⇒
             server.enqueue( new MockResponse().setResponseCode( 201 ).setBody( "foobar" ) )
         }
 
         val request = builder.build()
 
         Request( request ).parse[String].runAsync.map {
-            case Response.With( code, body ) ⇒
+            case Response( code, body ) ⇒
                 code shouldBe 201
                 body shouldBe "foobar"
         }

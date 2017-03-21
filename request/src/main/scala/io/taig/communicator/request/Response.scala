@@ -1,11 +1,12 @@
 package io.taig.communicator.request
 
+import io.taig.communicator.OkHttpResponse
 import okhttp3._
 
 import scala.collection.JavaConverters._
 
-sealed trait Response {
-    def wrapped: okhttp3.Response
+sealed trait Response[T] {
+    def wrapped: OkHttpResponse
 
     @inline
     def code: Int = wrapped.code()
@@ -44,46 +45,41 @@ sealed trait Response {
     @inline
     def receivedResponseAtMillis: Long = wrapped.receivedResponseAtMillis()
 
-    lazy val cacheResponse: Option[Response] = {
-        Option( wrapped.cacheResponse() ).map( Response( _ ) )
+    @inline
+    def body: T
+
+    lazy val cacheResponse: Option[Response[T]] = {
+        Option( wrapped.cacheResponse() ).map( Response( _, body ) )
     }
 
-    lazy val networkResponse: Option[Response] = {
-        Option( wrapped.networkResponse() ).map( Response( _ ) )
+    lazy val networkResponse: Option[Response[T]] = {
+        Option( wrapped.networkResponse() ).map( Response( _, body ) )
     }
 
-    lazy val priorResponse: Option[Response] = {
-        Option( wrapped.priorResponse() ).map( Response( _ ) )
+    lazy val priorResponse: Option[Response[T]] = {
+        Option( wrapped.priorResponse() ).map( Response( _, body ) )
     }
 
-    def withBody[T]( content: T ): Response.With[T] = new Response.With[T] {
-        override def wrapped = Response.this.wrapped
-
-        override def body = content
-    }
-
-    override def toString = {
+    override def toString: String =
         s"""
           |>>> ${request.url}
           |${if ( request.headers().size() == 0 ) "[No headers]" else request.headers()}
           |<<< $code${message.map( " " + _ ).getOrElse( "" )}
           |${if ( headers.size() == 0 ) "[No headers]" else headers}
         """.stripMargin.trim
-    }
 }
 
 object Response {
-    sealed trait With[+T] extends Response {
-        def body: T
-    }
+    def apply[T]( response: OkHttpResponse, _body: T ): Response[T] =
+        new Response[T] {
+            override def wrapped: OkHttpResponse = response
 
-    object With {
-        def unapply[T]( response: Response.With[T] ): Option[( Int, T )] =
-            Some( response.code, response.body )
-    }
+            override def body: T = _body
+        }
 
-    def apply( response: okhttp3.Response ): Response =
-        new Response { override def wrapped = response }
+    def untouched( response: OkHttpResponse ): Response[Unit] =
+        Response[Unit]( response, () )
 
-    def unapply( response: Response ): Option[Int] = Some( response.code )
+    def unapply[T]( response: Response[T] ): Option[( Int, T )] =
+        Some( response.code, response.body )
 }

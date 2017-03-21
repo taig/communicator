@@ -41,7 +41,7 @@ class ParserTest extends Suite {
     }
 
     it should "be possible to map of a Parser" in {
-        val parser = Parser[String].map { ( _, content ) ⇒ content.toUpperCase }
+        val parser = Parser[String].map( _.toUpperCase )
 
         val builder = http { server ⇒
             server.enqueue( new MockResponse().setBody( "foobar" ) )

@@ -1,5 +1,6 @@
 package io.taig.communicator.request
 
+import io.taig.communicator.OkHttpResponse
 import okhttp3.ResponseBody
 
 /**
@@ -10,27 +11,25 @@ import okhttp3.ResponseBody
  *
  * @tparam T
  */
-trait Parser[+T] {
-    def parse( response: Response, body: ResponseBody ): T
+trait Parser[T] {
+    def parse( response: OkHttpResponse ): T
 
-    def map[U]( f: ( Response, T ) ⇒ U ): Parser[U] = {
-        Parser.instance { ( response, body ) ⇒
-            f( response, parse( response, body ) )
-        }
+    def map[U]( f: T ⇒ U ): Parser[U] = Parser.instance { response ⇒
+        f( parse( response ) )
     }
 }
 
 object Parser {
     def apply[T: Parser]: Parser[T] = implicitly[Parser[T]]
 
-    def instance[T]( f: ( Response, ResponseBody ) ⇒ T ): Parser[T] = {
+    def instance[T]( f: OkHttpResponse ⇒ T ): Parser[T] =
         new Parser[T] {
-            override def parse( response: Response, body: ResponseBody ) =
-                f( response, body )
+            override def parse( response: OkHttpResponse ) = f( response )
         }
-    }
 
-    implicit val parserByteArray: Parser[Array[Byte]] = instance { ( _, body ) ⇒
+    implicit val parserByteArray: Parser[Array[Byte]] = instance { response ⇒
+        val body = response.body
+
         try {
             val stream = body.byteStream
             Iterator
@@ -38,17 +37,15 @@ object Parser {
                 .takeWhile( _ != -1 )
                 .map( _.toByte )
                 .toArray
-        } finally {
-            body.close()
-        }
+        } finally body.close()
     }
 
     implicit val parserResponseBody: Parser[ResponseBody] =
-        instance( ( _, body ) ⇒ body )
+        instance( _.body )
 
     implicit val parserUnit: Parser[Unit] =
-        instance( ( _, body ) ⇒ body.close() )
+        instance( _.body.close() )
 
     implicit val parserString: Parser[String] =
-        instance( ( _, body ) ⇒ body.string )
+        instance( _.body.string() )
 }
