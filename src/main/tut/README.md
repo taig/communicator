@@ -2,7 +2,7 @@
 
 [![CircleCI](https://circleci.com/gh/Taig/communicator/tree/master.svg?style=shield)](https://circleci.com/gh/Taig/communicator/tree/master)
 [![codecov](https://codecov.io/gh/Taig/communicator/branch/master/graph/badge.svg)](https://codecov.io/gh/Taig/communicator)
-[![Maven](https://img.shields.io/maven-central/v/io.taig/communicator_2.12.svg)](http://search.maven.org/#artifactdetails%7Cio.taig%7Ccommunicator_2.12%7C3.2.2%7Cjar)
+[![Maven](https://img.shields.io/maven-central/v/io.taig/communicator_2.12.svg)](http://search.maven.org/#artifactdetails%7Cio.taig%7Ccommunicator_2.12%7C3.3.0-SNAPSHOT%7Cjar)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/Taig/Communicator/master/LICENSE)
 
 > A [monix][1] wrapper for [OkHttp][2]
@@ -13,14 +13,14 @@ Communicator provides a simple way to construct OkHttp requests as `monix.Task`s
 
 ```scala
 libraryDependencies ++=
-    "io.taig" %% "communicator-common" % "3.2.2" ::
-    "io.taig" %% "communicator-request" % "3.2.2" ::
-    "io.taig" %% "communicator-phoenix" % "3.2.2" ::
+    "io.taig" %% "communicator-common" % "3.3.0-SNAPSHOT" ::
+    "io.taig" %% "communicator-request" % "3.3.0-SNAPSHOT" ::
+    "io.taig" %% "communicator-phoenix" % "3.3.0-SNAPSHOT" ::
     Nil
 ```
 
 ```scala
-libraryDependencies += "io.taig" %% "communicator" % "3.2.2"
+libraryDependencies += "io.taig" %% "communicator" % "3.3.0-SNAPSHOT"
 ```
 
 ## Quickstart
@@ -36,7 +36,7 @@ import scala._; import util._; import concurrent._; import duration._
 implicit val client = new OkHttpClient()
 
 // Simple OkHttp request builder
-val builder = new OkHttpRequest.Builder().url( "http://taig.io/" )
+val builder = new OkHttpRequest.Builder().url( "https://github.com/" )
 
 // Construct a Task[Response] and parse it to a String
 val request = Request( builder.build() ).parse[String]
@@ -59,7 +59,7 @@ Use the [OkHttp builder API][2] to construct requests which are then lifted into
 
 ```tut:silent
 val headers = new OkHttpRequest.Builder().
-    url( "http://taig.io/" ).
+    url( "https://github.com/" ).
     header( "X-API-Key", "foobar" ).
     build()
 
@@ -72,10 +72,10 @@ There are several ways to transform a `Request` to an executable `Task[Response]
 
 ```tut:silent
 // Ignores response body
-val ignoreBody: Task[Response] = request.ignoreBody
+val ignoreBody: Task[Response[Unit]] = request.ignoreBody
 
 // Parses response body to a String
-val parse: Task[Response.With[String]] = request.parse[String]
+val parse: Task[Response[String]] = request.parse[String]
 ```
 
 ### Phoenix Channels
