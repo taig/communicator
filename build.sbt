@@ -1,5 +1,6 @@
 lazy val root = project.in( file( "." ) )
-    .settings( tutSettings ++ Settings.common )
+    .enablePlugins( TutPlugin )
+    .settings( Settings.common )
     .settings(
         aggregate in tut := false,
         autoScalaLibrary := false,
