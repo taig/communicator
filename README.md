@@ -2,7 +2,7 @@
 
 [![CircleCI](https://circleci.com/gh/Taig/communicator/tree/master.svg?style=shield)](https://circleci.com/gh/Taig/communicator/tree/master)
 [![codecov](https://codecov.io/gh/Taig/communicator/branch/master/graph/badge.svg)](https://codecov.io/gh/Taig/communicator)
-[![Maven](https://img.shields.io/maven-central/v/io.taig/communicator_2.12.svg)](http://search.maven.org/#artifactdetails%7Cio.taig%7Ccommunicator_2.12%7C3.2.2%7Cjar)
+[![Maven](https://img.shields.io/maven-central/v/io.taig/communicator_2.12.svg)](http://search.maven.org/#artifactdetails%7Cio.taig%7Ccommunicator_2.12%7C3.3.0-SNAPSHOT%7Cjar)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/Taig/Communicator/master/LICENSE)
 
 > A [monix][1] wrapper for [OkHttp][2]
@@ -13,14 +13,14 @@ Communicator provides a simple way to construct OkHttp requests as `monix.Task`s
 
 ```scala
 libraryDependencies ++=
-    "io.taig" %% "communicator-common" % "3.2.2" ::
-    "io.taig" %% "communicator-request" % "3.2.2" ::
-    "io.taig" %% "communicator-phoenix" % "3.2.2" ::
+    "io.taig" %% "communicator-common" % "3.3.0-SNAPSHOT" ::
+    "io.taig" %% "communicator-request" % "3.3.0-SNAPSHOT" ::
+    "io.taig" %% "communicator-phoenix" % "3.3.0-SNAPSHOT" ::
     Nil
 ```
 
 ```scala
-libraryDependencies += "io.taig" %% "communicator" % "3.2.2"
+libraryDependencies += "io.taig" %% "communicator" % "3.3.0-SNAPSHOT"
 ```
 
 ## Quickstart
@@ -36,7 +36,7 @@ import scala._; import util._; import concurrent._; import duration._
 implicit val client = new OkHttpClient()
 
 // Simple OkHttp request builder
-val builder = new OkHttpRequest.Builder().url( "http://taig.io/" )
+val builder = new OkHttpRequest.Builder().url( "https://github.com/" )
 
 // Construct a Task[Response] and parse it to a String
 val request = Request( builder.build() ).parse[String]
@@ -47,28 +47,23 @@ val response = request.runAsync
 
 ```scala
 Await.result( response, 30.seconds )
-// res8: io.taig.communicator.request.Response.With[String] =
-// >>> http://taig.io/
+// res8: io.taig.communicator.request.Response[String] =
+// >>> https://github.com/
 // [No headers]
 // <<< 200 OK
 // Server: GitHub.com
+// Date: Tue, 30 May 2017 17:05:56 GMT
 // Content-Type: text/html; charset=utf-8
-// Last-Modified: Tue, 24 Feb 2015 15:20:41 GMT
-// Access-Control-Allow-Origin: *
-// Expires: Tue, 07 Mar 2017 13:14:33 GMT
-// Cache-Control: max-age=600
-// X-GitHub-Request-Id: 5D8A:181F:1B00A99:251073E:58BEAFDC
-// Accept-Ranges: bytes
-// Date: Tue, 07 Mar 2017 15:55:57 GMT
-// Via: 1.1 varnish
-// Age: 0
-// Connection: keep-alive
-// X-Served-By: cache-fra1236-FRA
-// X-Cache: HIT
-// X-Cache-Hits: 1
-// X-Timer: S1488902156.943359,VS0,VE94
-// Vary: Accept-Encoding
-// X-Fastly-Request-ID: e33821122553fe92bfbdadf46b23cade4a90b6b4
+// Transfer-Encoding: chunked
+// Status: 200 OK
+// Cache-Control: no-cache
+// Vary: X-PJAX
+// X-UA-Compatible: IE=Edge,chrome=1
+// Set-Cookie: logged_in=no; domain=.github.com; path=/; expires=Sat, 30 May 2037 17:05:56 -0000; secure; HttpOnly
+// Set-Cookie: _gh_sess=eyJzZXNzaW9uX2lkIjoiNThhNTMzZGNmNGJjNTliNTJmNTRkZTRjN2VlNTZiODYiLCJfY3NyZl90b2tlbiI6IjBIYU8wUXFvVWYzeHpMY1JELzJyZ3lyVFEwSG1uZ2tXTVArYklPUmxUd3c9In0%3D--bd27e0000ef530045ebfab3692d0df99b3a7e8b6; path=/; secure; HttpOnly
+// X-Request-Id: b38bedbf941d9ac9e5c923a973434dc5
+// X-Runtime: 0.073051
+// Content-Security-Policy: default-src 'none'...
 ```
 
 ## Usage
@@ -81,7 +76,7 @@ Use the [OkHttp builder API][2] to construct requests which are then lifted into
 
 ```scala
 val headers = new OkHttpRequest.Builder().
-    url( "http://taig.io/" ).
+    url( "https://github.com/" ).
     header( "X-API-Key", "foobar" ).
     build()
 
@@ -94,10 +89,10 @@ There are several ways to transform a `Request` to an executable `Task[Response]
 
 ```scala
 // Ignores response body
-val ignoreBody: Task[Response] = request.ignoreBody
+val ignoreBody: Task[Response[Unit]] = request.ignoreBody
 
 // Parses response body to a String
-val parse: Task[Response.With[String]] = request.parse[String]
+val parse: Task[Response[String]] = request.parse[String]
 ```
 
 ### Phoenix Channels

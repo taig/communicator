@@ -32,15 +32,15 @@ object Dependencies {
         val macros = scala( "macros" )
     }
 
-    object circe extends Configuration( "io.circe", "circe", "0.7.0" ) {
+    object circe extends Configuration( "io.circe", "circe", "0.8.0" ) {
         val parser = scala( "parser" )
     }
 
-    object logback extends Configuration( "ch.qos.logback", "logback", "1.2.1" ) {
+    object logback extends Configuration( "ch.qos.logback", "logback", "1.2.3" ) {
         val classic = java( "classic" )
     }
 
-    object monix extends Configuration( "io.monix", "monix", "2.2.2" ) {
+    object monix extends Configuration( "io.monix", "monix", "2.3.0" ) {
         val cats = scala( "cats" )
 
         val eval = scala( "eval" )
@@ -48,7 +48,7 @@ object Dependencies {
         val reactive = scala( "reactive" )
     }
 
-    object okhttp extends Configuration( "com.squareup.okhttp3", "3.6.0" ) {
+    object okhttp extends Configuration( "com.squareup.okhttp3", "3.8.0" ) {
         val core = java( "okhttp" )
 
         val mockwebserver = java( "mockwebserver" )
@@ -56,9 +56,9 @@ object Dependencies {
 
     val phoenixModels = "io.taig" %% "phoenix-models" % "1.0.2"
 
-    val scalatest = "org.scalatest" %% "scalatest" % "3.0.1"
+    val scalatest = "org.scalatest" %% "scalatest" % "3.0.3"
 
-    object slf4j extends Configuration( "org.slf4j", "slf4j", "1.7.24" ) {
+    object slf4j extends Configuration( "org.slf4j", "slf4j", "1.7.25" ) {
         val api = java( "api" )
     }
 }
