@@ -32,7 +32,7 @@ object Dependencies {
         val macros = scala( "macros" )
     }
 
-    object circe extends Configuration( "io.circe", "circe", "0.7.0" ) {
+    object circe extends Configuration( "io.circe", "circe", "0.8.0" ) {
         val parser = scala( "parser" )
     }
 
