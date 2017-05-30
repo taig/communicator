@@ -56,7 +56,7 @@ object Dependencies {
 
     val phoenixModels = "io.taig" %% "phoenix-models" % "1.0.2"
 
-    val scalatest = "org.scalatest" %% "scalatest" % "3.0.1"
+    val scalatest = "org.scalatest" %% "scalatest" % "3.0.3"
 
     object slf4j extends Configuration( "org.slf4j", "slf4j", "1.7.25" ) {
         val api = java( "api" )
