@@ -2,7 +2,7 @@
 
 [![CircleCI](https://circleci.com/gh/Taig/communicator/tree/master.svg?style=shield)](https://circleci.com/gh/Taig/communicator/tree/master)
 [![codecov](https://codecov.io/gh/Taig/communicator/branch/master/graph/badge.svg)](https://codecov.io/gh/Taig/communicator)
-[![Maven](https://img.shields.io/maven-central/v/io.taig/communicator_2.12.svg)](http://search.maven.org/#artifactdetails%7Cio.taig%7Ccommunicator_2.12%7C3.3.0-SNAPSHOT%7Cjar)
+[![Maven](https://img.shields.io/maven-central/v/io.taig/communicator_2.12.svg)](http://search.maven.org/#artifactdetails%7Cio.taig%7Ccommunicator_2.12%7C3.3.0-RC1%7Cjar)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/Taig/Communicator/master/LICENSE)
 
 > A [monix][1] wrapper for [OkHttp][2]
@@ -13,14 +13,14 @@ Communicator provides a simple way to construct OkHttp requests as `monix.Task`s
 
 ```scala
 libraryDependencies ++=
-    "io.taig" %% "communicator-common" % "3.3.0-SNAPSHOT" ::
-    "io.taig" %% "communicator-request" % "3.3.0-SNAPSHOT" ::
-    "io.taig" %% "communicator-phoenix" % "3.3.0-SNAPSHOT" ::
+    "io.taig" %% "communicator-common" % "3.3.0-RC1" ::
+    "io.taig" %% "communicator-request" % "3.3.0-RC1" ::
+    "io.taig" %% "communicator-phoenix" % "3.3.0-RC1" ::
     Nil
 ```
 
 ```scala
-libraryDependencies += "io.taig" %% "communicator" % "3.3.0-SNAPSHOT"
+libraryDependencies += "io.taig" %% "communicator" % "3.3.0-RC1"
 ```
 
 ## Quickstart
@@ -52,17 +52,17 @@ Await.result( response, 30.seconds )
 // [No headers]
 // <<< 200 OK
 // Server: GitHub.com
-// Date: Tue, 30 May 2017 17:05:56 GMT
+// Date: Tue, 30 May 2017 17:20:21 GMT
 // Content-Type: text/html; charset=utf-8
 // Transfer-Encoding: chunked
 // Status: 200 OK
 // Cache-Control: no-cache
 // Vary: X-PJAX
 // X-UA-Compatible: IE=Edge,chrome=1
-// Set-Cookie: logged_in=no; domain=.github.com; path=/; expires=Sat, 30 May 2037 17:05:56 -0000; secure; HttpOnly
-// Set-Cookie: _gh_sess=eyJzZXNzaW9uX2lkIjoiNThhNTMzZGNmNGJjNTliNTJmNTRkZTRjN2VlNTZiODYiLCJfY3NyZl90b2tlbiI6IjBIYU8wUXFvVWYzeHpMY1JELzJyZ3lyVFEwSG1uZ2tXTVArYklPUmxUd3c9In0%3D--bd27e0000ef530045ebfab3692d0df99b3a7e8b6; path=/; secure; HttpOnly
-// X-Request-Id: b38bedbf941d9ac9e5c923a973434dc5
-// X-Runtime: 0.073051
+// Set-Cookie: logged_in=no; domain=.github.com; path=/; expires=Sat, 30 May 2037 17:20:21 -0000; secure; HttpOnly
+// Set-Cookie: _gh_sess=eyJzZXNzaW9uX2lkIjoiODExNmU2YjBjZmRiYjRjMzk3MzgyNzAyZmQ4MDc3NWIiLCJfY3NyZl90b2tlbiI6IlUxaVZ5S20rWXgrcHpFZ2p0ckxnaFkwM1VTQmpQT0F4SFMwOXZZWTdiT2c9In0%3D--01402e8631dc984175d6ad1a0a888fcfa9070a3b; path=/; secure; HttpOnly
+// X-Request-Id: be029c692e6be93d3fbd5f0e1d120067
+// X-Runtime: 0.069576
 // Content-Security-Policy: default-src 'none'...
 ```
 
