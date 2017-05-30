@@ -1,5 +1,20 @@
 # Changelog
 
+## 3.3.0-RC1
+
+_2017-05-30_
+
+ * Remove `Response.With` in favor of `Response[Unit]`
+ * Rename `Response.untouched` to `Response.raw`
+ * Upgrade to okhttp 3.8.0
+ * Upgrade to monix 2.3.0
+ * Upgrade to circe 0.8.0
+ * Upgrade to scala 2.11.11 and 2.12.2
+ * Upgrade to tut 0.5.2
+ * Upgrade to slf4j 1.7.25
+ * Upgrade to logback-classic 1.2.3
+ * Upgrade to scalatest 3.0.3
+
 ## 3.2.2
 
 _2017-03-07_
