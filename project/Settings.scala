@@ -4,10 +4,10 @@ import sbt.Keys._
 import sbt._
 
 object Settings {
-    val Scala211 = "2.11.8"
-    
-    val Scala212 = "2.12.1"
-    
+    val Scala211 = "2.11.11"
+
+    val Scala212 = "2.12.2"
+
     val common = Def.settings(
         crossScalaVersions := Scala211 :: Scala212 :: Nil,
         githubProject := "communicator",
