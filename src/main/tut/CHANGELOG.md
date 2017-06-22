@@ -1,5 +1,12 @@
 # Changelog
 
+## 3.3.0-RC2
+
+_2017-06-22_
+
+ * Add Parser#mapResponse
+ * Upgrade to okhttp 3.8.1
+
 ## 3.3.0-RC1
 
 _2017-05-30_
