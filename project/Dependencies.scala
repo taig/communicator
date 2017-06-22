@@ -48,7 +48,7 @@ object Dependencies {
         val reactive = scala( "reactive" )
     }
 
-    object okhttp extends Configuration( "com.squareup.okhttp3", "3.8.0" ) {
+    object okhttp extends Configuration( "com.squareup.okhttp3", "3.8.1" ) {
         val core = java( "okhttp" )
 
         val mockwebserver = java( "mockwebserver" )
