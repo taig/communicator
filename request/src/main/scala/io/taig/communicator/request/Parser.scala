@@ -17,6 +17,11 @@ trait Parser[T] {
     def map[U]( f: T ⇒ U ): Parser[U] = Parser.instance { response ⇒
         f( parse( response ) )
     }
+
+    def mapResponse[U]( f: ( OkHttpResponse, T ) ⇒ U ): Parser[U] =
+        Parser.instance { response ⇒
+            f( response, parse( response ) )
+        }
 }
 
 object Parser {
