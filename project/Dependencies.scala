@@ -1,64 +1,21 @@
 import sbt._
 
 object Dependencies {
-    abstract class Configuration(
-        group: String,
-        version: String,
-        prefix: Option[String] = None
-    ) {
-        def this( group: String, prefix: String, version: String ) =
-            this( group, version, Some( prefix ) )
+    object Version {
+        val cats = "0.9.0"
 
-        def module(
-            name: String,
-            f: String => ModuleID
-        ): ModuleID = {
-            val artifact = prefix.map( _ + "-" ).getOrElse( "" ) + name
-            f( artifact )
-        }
+        val monix = "2.3.0"
 
-        def scala( name: String, version: String = this.version ): ModuleID =
-            module( name, group %% _ % version )
-
-        def java( name: String, version: String = this.version ): ModuleID =
-            module( name, group % _ % version )
+        val okhttp = "3.9.0"
     }
 
-    object cats extends Configuration( "org.typelevel", "cats", "0.9.0" ) {
-        val core = scala( "core" )
+    val catsCore = "org.typelevel" %% "cats-core" % Version.cats
 
-        val kernel = scala( "kernel" )
+    val monixEval = "io.monix" %% "monix-eval" % Version.monix
 
-        val macros = scala( "macros" )
-    }
+    val okhttp = "com.squareup.okhttp3" % "okhttp" % Version.okhttp
 
-    object circe extends Configuration( "io.circe", "circe", "0.8.0" ) {
-        val parser = scala( "parser" )
-    }
+    val okhttpMockwebserver = "com.squareup.okhttp3" % "mockwebserver" % Version.okhttp
 
-    object logback extends Configuration( "ch.qos.logback", "logback", "1.2.3" ) {
-        val classic = java( "classic" )
-    }
-
-    object monix extends Configuration( "io.monix", "monix", "2.3.0" ) {
-        val cats = scala( "cats" )
-
-        val eval = scala( "eval" )
-
-        val reactive = scala( "reactive" )
-    }
-
-    object okhttp extends Configuration( "com.squareup.okhttp3", "3.8.1" ) {
-        val core = java( "okhttp" )
-
-        val mockwebserver = java( "mockwebserver" )
-    }
-
-    val phoenixModels = "io.taig" %% "phoenix-models" % "1.0.2"
-
-    val scalatest = "org.scalatest" %% "scalatest" % "3.0.3"
-
-    object slf4j extends Configuration( "org.slf4j", "slf4j", "1.7.25" ) {
-        val api = java( "api" )
-    }
+    val scalatest = "org.scalatest" %% "scalatest" % "3.0.4"
 }
