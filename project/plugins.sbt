@@ -1,4 +1,4 @@
-addSbtPlugin( "com.typesafe.sbt" % "sbt-git" % "0.8.5" )
+addSbtPlugin( "com.typesafe.sbt" % "sbt-git" % "0.9.3" )
 
 addSbtPlugin( "io.taig" % "sbt-scalariform" % "1.7.1" )
 
