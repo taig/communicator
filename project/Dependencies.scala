@@ -1,64 +1,37 @@
 import sbt._
 
 object Dependencies {
-    abstract class Configuration(
-        group: String,
-        version: String,
-        prefix: Option[String] = None
-    ) {
-        def this( group: String, prefix: String, version: String ) =
-            this( group, version, Some( prefix ) )
+    object Version {
+        val cats = "0.9.0"
 
-        def module(
-            name: String,
-            f: String => ModuleID
-        ): ModuleID = {
-            val artifact = prefix.map( _ + "-" ).getOrElse( "" ) + name
-            f( artifact )
-        }
+        val monix = "2.3.0"
 
-        def scala( name: String, version: String = this.version ): ModuleID =
-            module( name, group %% _ % version )
-
-        def java( name: String, version: String = this.version ): ModuleID =
-            module( name, group % _ % version )
+        val okhttp = "3.8.1"
     }
 
-    object cats extends Configuration( "org.typelevel", "cats", "0.9.0" ) {
-        val core = scala( "core" )
+    val catsCore = "org.typelevel" %% "cats-core" % Version.cats
 
-        val kernel = scala( "kernel" )
+    val catsKernel = "org.typelevel" %% "cats-kernel" % Version.cats
 
-        val macros = scala( "macros" )
-    }
+    val catsMacros = "org.typelevel" %% "cats-macros" % Version.cats
 
-    object circe extends Configuration( "io.circe", "circe", "0.8.0" ) {
-        val parser = scala( "parser" )
-    }
+    val circeParser = "io.circe" %% "circe-parser" % "0.8.0"
 
-    object logback extends Configuration( "ch.qos.logback", "logback", "1.2.3" ) {
-        val classic = java( "classic" )
-    }
+    val logbackClassic = "ch.qos.logback" % "logback-classic" % "1.2.3"
 
-    object monix extends Configuration( "io.monix", "monix", "2.3.0" ) {
-        val cats = scala( "cats" )
+    val monixCats = "io.monix" %% "monix-cats" % Version.monix
 
-        val eval = scala( "eval" )
+    val monixEval = "io.monix" %% "monix-eval" % Version.monix
 
-        val reactive = scala( "reactive" )
-    }
+    val monixReactive = "io.monix" %% "monix-reactive" % Version.monix
 
-    object okhttp extends Configuration( "com.squareup.okhttp3", "3.8.1" ) {
-        val core = java( "okhttp" )
+    val okhttp = "com.squareup.okhttp3" % "okhttp" % Version.okhttp
 
-        val mockwebserver = java( "mockwebserver" )
-    }
+    val okhttpMockwebserver = "com.squareup.okhttp3" % "mockwebserver" % Version.okhttp
 
     val phoenixModels = "io.taig" %% "phoenix-models" % "1.0.2"
 
     val scalatest = "org.scalatest" %% "scalatest" % "3.0.3"
 
-    object slf4j extends Configuration( "org.slf4j", "slf4j", "1.7.25" ) {
-        val api = java( "api" )
-    }
+    val slf4jApi = "org.slf4j" % "slf4j-api" % "1.7.25"
 }
