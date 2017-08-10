@@ -25,7 +25,7 @@ lazy val builder = project
     .settings(
         coverageEnabled := false,
         libraryDependencies ++=
-            Dependencies.cats.core ::
+            Dependencies.catsCore ::
             Nil,
         name := "builder",
         startYear := Some( 2016 )
@@ -36,9 +36,9 @@ lazy val request = project
     .settings( Settings.common )
     .settings(
         libraryDependencies ++=
-            Dependencies.okhttp.core ::
-            Dependencies.monix.eval ::
-            Dependencies.okhttp.mockwebserver % "test" ::
+            Dependencies.okhttp ::
+            Dependencies.monixEval ::
+            Dependencies.okhttpMockwebserver % "test" ::
             Dependencies.scalatest % "test" ::
             Nil,
         name := "request",
@@ -49,9 +49,9 @@ lazy val websocket = project
     .settings( Settings.common )
     .settings(
         libraryDependencies ++=
-            Dependencies.monix.reactive ::
-            Dependencies.slf4j.api ::
-            Dependencies.logback.classic % "test" ::
+            Dependencies.monixReactive ::
+            Dependencies.slf4jApi ::
+            Dependencies.logbackClassic % "test" ::
             Nil,
         startYear := Some( 2017 )
     )
@@ -61,9 +61,9 @@ lazy val phoenix = project
     .settings( Settings.common )
     .settings(
         libraryDependencies ++=
-            Dependencies.circe.parser ::
+            Dependencies.circeParser ::
             Dependencies.phoenixModels ::
-            Dependencies.monix.cats % "test" ::
+            Dependencies.monixCats % "test" ::
             Nil,
         startYear := Some( 2016 )
     )
