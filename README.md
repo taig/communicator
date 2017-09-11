@@ -13,21 +13,15 @@ Communicator provides a simple way to construct OkHttp requests as `monix.Task`s
 
 ```scala
 libraryDependencies ++=
-    "io.taig" %% "communicator-common" % "3.3.0-RC2" ::
     "io.taig" %% "communicator-request" % "3.3.0-RC2" ::
-    "io.taig" %% "communicator-phoenix" % "3.3.0-RC2" ::
+    "io.taig" %% "communicator-builder" % "3.3.0-RC2" ::
     Nil
-```
-
-```scala
-libraryDependencies += "io.taig" %% "communicator" % "3.3.0-RC2"
 ```
 
 ## Quickstart
 
 ```scala
 import monix._; import eval.Task; import execution.Scheduler.Implicits.global
-import io.taig.phoenix.models._
 import io.taig.communicator._; import request._
 import okhttp3.OkHttpClient
 import scala._; import util._; import concurrent._; import duration._
@@ -52,17 +46,16 @@ Await.result( response, 30.seconds )
 // [No headers]
 // <<< 200 OK
 // Server: GitHub.com
-// Date: Thu, 22 Jun 2017 10:59:11 GMT
+// Date: Mon, 11 Sep 2017 14:02:53 GMT
 // Content-Type: text/html; charset=utf-8
 // Transfer-Encoding: chunked
 // Status: 200 OK
 // Cache-Control: no-cache
 // Vary: X-PJAX
 // X-UA-Compatible: IE=Edge,chrome=1
-// Set-Cookie: logged_in=no; domain=.github.com; path=/; expires=Mon, 22 Jun 2037 10:59:11 -0000; secure; HttpOnly
-// Set-Cookie: _gh_sess=eyJzZXNzaW9uX2lkIjoiYzk0YmFhMDZmOGQxN2Y3MzE3OTgwODU2NTFjYjk3MmYiLCJsYXN0X3JlYWRfZnJvbV9yZXBsaWNhcyI6MTQ5ODEyOTE1MTU4MywiX2NzcmZfdG9rZW4iOiJoTW16UlJYVjl0bjdFdkVRbGNEQVYyczZ6S0FkaVZRa3lJUjB2dFNZZ0I0PSJ9--a069c97337248b1697c023081d1b1137a8afef30; path=/; secure; HttpOnly
-// X-Request-Id: 629afaa11682238d031cdafcb4865d72
-// X-Runtime: 0....
+// Set-Cookie: _octo=GH1.1.189582300.1505138573; domain=.github.com; path=/; expires=Wed, 11 Sep 2019 14:02:53 -0000
+// Set-Cookie: logged_in=no; domain=.github.com; path=/; expires=Fri, 11 Sep 2037 14:02:53 -0000; secure; HttpOnly
+// Set-Cookie: _gh_sess=eyJzZXNzaW9uX2lkIjoiMWUyNmQyZTI5YWY1YWFlM2MxZDcwNzU2MjJhYzIxMTAiLCJsYXN0X3JlYWRfZnJvbV9yZXBsaWNhcyI6MTUwNTEzODU3MzM4NCwiX2NzcmZfdG9rZW4iOiJzOUNrMk9LR3c4blBBS0NtUFVXS2llRVRpSFdLaXBYZXlmUHpPMXhERVhBPSJ9--de6056b310e0c...
 ```
 
 ## Usage
@@ -92,37 +85,6 @@ val ignoreBody: Task[Response[Unit]] = request.ignoreBody
 
 // Parses response body to a String
 val parse: Task[Response[String]] = request.parse[String]
-```
-
-### Phoenix Channels
-
-```scala
-import monix.execution.Scheduler.Implicits.global
-import io.taig.communicator._; import websocket._; import phoenix._
-import io.taig.phoenix.models._
-import okhttp3.{ConnectionPool, OkHttpClient}
-import scala._; import util._; import concurrent._; import duration._
-import java.util.concurrent.TimeUnit
-
-implicit val client = new OkHttpClient()
-
-val request = new OkHttpRequest.Builder().
-    url( s"ws://localhost:4000/socket/websocket" ).
-    build()
-
-val topic = Topic( "echo", "foobar" )
-
-val websocket = WebSocket( request )
-val phoenix = Phoenix( websocket )
-val channel = Channel.join( phoenix, topic )
-
-val task = channel.collect {
-    case Channel.Event.Available( channel ) ⇒ channel
-}.firstL.map( _.topic )
-```
-
-```scala
-// Await.result( task.runAsync, 90.seconds )
 ```
 
 ## Android
@@ -156,15 +118,6 @@ implicit val PoolScheduler: Scheduler = Scheduler {
 }
 ```
 
-## Testing
-
-To run the Phoenix-module specific tests, the [phoenix_echo][5] app (thanks [@PragTob][6]) has to be running in the background. The easiest way to do so is via the included `docker` configuration.
-```
-docker pull taig/communicator:latest
-docker build -t taig/communicator:latest .
-docker -v "$PWD:/communicator/" --entrypoint="./test.sh" taig/communicator:latest
-```
-
 ## Communicator 2.x
 
 The `scala.concurrent.Future` predecessor of this library has been deprecated. You can still [access][3] the source and documentation.
@@ -177,5 +130,3 @@ The Java predecessor of this library has been deprecated. You can still [access]
 [2]: http://square.github.io/okhttp/
 [3]: https://github.com/Taig/Communicator/tree/2.3.2
 [4]: https://github.com/Taig/Communicator/tree/f820d08b1cc4d77083e384568ce89223e53ab693
-[5]: https://github.com/PragTob/phoenix_echo
-[6]: https://github.com/PragTob

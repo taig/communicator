@@ -17,8 +17,8 @@ lazy val root = project.in( file( "." ) )
         startYear := Some( 2013 ),
         tutTargetDirectory := file( "." )
     )
-    .aggregate( builder, request, websocket, phoenix )
-    .dependsOn( builder, request, websocket, phoenix )
+    .aggregate( builder, request )
+    .dependsOn( builder, request )
 
 lazy val builder = project
     .settings( Settings.common )
@@ -44,27 +44,3 @@ lazy val request = project
         name := "request",
         startYear := Some( 2016 )
     )
-
-lazy val websocket = project
-    .settings( Settings.common )
-    .settings(
-        libraryDependencies ++=
-            Dependencies.monixReactive ::
-            Dependencies.slf4jApi ::
-            Dependencies.logbackClassic % "test" ::
-            Nil,
-        startYear := Some( 2017 )
-    )
-    .dependsOn( request % "compile->compile;test->test" )
-
-lazy val phoenix = project
-    .settings( Settings.common )
-    .settings(
-        libraryDependencies ++=
-            Dependencies.circeParser ::
-            Dependencies.phoenixModels ::
-            Dependencies.monixCats % "test" ::
-            Nil,
-        startYear := Some( 2016 )
-    )
-    .dependsOn( websocket % "compile->compile;test->test" )
