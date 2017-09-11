@@ -13,21 +13,15 @@ Communicator provides a simple way to construct OkHttp requests as `monix.Task`s
 
 ```scala
 libraryDependencies ++=
-    "io.taig" %% "communicator-common" % "3.3.0-RC2" ::
     "io.taig" %% "communicator-request" % "3.3.0-RC2" ::
-    "io.taig" %% "communicator-phoenix" % "3.3.0-RC2" ::
+    "io.taig" %% "communicator-builder" % "3.3.0-RC2" ::
     Nil
-```
-
-```scala
-libraryDependencies += "io.taig" %% "communicator" % "3.3.0-RC2"
 ```
 
 ## Quickstart
 
 ```tut:silent
 import monix._; import eval.Task; import execution.Scheduler.Implicits.global
-import io.taig.phoenix.models._
 import io.taig.communicator._; import request._
 import okhttp3.OkHttpClient
 import scala._; import util._; import concurrent._; import duration._
@@ -78,37 +72,6 @@ val ignoreBody: Task[Response[Unit]] = request.ignoreBody
 val parse: Task[Response[String]] = request.parse[String]
 ```
 
-### Phoenix Channels
-
-```tut:reset:silent
-import monix.execution.Scheduler.Implicits.global
-import io.taig.communicator._; import websocket._; import phoenix._
-import io.taig.phoenix.models._
-import okhttp3.{ConnectionPool, OkHttpClient}
-import scala._; import util._; import concurrent._; import duration._
-import java.util.concurrent.TimeUnit
-
-implicit val client = new OkHttpClient()
-
-val request = new OkHttpRequest.Builder().
-    url( s"ws://localhost:4000/socket/websocket" ).
-    build()
-
-val topic = Topic( "echo", "foobar" )
-
-val websocket = WebSocket( request )
-val phoenix = Phoenix( websocket )
-val channel = Channel.join( phoenix, topic )
-
-val task = channel.collect {
-    case Channel.Event.Available( channel ) ⇒ channel
-}.firstL.map( _.topic )
-```
-
-```tut:book
-// Await.result( task.runAsync, 90.seconds )
-```
-
 ## Android
 
 To use Communicator on the Android platform please extend your ProGuard rules by the following instructions:
@@ -140,15 +103,6 @@ implicit val PoolScheduler: Scheduler = Scheduler {
 }
 ```
 
-## Testing
-
-To run the Phoenix-module specific tests, the [phoenix_echo][5] app (thanks [@PragTob][6]) has to be running in the background. The easiest way to do so is via the included `docker` configuration.
-```
-docker pull taig/communicator:latest
-docker build -t taig/communicator:latest .
-docker -v "$PWD:/communicator/" --entrypoint="./test.sh" taig/communicator:latest
-```
-
 ## Communicator 2.x
 
 The `scala.concurrent.Future` predecessor of this library has been deprecated. You can still [access][3] the source and documentation.
@@ -161,5 +115,3 @@ The Java predecessor of this library has been deprecated. You can still [access]
 [2]: http://square.github.io/okhttp/
 [3]: https://github.com/Taig/Communicator/tree/2.3.2
 [4]: https://github.com/Taig/Communicator/tree/f820d08b1cc4d77083e384568ce89223e53ab693
-[5]: https://github.com/PragTob/phoenix_echo
-[6]: https://github.com/PragTob
