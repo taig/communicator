@@ -1,5 +1,14 @@
 # Changelog
 
+## 3.3.0
+
+_2017-11-15_
+
+ *  Ditch phoenix & websocket modules (#57)
+ *  Upgrade to scala 2.11.12 and 2.12.4
+ *  Upgrade to sbt 1.0.3
+ *  Add sbt-scalafmt
+
 ## 3.3.0-RC2
 
 _2017-06-22_
