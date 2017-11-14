@@ -6,8 +6,4 @@
 
 set -e
 
-cd ~/phoenix_echo/
-elixir --detached -S mix do phoenix.server
-cd -
-
 sbt tut

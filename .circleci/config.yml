@@ -1,0 +1,42 @@
+version: 2
+jobs:
+  build:
+    working_directory: /app/
+    docker:
+      - image: docker:17.11.0-ce-rc2-git
+    steps:
+      - checkout
+      - setup_remote_docker
+      - restore_cache:
+          keys:
+            - v1-{{ .Branch }}
+          paths:
+            - /caches/communicator.tar
+      - run:
+          name: Load Docker image layer cache
+          command: |
+            set +o pipefail
+            docker load -i /caches/communicator.tar | true
+      - run:
+          name: Build docker images
+          command: |
+            docker build --cache-from=communicator -t communicator .
+      - run:
+          name: Save Docker image layer cache
+          command: |
+            mkdir -p /caches/
+            docker save -o /caches/communicator.tar communicator
+      - save_cache:
+          key: v1-{{ .Branch }}-{{ epoch }}
+          paths:
+            - /caches/communicator.tar
+      - run:
+          name: Run tests
+          command: |
+            docker create -v /app/ --name app alpine /bin/true
+            docker cp /app/ app:/
+            docker run \
+              -e CODECOV_TOKEN=$CODECOV_TOKEN \
+              --volumes-from app \
+              --entrypoint="./test.sh" \
+              communicator

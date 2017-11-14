@@ -1,12 +1,12 @@
-import io.taig.sbt.sonatype.SonatypeHouserulePlugin.autoImport._
+import io.taig.sbt.sonatype.SonatypeHouserulesPlugin.autoImport._
 import sbt.{Def, Tests}
 import sbt.Keys._
 import sbt._
 
 object Settings {
-    val Scala211 = "2.11.11"
+    val Scala211 = "2.11.12"
 
-    val Scala212 = "2.12.2"
+    val Scala212 = "2.12.4"
 
     val common = Def.settings(
         crossScalaVersions := Scala211 :: Scala212 :: Nil,
