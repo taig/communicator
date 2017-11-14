@@ -1,3 +1,5 @@
+addSbtPlugin( "com.lucidchart" % "sbt-scalafmt" % "1.14" )
+
 addSbtPlugin( "com.typesafe.sbt" % "sbt-git" % "0.9.3" )
 
 addSbtPlugin( "io.taig" % "sbt-sonatype-houserules" % "1.2.0" )
