@@ -1,20 +1,26 @@
-FROM        taig/scala:1.0.9
+FROM        openjdk:8-jdk-alpine
 
-MAINTAINER  Niklas Klein "mail@taig.io"
+# Install wget and unzip; add SSL certs to wget
+RUN         apk update
+RUN         apk add --no-cache bash git wget
+RUN         update-ca-certificates
 
 # Install python & pip, necessary to submit test coverage
-RUN         apt-get install -y --no-install-recommends python-pip
-RUN         apt-get clean
+RUN         apk add py-pip
 RUN         pip install --upgrade pip
 RUN         pip install setuptools
 RUN         pip install codecov
 
+# Install Sbt
+RUN         wget -q https://raw.githubusercontent.com/paulp/sbt-extras/master/sbt -O /bin/sbt
+RUN         chmod +x /bin/sbt
+
 # Cache project dependencies
-RUN         mkdir -p ./cache/phoenix/src/test/scala/
+RUN         mkdir -p ./cache/request/src/test/scala/
 ADD         ./project/ ./cache/project/
 ADD         ./build.sbt ./cache/
-RUN         echo "object Foobar" > ./cache/phoenix/src/test/scala/Foobar.scala
+RUN         echo "object Foobar" > ./cache/request/src/test/scala/Foobar.scala
 RUN         cd ./cache/ && sbt ";coverage;+test;+tut"
 RUN         rm -r ./cache
 
-WORKDIR     /communicator/
+WORKDIR     /app/

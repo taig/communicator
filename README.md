@@ -2,7 +2,7 @@
 
 [![CircleCI](https://circleci.com/gh/Taig/communicator/tree/master.svg?style=shield)](https://circleci.com/gh/Taig/communicator/tree/master)
 [![codecov](https://codecov.io/gh/Taig/communicator/branch/master/graph/badge.svg)](https://codecov.io/gh/Taig/communicator)
-[![Maven](https://img.shields.io/maven-central/v/io.taig/communicator_2.12.svg)](http://search.maven.org/#artifactdetails%7Cio.taig%7Ccommunicator_2.12%7C3.3.0-RC2%7Cjar)
+[![Maven](https://img.shields.io/maven-central/v/io.taig/communicator_2.12.svg)](https://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22io.taig%22%20AND%20a%3A%22communicator_2.12%22)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/Taig/Communicator/master/LICENSE)
 
 > A [monix][1] wrapper for [OkHttp][2]
@@ -45,17 +45,18 @@ Await.result( response, 30.seconds )
 // >>> https://github.com/
 // [No headers]
 // <<< 200 OK
-// Server: GitHub.com
-// Date: Mon, 11 Sep 2017 14:02:53 GMT
+// Date: Tue, 14 Nov 2017 09:27:41 GMT
 // Content-Type: text/html; charset=utf-8
 // Transfer-Encoding: chunked
+// Server: GitHub.com
 // Status: 200 OK
 // Cache-Control: no-cache
 // Vary: X-PJAX
 // X-UA-Compatible: IE=Edge,chrome=1
-// Set-Cookie: _octo=GH1.1.189582300.1505138573; domain=.github.com; path=/; expires=Wed, 11 Sep 2019 14:02:53 -0000
-// Set-Cookie: logged_in=no; domain=.github.com; path=/; expires=Fri, 11 Sep 2037 14:02:53 -0000; secure; HttpOnly
-// Set-Cookie: _gh_sess=eyJzZXNzaW9uX2lkIjoiMWUyNmQyZTI5YWY1YWFlM2MxZDcwNzU2MjJhYzIxMTAiLCJsYXN0X3JlYWRfZnJvbV9yZXBsaWNhcyI6MTUwNTEzODU3MzM4NCwiX2NzcmZfdG9rZW4iOiJzOUNrMk9LR3c4blBBS0NtUFVXS2llRVRpSFdLaXBYZXlmUHpPMXhERVhBPSJ9--de6056b310e0c...
+// Set-Cookie: logged_in=no; domain=.github.com; path=/; expires=Sat, 14 Nov 2037 09:27:41 -0000; secure; HttpOnly
+// Set-Cookie: _gh_sess=eyJzZXNzaW9uX2lkIjoiMDMzYmRmNTM0ZDcyNGU5MzhiYTdhMWM0MzBiYzYxNzAiLCJsYXN0X3JlYWRfZnJvbV9yZXBsaWNhcyI6MTUxMDY1MTY2MTUzNCwiX2NzcmZfdG9rZW4iOiJQNUxOa1VRa1RQQjU5Q0lSUHp1dlpyck5yejF2VlpudzJQYVl1ZkNvL3ZJPSJ9--47c70efde18b0b5293011a1945e37703c2f62cc4; path=/; secure; HttpOnly
+// X-Request-Id: 84a0d4eabb51eadd80d7f24ea4355c96
+// X-Runtime: 0....
 ```
 
 ## Usage
