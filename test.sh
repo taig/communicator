@@ -6,10 +6,7 @@
 
 set -e
 
-cd ~/phoenix_echo/
-elixir --detached -S mix do phoenix.server
-cd -
-
+sbt ";scalafmt::test;test:scalafmt::test;sbt:scalafmt::test"
 sbt ";coverage;+test;+tut;coverageReport;coverageAggregate"
 
 if [ -n "$CODECOV_TOKEN" ]; then
