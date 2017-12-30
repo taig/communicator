@@ -6,7 +6,7 @@ object Dependencies {
 
         val monix = "2.3.2"
 
-        val okhttp = "3.9.0"
+        val okhttp = "3.9.1"
     }
 
     val catsCore = "org.typelevel" %% "cats-core" % Version.cats
