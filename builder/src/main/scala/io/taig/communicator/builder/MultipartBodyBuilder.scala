@@ -3,6 +3,9 @@ package io.taig.communicator.builder
 import java.util.UUID
 
 import cats.data.NonEmptyList
+import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
+import io.circe.{Decoder, Encoder}
+import io.taig.communicator.builder.extension.instance.circe._
 import io.taig.communicator.OkHttpMultipartBody
 import okhttp3.MediaType
 import okhttp3.MultipartBody.FORM
@@ -11,7 +14,7 @@ case class MultipartBodyBuilder(
     parts: NonEmptyList[PartBuilder],
     contentType: MediaType = FORM,
     boundary: String = UUID.randomUUID.toString
-) extends BuilderBuilder[OkHttpMultipartBody] {
+) extends Builder[OkHttpMultipartBody] {
   override def build: OkHttpMultipartBody = {
     val builder = new OkHttpMultipartBody.Builder(boundary)
       .setType(contentType)
@@ -22,4 +25,10 @@ case class MultipartBodyBuilder(
 
     builder.build()
   }
+}
+
+object MultipartBodyBuilder {
+  implicit val decoder: Decoder[MultipartBodyBuilder] = deriveDecoder
+
+  implicit val encoder: Encoder[MultipartBodyBuilder] = deriveEncoder
 }
