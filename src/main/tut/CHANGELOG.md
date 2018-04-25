@@ -1,5 +1,21 @@
 # Changelog
 
+## 3.4.0
+
+_2018-04-25_
+
+ * Suffix all elements in builder package with Builder
+ * Add circe codecs for all builder classes
+ * Remove `request` package
+ * Upgrade to okhttp 3.10.0
+ * Upgrade to monix 2.3.3
+ * Upgrade to scalatest 3.0.5
+ * Upgrade to tut 0.6.4
+ * Upgrade to sbt 1.1.4
+ * Upgrade to okhttp 3.9.1
+ * Upgrade to monix 2.3.2
+ * Upgrade to sbt-scalafmt 1.15
+
 ## 3.3.0
 
 _2017-11-15_
