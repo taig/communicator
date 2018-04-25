@@ -1,5 +1,5 @@
 package io.taig.communicator.builder
 
-trait Builder[+T] {
+trait BuilderBuilder[+T] {
   def build: T
 }

@@ -7,11 +7,11 @@ import io.taig.communicator.OkHttpMultipartBody
 import okhttp3.MediaType
 import okhttp3.MultipartBody.FORM
 
-case class MultipartBody(
-    parts: NonEmptyList[Part],
+case class MultipartBodyBuilder(
+    parts: NonEmptyList[PartBuilder],
     contentType: MediaType = FORM,
     boundary: String = UUID.randomUUID.toString
-) extends Builder[OkHttpMultipartBody] {
+) extends BuilderBuilder[OkHttpMultipartBody] {
   override def build: OkHttpMultipartBody = {
     val builder = new OkHttpMultipartBody.Builder(boundary)
       .setType(contentType)

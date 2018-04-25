@@ -3,14 +3,14 @@ package io.taig.communicator.builder
 import java.io.File
 
 import io.taig.communicator.OkHttpRequestBody
-import io.taig.communicator.builder.RequestBody.Content
+import io.taig.communicator.builder.RequestBodyBuilder.Content
 import okhttp3.MediaType
 import okhttp3.RequestBody.create
 
-case class RequestBody(
+case class RequestBodyBuilder(
     contentType: MediaType,
     content: Content
-) extends Builder[OkHttpRequestBody] {
+) extends BuilderBuilder[OkHttpRequestBody] {
   override def build: OkHttpRequestBody = content match {
     case Content.Text(value) ⇒ create(contentType, value)
     case Content.Bytes(value) ⇒ create(contentType, value)
@@ -18,7 +18,7 @@ case class RequestBody(
   }
 }
 
-object RequestBody {
+object RequestBodyBuilder {
   sealed trait Content
 
   object Content {

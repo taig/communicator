@@ -41,22 +41,19 @@ val response = request.runAsync
 
 ```scala
 Await.result( response, 30.seconds )
-// res8: io.taig.communicator.request.Response[String] =
+// res4: io.taig.communicator.request.Response[String] =
 // >>> https://github.com/
 // [No headers]
 // <<< 200 OK
-// Date: Tue, 14 Nov 2017 17:02:20 GMT
+// Server: GitHub.com
+// Date: Wed, 25 Apr 2018 08:04:58 GMT
 // Content-Type: text/html; charset=utf-8
 // Transfer-Encoding: chunked
-// Server: GitHub.com
 // Status: 200 OK
 // Cache-Control: no-cache
 // Vary: X-PJAX
-// X-UA-Compatible: IE=Edge,chrome=1
-// Set-Cookie: logged_in=no; domain=.github.com; path=/; expires=Sat, 14 Nov 2037 17:02:20 -0000; secure; HttpOnly
-// Set-Cookie: _gh_sess=eyJzZXNzaW9uX2lkIjoiYmViZDE1NTI4ZThkMDBjN2Q4NzFmOGRkZmZlMWEzZWYiLCJsYXN0X3JlYWRfZnJvbV9yZXBsaWNhcyI6MTUxMDY3ODk0MDAxNiwiX2NzcmZfdG9rZW4iOiJlVGxTS3pDMnpOYjgzRmxHNmlqdmZLUzcvOVIxRGFGY1hPam1pSHhIdDQwPSJ9--ea40a8d0dd958facd7872773c10593ccd8842e84; path=/; secure; HttpOnly
-// X-Request-Id: be24b0dcc89599a647bc5afed0f1e162
-// X-Runtime: 0....
+// Set-Cookie: logged_in=no; domain=.github.com; path=/; expires=Sun, 25 Apr 2038 08:04:58 -0000; secure; HttpOnly
+// Set-Cookie: _gh_sess=c2c3TTFjR3hPRjZsZHFkRnFCN2o1WERIZ29vR3NBMFZuUjF4ZGh3ZlMwSDBjN3pGZitER3ppN0N0c1ZtLzljU1lrc0pXaFN0UGhXaVVlYVlSMDdGL2ZZQU9DUjA5OWpzWnJKRWc4aUw3bm9VNWNFZitNNXd1bnM4SXVTUnZyVCtFUzY5bHhsbmIyd2tWR1c2TnZBTm1wOHJsWGRWSWJZU1dyS0FWYjFWOTF1cldiK0JBSzI4RjhkQnJ3MmxFaVhDVjlUYWd6SnJKKy8zVkx2ZDFrUkxwZz09LS1FZG9mdTBnNGgrNnorS0hYemtXK2J3PT0%3D--5638c023d32e9b7479cf772f16f1f5c2256...
 ```
 
 ## Usage
