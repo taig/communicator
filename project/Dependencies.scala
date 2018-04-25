@@ -4,7 +4,7 @@ object Dependencies {
     object Version {
         val cats = "0.9.0"
 
-        val monix = "2.3.2"
+        val monix = "2.3.3"
 
         val okhttp = "3.9.1"
     }
