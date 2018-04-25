@@ -28,7 +28,7 @@ lazy val builder = project
   .settings(
     coverageEnabled := false,
     libraryDependencies ++=
-      Dependencies.catsCore ::
+      Dependencies.circeGeneric ::
         Nil,
     name := "builder",
     startYear := Some(2016)

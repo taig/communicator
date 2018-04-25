@@ -2,14 +2,14 @@ import sbt._
 
 object Dependencies {
     object Version {
-        val cats = "0.9.0"
+        val circe = "0.8.0"
 
         val monix = "2.3.3"
 
         val okhttp = "3.10.0"
     }
 
-    val catsCore = "org.typelevel" %% "cats-core" % Version.cats
+    val circeGeneric = "io.circe" %% "circe-generic" % Version.circe
 
     val monixEval = "io.monix" %% "monix-eval" % Version.monix
 
