@@ -32,8 +32,7 @@ sealed trait Response[T] {
   def isRedirect: Boolean = wrapped.isRedirect
 
   @inline
-  def challenges: List[Challenge] =
-    iterableAsScalaIterableConverter(wrapped.challenges).asScala.toList
+  def challenges: List[Challenge] = wrapped.challenges.asScala.toList
 
   @inline
   def cacheControl: CacheControl = wrapped.cacheControl

@@ -2,6 +2,7 @@ package io.taig.communicator.builder.extension.instance
 
 import java.io.File
 
+import cats.syntax.either._
 import io.circe.syntax._
 import io.circe.{Decoder, DecodingFailure, Encoder, Json}
 import io.taig.communicator.OkHttpRequestBody

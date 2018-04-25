@@ -46,14 +46,15 @@ Await.result(response, 30.seconds)
 // [No headers]
 // <<< 200 OK
 // Server: GitHub.com
-// Date: Wed, 25 Apr 2018 08:54:58 GMT
+// Date: Wed, 25 Apr 2018 09:00:12 GMT
 // Content-Type: text/html; charset=utf-8
 // Transfer-Encoding: chunked
 // Status: 200 OK
 // Cache-Control: no-cache
 // Vary: X-PJAX
-// Set-Cookie: logged_in=no; domain=.github.com; path=/; expires=Sun, 25 Apr 2038 08:54:58 -0000; secure; HttpOnly
-// Set-Cookie: _gh_sess=TnhzR051bXFaSG9Ma3ZxaUJTUDZPYlA2NXYxRWY2TUxJT1Zra0tnakdsL1o4OVYybE94M1hSaTB2ZVNwNDRMQWFyRWNSVmM3eWd6dUgyZk4veG5vaWZkemF0WWVPR2RSdmxLMXgvc3Vna245clJhN3BZNDF6MUNCdmIwZWhHSElwMVFmTUFweTJxOEl2anNtZGZtZ2lHNWl2c1BMeTluQ01nRUZIMU9rVkh3bnYyTWZyL0xzU1lRc2U5bFBuM1JNQUtiZ1hPUk9GMGZjN1pTL3g0S0xqQT09LS1jaUFLM2dJKzVaN3NUUGdSRkQza1VnPT0%3D--b085b2f28369b54ed756e0a9e5fbd4e59b976b76; p...
+// Set-Cookie: logged_in=no; domain=.github.com; path=/; expires=Sun, 25 Apr 2038 09:00:12 -0000; secure; HttpOnly
+// Set-Cookie: _gh_sess=dWRCRXRkYlBKSVhIRHhUT2xHRnlBZnd5emxlQ1NrazhxRzljVnkvWkFSV21UVEMwOFlZSlZsMWJmalZQWUlxUWl2cEZzUTB0Q0xQVkJESEliM1YwM1MyZXNzUDBBZ1R5RG5TV1JLWXFRS1lXSmJEVlJ1ZlZsNktDMUxMOVZKNksxV3RuNTBPMmdXaDZpY3hFbUx3TmlvR2JmTGVnZzJDOURoa3BQS3ovaXBER215UENrZW5MaStVVGJIei9rQ09uVUJsc3NzNEoyc1ljSlVVMm9LZlJQdz09LS13bjF0WERkQ1kwMHRUcmpKL2xsOXVnPT0%3D--a797cb8ba90742e8a0735c96e1e6baebc3bb6ec9; path=/; secure; HttpOnly
+// X-...
 ```
 
 ## Usage
@@ -70,7 +71,7 @@ val headers = new OkHttpRequestBuilder().
     header("X-API-Key", "foobar").
     build()
 
-val request: Request = Request( headers )
+val request: Request = Request(headers)
 ```
 
 ### Handling Responses
@@ -111,7 +112,7 @@ import monix.execution.Scheduler
 implicit val PoolScheduler: Scheduler = Scheduler {
     ExecutionContext.fromExecutor(
         AsyncTask.THREAD_POOL_EXECUTOR,
-        t ⇒ Log.e( "PoolScheduler", "Failure during asynchronous operation", t )
+        t ⇒ Log.e("PoolScheduler", "Failure during asynchronous operation", t)
     )
 }
 ```
