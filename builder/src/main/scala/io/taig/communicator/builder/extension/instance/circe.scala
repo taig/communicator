@@ -4,9 +4,9 @@ import java.io.File
 
 import io.circe.syntax._
 import io.circe.{Decoder, DecodingFailure, Encoder, Json}
+import io.taig.communicator.OkHttpRequestBody
 import io.taig.communicator.builder._
-import io.taig.communicator.{MediaType, OkHttpRequestBody, builder}
-import okhttp3.{Headers, HttpUrl}
+import okhttp3.{Headers, HttpUrl, MediaType}
 
 import scala.collection.JavaConverters._
 

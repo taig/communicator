@@ -6,7 +6,7 @@ import cats.data.NonEmptyList
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 import io.circe.{Decoder, Encoder}
 import io.taig.communicator.builder.extension.instance.circe._
-import io.taig.communicator.OkHttpMultipartBody
+import io.taig.communicator.{OkHttpMultipartBody, OkHttpMultipartBodyBuilder}
 import okhttp3.MediaType
 import okhttp3.MultipartBody.FORM
 
@@ -16,7 +16,7 @@ case class MultipartBodyBuilder(
     boundary: String = UUID.randomUUID.toString
 ) extends Builder[OkHttpMultipartBody] {
   override def build: OkHttpMultipartBody = {
-    val builder = new OkHttpMultipartBody.Builder(boundary)
+    val builder = new OkHttpMultipartBodyBuilder(boundary)
       .setType(contentType)
 
     parts.toList.foreach { part ⇒

@@ -8,7 +8,11 @@ import io.taig.communicator.builder.RequestBuilder.Method.{
   PermitsRequestBody,
   RequiresRequestBody
 }
-import io.taig.communicator.{OkHttpRequest, OkHttpRequestBody}
+import io.taig.communicator.{
+  OkHttpRequest,
+  OkHttpRequestBody,
+  OkHttpRequestBuilder
+}
 import okhttp3.HttpUrl
 
 case class RequestBuilder(
@@ -59,7 +63,7 @@ case class RequestBuilder(
   }
 
   override def build: OkHttpRequest = {
-    val builder = new OkHttpRequest.Builder()
+    val builder = new OkHttpRequestBuilder()
       .url(url)
       .method(method.name, body.map(_.build).orNull)
 

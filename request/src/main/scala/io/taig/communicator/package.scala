@@ -2,10 +2,7 @@ package io.taig
 
 package object communicator {
   type OkHttpRequest = okhttp3.Request
-
-  object OkHttpRequest {
-    type Builder = okhttp3.Request.Builder
-  }
+  type OkHttpRequestBuilder = okhttp3.Request.Builder
 
   type OkHttpResponse = okhttp3.Response
 
@@ -14,27 +11,11 @@ package object communicator {
   type OkHttpResponseBody = okhttp3.ResponseBody
 
   type OkHttpMultipartBody = okhttp3.MultipartBody
-
-  object OkHttpMultipartBody {
-    type Builder = okhttp3.MultipartBody.Builder
-  }
+  type OkHttpMultipartBodyBuilder = okhttp3.MultipartBody.Builder
 
   type OkHttpPart = okhttp3.MultipartBody.Part
 
   type OkHttpWebSocket = okhttp3.WebSocket
 
   type OkHttpWebSocketListener = okhttp3.WebSocketListener
-
-  type MediaType = okhttp3.MediaType
-
-  object MediaType {
-    val Jpeg = parse("image/jpeg")
-
-    val Json = parse("application/json")
-
-    val Png = parse("image/png")
-
-    @inline
-    def parse(value: String): MediaType = okhttp3.MediaType.parse(value)
-  }
 }
