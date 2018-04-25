@@ -1,4 +1,4 @@
-package io.taig.communicator.request
+package io.taig.communicator
 
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.{MediaType, RequestBody}

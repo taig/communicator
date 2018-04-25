@@ -1,6 +1,5 @@
-package io.taig.communicator.request
+package io.taig.communicator
 
-import io.taig.communicator.OkHttpResponse
 import okhttp3._
 
 import scala.collection.JavaConverters._
@@ -48,26 +47,21 @@ sealed trait Response[T] {
   @inline
   def body: T
 
-  lazy val cacheResponse: Option[Response[T]] = {
+  lazy val cacheResponse: Option[Response[T]] =
     Option(wrapped.cacheResponse()).map(Response(_, body))
-  }
 
-  lazy val networkResponse: Option[Response[T]] = {
+  lazy val networkResponse: Option[Response[T]] =
     Option(wrapped.networkResponse()).map(Response(_, body))
-  }
 
-  lazy val priorResponse: Option[Response[T]] = {
+  lazy val priorResponse: Option[Response[T]] =
     Option(wrapped.priorResponse()).map(Response(_, body))
-  }
 
   override def toString: String =
-    s"""
-          |>>> ${request.url}
-          |${if (request.headers().size() == 0) "[No headers]"
+    s""">>> ${request.url}
+       |${if (request.headers().size() == 0) "[No headers]"
        else request.headers()}
-          |<<< $code${message.map(" " + _).getOrElse("")}
-          |${if (headers.size() == 0) "[No headers]" else headers}
-        """.stripMargin.trim
+       |<<< $code${message.map(" " + _).getOrElse("")}
+       |${if (headers.size() == 0) "[No headers]" else headers}""".stripMargin.trim
 }
 
 object Response {

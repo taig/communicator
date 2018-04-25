@@ -1,6 +1,5 @@
-package io.taig.communicator.request
+package io.taig.communicator
 
-import io.taig.communicator.OkHttpResponse
 import okhttp3.ResponseBody
 
 /**

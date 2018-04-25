@@ -22,7 +22,7 @@ libraryDependencies ++=
 
 ```tut:silent
 import monix._; import eval.Task; import execution.Scheduler.Implicits.global
-import io.taig.communicator._; import request._
+import io.taig.communicator._
 import okhttp3.OkHttpClient
 import scala._; import util._; import concurrent._; import duration._
 
@@ -30,17 +30,17 @@ import scala._; import util._; import concurrent._; import duration._
 implicit val client = new OkHttpClient()
 
 // Simple OkHttp request builder
-val builder = new OkHttpRequest.Builder().url( "https://github.com/" )
+val builder = new OkHttpRequestBuilder().url("https://github.com/")
 
 // Construct a Task[Response] and parse it to a String
-val request = Request( builder.build() ).parse[String]
+val request = Request(builder.build()).parse[String]
 
 // Kick off the actual request
 val response = request.runAsync
 ```
 
 ```tut:book
-Await.result( response, 30.seconds )
+Await.result(response, 30.seconds)
 ```
 
 ## Usage
@@ -52,12 +52,12 @@ Communicator provides a thin layer around OkHttp using `monix.Task` to execute H
 Use the [OkHttp builder API][2] to construct requests which are then lifted into `io.taig.communicator.request.Request`.
 
 ```tut:silent
-val headers = new OkHttpRequest.Builder().
-    url( "https://github.com/" ).
-    header( "X-API-Key", "foobar" ).
+val headers = new OkHttpRequestBuilder().
+    url("https://github.com/").
+    header("X-API-Key", "foobar").
     build()
 
-val request: Request = Request( headers )
+val request: Request = Request(headers)
 ```
 
 ### Handling Responses
@@ -98,7 +98,7 @@ import monix.execution.Scheduler
 implicit val PoolScheduler: Scheduler = Scheduler {
     ExecutionContext.fromExecutor(
         AsyncTask.THREAD_POOL_EXECUTOR,
-        t ⇒ Log.e( "PoolScheduler", "Failure during asynchronous operation", t )
+        t ⇒ Log.e("PoolScheduler", "Failure during asynchronous operation", t)
     )
 }
 ```

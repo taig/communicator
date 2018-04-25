@@ -22,7 +22,7 @@ libraryDependencies ++=
 
 ```scala
 import monix._; import eval.Task; import execution.Scheduler.Implicits.global
-import io.taig.communicator._; import request._
+import io.taig.communicator._
 import okhttp3.OkHttpClient
 import scala._; import util._; import concurrent._; import duration._
 
@@ -30,30 +30,30 @@ import scala._; import util._; import concurrent._; import duration._
 implicit val client = new OkHttpClient()
 
 // Simple OkHttp request builder
-val builder = new OkHttpRequest.Builder().url( "https://github.com/" )
+val builder = new OkHttpRequestBuilder().url("https://github.com/")
 
 // Construct a Task[Response] and parse it to a String
-val request = Request( builder.build() ).parse[String]
+val request = Request(builder.build()).parse[String]
 
 // Kick off the actual request
 val response = request.runAsync
 ```
 
 ```scala
-Await.result( response, 30.seconds )
-// res4: io.taig.communicator.request.Response[String] =
+Await.result(response, 30.seconds)
+// res4: io.taig.communicator.Response[String] =
 // >>> https://github.com/
 // [No headers]
 // <<< 200 OK
 // Server: GitHub.com
-// Date: Wed, 25 Apr 2018 08:04:58 GMT
+// Date: Wed, 25 Apr 2018 08:54:58 GMT
 // Content-Type: text/html; charset=utf-8
 // Transfer-Encoding: chunked
 // Status: 200 OK
 // Cache-Control: no-cache
 // Vary: X-PJAX
-// Set-Cookie: logged_in=no; domain=.github.com; path=/; expires=Sun, 25 Apr 2038 08:04:58 -0000; secure; HttpOnly
-// Set-Cookie: _gh_sess=c2c3TTFjR3hPRjZsZHFkRnFCN2o1WERIZ29vR3NBMFZuUjF4ZGh3ZlMwSDBjN3pGZitER3ppN0N0c1ZtLzljU1lrc0pXaFN0UGhXaVVlYVlSMDdGL2ZZQU9DUjA5OWpzWnJKRWc4aUw3bm9VNWNFZitNNXd1bnM4SXVTUnZyVCtFUzY5bHhsbmIyd2tWR1c2TnZBTm1wOHJsWGRWSWJZU1dyS0FWYjFWOTF1cldiK0JBSzI4RjhkQnJ3MmxFaVhDVjlUYWd6SnJKKy8zVkx2ZDFrUkxwZz09LS1FZG9mdTBnNGgrNnorS0hYemtXK2J3PT0%3D--5638c023d32e9b7479cf772f16f1f5c2256...
+// Set-Cookie: logged_in=no; domain=.github.com; path=/; expires=Sun, 25 Apr 2038 08:54:58 -0000; secure; HttpOnly
+// Set-Cookie: _gh_sess=TnhzR051bXFaSG9Ma3ZxaUJTUDZPYlA2NXYxRWY2TUxJT1Zra0tnakdsL1o4OVYybE94M1hSaTB2ZVNwNDRMQWFyRWNSVmM3eWd6dUgyZk4veG5vaWZkemF0WWVPR2RSdmxLMXgvc3Vna245clJhN3BZNDF6MUNCdmIwZWhHSElwMVFmTUFweTJxOEl2anNtZGZtZ2lHNWl2c1BMeTluQ01nRUZIMU9rVkh3bnYyTWZyL0xzU1lRc2U5bFBuM1JNQUtiZ1hPUk9GMGZjN1pTL3g0S0xqQT09LS1jaUFLM2dJKzVaN3NUUGdSRkQza1VnPT0%3D--b085b2f28369b54ed756e0a9e5fbd4e59b976b76; p...
 ```
 
 ## Usage
@@ -65,9 +65,9 @@ Communicator provides a thin layer around OkHttp using `monix.Task` to execute H
 Use the [OkHttp builder API][2] to construct requests which are then lifted into `io.taig.communicator.request.Request`.
 
 ```scala
-val headers = new OkHttpRequest.Builder().
-    url( "https://github.com/" ).
-    header( "X-API-Key", "foobar" ).
+val headers = new OkHttpRequestBuilder().
+    url("https://github.com/").
+    header("X-API-Key", "foobar").
     build()
 
 val request: Request = Request( headers )

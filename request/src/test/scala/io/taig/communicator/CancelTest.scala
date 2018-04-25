@@ -1,4 +1,4 @@
-package io.taig.communicator.request
+package io.taig.communicator
 
 import java.util.concurrent.TimeUnit
 
