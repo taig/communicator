@@ -21,46 +21,35 @@ case class RequestBuilder(
     method: Method = Method.GET,
     body: Option[Builder[OkHttpRequestBody]] = None
 ) extends Builder[OkHttpRequest] {
-  def addHeader(key: String, value: String): RequestBuilder = {
+  def addHeader(key: String, value: String): RequestBuilder =
     copy(headers = headers + (key → value))
-  }
 
-  def removeHeader(key: String): RequestBuilder = {
-    copy(headers = headers - key)
-  }
+  def removeHeader(key: String): RequestBuilder = copy(headers = headers - key)
 
   def delete: RequestBuilder = method(Method.DELETE)
 
-  def delete(body: Builder[OkHttpRequestBody]): RequestBuilder = {
+  def delete(body: Builder[OkHttpRequestBody]): RequestBuilder =
     method(Method.DELETE, body)
-  }
 
   def get: RequestBuilder = method(Method.GET)
 
   def head: RequestBuilder = method(Method.HEAD)
 
-  def patch(body: Builder[OkHttpRequestBody]): RequestBuilder = {
+  def patch(body: Builder[OkHttpRequestBody]): RequestBuilder =
     method(Method.PATCH, body)
-  }
 
-  def post(body: Builder[OkHttpRequestBody]): RequestBuilder = {
+  def post(body: Builder[OkHttpRequestBody]): RequestBuilder =
     method(Method.POST, body)
-  }
 
-  def put(body: Builder[OkHttpRequestBody]): RequestBuilder = {
+  def put(body: Builder[OkHttpRequestBody]): RequestBuilder =
     method(Method.PUT, body)
-  }
 
-  def method(value: Method with PermitsRequestBody): RequestBuilder = {
+  def method(value: Method with PermitsRequestBody): RequestBuilder =
     copy(method = value, body = None)
-  }
 
-  def method(
-      value: Method with RequiresRequestBody,
-      body: Builder[OkHttpRequestBody]
-  ): RequestBuilder = {
+  def method(value: Method with RequiresRequestBody,
+             body: Builder[OkHttpRequestBody]): RequestBuilder =
     copy(method = value, body = Some(body))
-  }
 
   override def build: OkHttpRequest = {
     val builder = new OkHttpRequestBuilder()
