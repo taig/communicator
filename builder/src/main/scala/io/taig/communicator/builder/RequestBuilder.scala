@@ -1,62 +1,58 @@
 package io.taig.communicator.builder
 
-import io.taig.communicator.{OkHttpRequest, OkHttpRequestBody}
-import io.taig.communicator.builder.Request.Method
-import io.taig.communicator.builder.Request.Method.{
+import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
+import io.circe.{Decoder, Encoder}
+import io.taig.communicator.builder.extension.instance.circe._
+import io.taig.communicator.builder.RequestBuilder.Method
+import io.taig.communicator.builder.RequestBuilder.Method.{
   PermitsRequestBody,
   RequiresRequestBody
 }
+import io.taig.communicator.{
+  OkHttpRequest,
+  OkHttpRequestBody,
+  OkHttpRequestBuilder
+}
 import okhttp3.HttpUrl
 
-case class Request(
+case class RequestBuilder(
     url: HttpUrl,
     headers: Map[String, String] = Map.empty,
     method: Method = Method.GET,
     body: Option[Builder[OkHttpRequestBody]] = None
 ) extends Builder[OkHttpRequest] {
-  def addHeader(key: String, value: String): Request = {
+  def addHeader(key: String, value: String): RequestBuilder =
     copy(headers = headers + (key → value))
-  }
 
-  def removeHeader(key: String): Request = {
-    copy(headers = headers - key)
-  }
+  def removeHeader(key: String): RequestBuilder = copy(headers = headers - key)
 
-  def delete: Request = method(Method.DELETE)
+  def delete: RequestBuilder = method(Method.DELETE)
 
-  def delete(body: Builder[OkHttpRequestBody]): Request = {
+  def delete(body: Builder[OkHttpRequestBody]): RequestBuilder =
     method(Method.DELETE, body)
-  }
 
-  def get: Request = method(Method.GET)
+  def get: RequestBuilder = method(Method.GET)
 
-  def head: Request = method(Method.HEAD)
+  def head: RequestBuilder = method(Method.HEAD)
 
-  def patch(body: Builder[OkHttpRequestBody]): Request = {
+  def patch(body: Builder[OkHttpRequestBody]): RequestBuilder =
     method(Method.PATCH, body)
-  }
 
-  def post(body: Builder[OkHttpRequestBody]): Request = {
+  def post(body: Builder[OkHttpRequestBody]): RequestBuilder =
     method(Method.POST, body)
-  }
 
-  def put(body: Builder[OkHttpRequestBody]): Request = {
+  def put(body: Builder[OkHttpRequestBody]): RequestBuilder =
     method(Method.PUT, body)
-  }
 
-  def method(value: Method with PermitsRequestBody): Request = {
+  def method(value: Method with PermitsRequestBody): RequestBuilder =
     copy(method = value, body = None)
-  }
 
-  def method(
-      value: Method with RequiresRequestBody,
-      body: Builder[OkHttpRequestBody]
-  ): Request = {
+  def method(value: Method with RequiresRequestBody,
+             body: Builder[OkHttpRequestBody]): RequestBuilder =
     copy(method = value, body = Some(body))
-  }
 
   override def build: OkHttpRequest = {
-    val builder = new OkHttpRequest.Builder()
+    val builder = new OkHttpRequestBuilder()
       .url(url)
       .method(method.name, body.map(_.build).orNull)
 
@@ -68,9 +64,11 @@ case class Request(
   }
 }
 
-object Request {
-  sealed abstract class Method(val name: String) {
-    override def toString = name
+object RequestBuilder {
+  sealed abstract class Method(val name: String)
+      extends Product
+      with Serializable {
+    override def toString: String = name
   }
 
   object Method {
@@ -99,5 +97,13 @@ object Request {
         extends Method(name)
         with RequiresRequestBody
         with PermitsRequestBody
+
+    implicit val decoder: Decoder[Method] = deriveDecoder
+
+    implicit val encoder: Encoder[Method] = deriveEncoder
   }
+
+  implicit val decoder: Decoder[RequestBuilder] = deriveDecoder
+
+  implicit val encoder: Encoder[RequestBuilder] = deriveEncoder
 }

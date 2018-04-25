@@ -22,7 +22,7 @@ libraryDependencies ++=
 
 ```scala
 import monix._; import eval.Task; import execution.Scheduler.Implicits.global
-import io.taig.communicator._; import request._
+import io.taig.communicator._
 import okhttp3.OkHttpClient
 import scala._; import util._; import concurrent._; import duration._
 
@@ -30,33 +30,31 @@ import scala._; import util._; import concurrent._; import duration._
 implicit val client = new OkHttpClient()
 
 // Simple OkHttp request builder
-val builder = new OkHttpRequest.Builder().url( "https://github.com/" )
+val builder = new OkHttpRequestBuilder().url("https://github.com/")
 
 // Construct a Task[Response] and parse it to a String
-val request = Request( builder.build() ).parse[String]
+val request = Request(builder.build()).parse[String]
 
 // Kick off the actual request
 val response = request.runAsync
 ```
 
 ```scala
-Await.result( response, 30.seconds )
-// res8: io.taig.communicator.request.Response[String] =
+Await.result(response, 30.seconds)
+// res4: io.taig.communicator.Response[String] =
 // >>> https://github.com/
 // [No headers]
 // <<< 200 OK
-// Date: Tue, 14 Nov 2017 17:02:20 GMT
+// Server: GitHub.com
+// Date: Wed, 25 Apr 2018 09:00:12 GMT
 // Content-Type: text/html; charset=utf-8
 // Transfer-Encoding: chunked
-// Server: GitHub.com
 // Status: 200 OK
 // Cache-Control: no-cache
 // Vary: X-PJAX
-// X-UA-Compatible: IE=Edge,chrome=1
-// Set-Cookie: logged_in=no; domain=.github.com; path=/; expires=Sat, 14 Nov 2037 17:02:20 -0000; secure; HttpOnly
-// Set-Cookie: _gh_sess=eyJzZXNzaW9uX2lkIjoiYmViZDE1NTI4ZThkMDBjN2Q4NzFmOGRkZmZlMWEzZWYiLCJsYXN0X3JlYWRfZnJvbV9yZXBsaWNhcyI6MTUxMDY3ODk0MDAxNiwiX2NzcmZfdG9rZW4iOiJlVGxTS3pDMnpOYjgzRmxHNmlqdmZLUzcvOVIxRGFGY1hPam1pSHhIdDQwPSJ9--ea40a8d0dd958facd7872773c10593ccd8842e84; path=/; secure; HttpOnly
-// X-Request-Id: be24b0dcc89599a647bc5afed0f1e162
-// X-Runtime: 0....
+// Set-Cookie: logged_in=no; domain=.github.com; path=/; expires=Sun, 25 Apr 2038 09:00:12 -0000; secure; HttpOnly
+// Set-Cookie: _gh_sess=dWRCRXRkYlBKSVhIRHhUT2xHRnlBZnd5emxlQ1NrazhxRzljVnkvWkFSV21UVEMwOFlZSlZsMWJmalZQWUlxUWl2cEZzUTB0Q0xQVkJESEliM1YwM1MyZXNzUDBBZ1R5RG5TV1JLWXFRS1lXSmJEVlJ1ZlZsNktDMUxMOVZKNksxV3RuNTBPMmdXaDZpY3hFbUx3TmlvR2JmTGVnZzJDOURoa3BQS3ovaXBER215UENrZW5MaStVVGJIei9rQ09uVUJsc3NzNEoyc1ljSlVVMm9LZlJQdz09LS13bjF0WERkQ1kwMHRUcmpKL2xsOXVnPT0%3D--a797cb8ba90742e8a0735c96e1e6baebc3bb6ec9; path=/; secure; HttpOnly
+// X-...
 ```
 
 ## Usage
@@ -68,12 +66,12 @@ Communicator provides a thin layer around OkHttp using `monix.Task` to execute H
 Use the [OkHttp builder API][2] to construct requests which are then lifted into `io.taig.communicator.request.Request`.
 
 ```scala
-val headers = new OkHttpRequest.Builder().
-    url( "https://github.com/" ).
-    header( "X-API-Key", "foobar" ).
+val headers = new OkHttpRequestBuilder().
+    url("https://github.com/").
+    header("X-API-Key", "foobar").
     build()
 
-val request: Request = Request( headers )
+val request: Request = Request(headers)
 ```
 
 ### Handling Responses
@@ -114,7 +112,7 @@ import monix.execution.Scheduler
 implicit val PoolScheduler: Scheduler = Scheduler {
     ExecutionContext.fromExecutor(
         AsyncTask.THREAD_POOL_EXECUTOR,
-        t ⇒ Log.e( "PoolScheduler", "Failure during asynchronous operation", t )
+        t ⇒ Log.e("PoolScheduler", "Failure during asynchronous operation", t)
     )
 }
 ```

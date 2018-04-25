@@ -26,6 +26,7 @@ object Settings {
             "-deprecation" ::
             "-feature" ::
             "-Xfatal-warnings" ::
+            "-Xexperimental" ::
             "-Ywarn-dead-code" ::
             "-Ywarn-infer-any" ::
             "-Ywarn-numeric-widen" ::

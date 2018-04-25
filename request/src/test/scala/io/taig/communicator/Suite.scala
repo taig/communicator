@@ -1,4 +1,4 @@
-package io.taig.communicator.request
+package io.taig.communicator
 
 import java.util.logging.LogManager
 
@@ -19,11 +19,8 @@ trait Suite extends AsyncFlatSpec with Matchers {
     * Scheduler that does not log exceptions to reduce noise. The library is
     * already explicitly logging socket failures.
     */
-  implicit val scheduler = Scheduler.fixedPool(
-    "test",
-    5,
-    reporter = UncaughtExceptionReporter(_ ⇒ {})
-  )
+  implicit val scheduler =
+    Scheduler.fixedPool("test", 5, reporter = UncaughtExceptionReporter(_ ⇒ {}))
 
   def http[U](f: MockWebServer ⇒ U): Builder = {
     val server = new MockWebServer
@@ -32,9 +29,8 @@ trait Suite extends AsyncFlatSpec with Matchers {
     new okhttp3.Request.Builder().url(server.url("/"))
   }
 
-  implicit def taskToFuture(
-      task: Task[Assertion]
-  ): Future[Assertion] = task.runAsync
+  implicit def taskToFuture(task: Task[Assertion]): Future[Assertion] =
+    task.runAsync
 
   LogManager.getLogManager.reset()
 }

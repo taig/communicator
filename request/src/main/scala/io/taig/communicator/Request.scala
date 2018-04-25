@@ -1,8 +1,7 @@
-package io.taig.communicator.request
+package io.taig.communicator
 
 import java.io.IOException
 
-import io.taig.communicator._
 import monix.eval.Task
 import monix.execution.Cancelable
 import okhttp3.OkHttpClient
@@ -53,10 +52,7 @@ object Request {
   implicit def requestToTask(request: Request): Task[Response[Unit]] =
     request.ignoreBody
 
-  def apply(request: OkHttpRequest)(
-      implicit
-      ohc: OkHttpClient
-  ): Request = {
+  def apply(request: OkHttpRequest)(implicit ohc: OkHttpClient): Request = {
     val task = Task.create[Response[Unit]] { (scheduler, callback) ⇒
       val call = ohc.newCall(request)
 
