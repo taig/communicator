@@ -17,5 +17,5 @@ object Dependencies {
 
     val okhttpMockwebserver = "com.squareup.okhttp3" % "mockwebserver" % Version.okhttp
 
-    val scalatest = "org.scalatest" %% "scalatest" % "3.0.4"
+    val scalatest = "org.scalatest" %% "scalatest" % "3.0.5"
 }
