@@ -13,8 +13,8 @@ Communicator provides a simple way to construct OkHttp requests as `monix.Task`s
 
 ```scala
 libraryDependencies ++=
-    "io.taig" %% "communicator-request" % "3.4.0" ::
-    "io.taig" %% "communicator-builder" % "3.4.0" ::
+    "io.taig" %% "communicator-request" % "3.5.0" ::
+    "io.taig" %% "communicator-builder" % "3.5.0" ::
     Nil
 ```
 
@@ -46,14 +46,14 @@ Await.result(response, 30.seconds)
 // [No headers]
 // <<< 200 OK
 // Server: GitHub.com
-// Date: Tue, 15 May 2018 14:30:11 GMT
+// Date: Tue, 15 May 2018 14:37:52 GMT
 // Content-Type: text/html; charset=utf-8
 // Transfer-Encoding: chunked
 // Status: 200 OK
 // Cache-Control: no-cache
 // Vary: X-PJAX
-// Set-Cookie: logged_in=no; domain=.github.com; path=/; expires=Sat, 15 May 2038 14:30:11 -0000; secure; HttpOnly
-// Set-Cookie: _gh_sess=bDI1cjBIeVI5OUhVWkc3a1luUmhTOThLcmwza3lzRmIxcTZiVW96ZVR3c1MvbE1KdnVxWW1WbW8ydXZoSHRldG5lYUFpVDZxc0VpWG5RUzI1blg3L09ocXBJSlhMbWJXWXR3aTN2L1dSRW9US3hpT2phdDB1Tk5YalArWXJoSzZ3NHJLRU1hUVRQM1lBTFNIZURZKzViNkJFQXZndHo4L1RqNXZ4WU1jRFpTeWN2WGlPSUVDemRGZHBPaWMrL2U0L0FnQkVjQWxaWDN3em1kOE1DZjU1QT09LS1xYkhza2JYSEtaVVNlR3c5eC9ZZU9BPT0%3D--fdd3db255410f14b220b258041c1fec84c563f5a; p...
+// Set-Cookie: logged_in=no; domain=.github.com; path=/; expires=Sat, 15 May 2038 14:37:52 -0000; secure; HttpOnly
+// Set-Cookie: _gh_sess=MHR4eloxb2s4b3QzNTNyMkJRMTVDTXNzekk0R3JYSTg4bEZJSU9wM1prZmFvdjByQ0dUSDdUdDFQVTZNZ3VpMGJKQVM0bkJ3RkVrNlpwMVZwWHI3TmZiQmw2V0hwZkM3SUNFVDNLdXFFYlE2UGdIU2phV3hOMEYzSm5JMEtnTlY2YjhVVk45Ti9pZXJuMmY4MDd0MWY0RzB4MDNDcnFxYWxTQWZ0QUNOMFJUbmRTOEtzRWtadXo0MnlIWVkzdXJwYzhyMGxOY3NVSXhlc3hEM09jTFozdz09LS1XUG5yeUhQR3p2QWtIMURIYVA3ZnpnPT0%3D--558ba0f66da37431e8fdbcda31e80dfacdb43c2e; p...
 ```
 
 ## Usage
