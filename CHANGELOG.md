@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.5.0
+
+_2018-05-15_
+
+ * Upgrade to monix 3.0.0-RC1
+ * Upgrade to circe 0.9.3
+ * Upgrade to scala 2.12.6
+
 ## 3.4.0
 
 _2018-04-25_

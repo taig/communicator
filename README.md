@@ -46,14 +46,14 @@ Await.result(response, 30.seconds)
 // [No headers]
 // <<< 200 OK
 // Server: GitHub.com
-// Date: Wed, 25 Apr 2018 11:40:01 GMT
+// Date: Tue, 15 May 2018 14:30:11 GMT
 // Content-Type: text/html; charset=utf-8
 // Transfer-Encoding: chunked
 // Status: 200 OK
 // Cache-Control: no-cache
 // Vary: X-PJAX
-// Set-Cookie: logged_in=no; domain=.github.com; path=/; expires=Sun, 25 Apr 2038 11:40:01 -0000; secure; HttpOnly
-// Set-Cookie: _gh_sess=d1d3eWt5TmVpd3lPNEtoZGg4d2JuSjR3SVd4OERhOUtLZTlWTmszOTRPc21VOGtFcjVwUFdOeTJGVUZoazA2UmRyNGZ0VEFaQjMxVlp0WWZCVXRMZ3ROYVNhR3NNb2dlUitNQ0pPWDRhQ0xEbzl4YUZxKzdlcFg1WjY4dENvRGhHazArSmNpdnk2NnV6Yld2VlJQS2EzYmFISWtHa0lDWExvU0VEbnRxbUxCUXFUbGNCWnZGVHZldHZoRzhuQkM4UjRWVU45THhEajNVZ2g4NnFYU2hQdz09LS1zRUtZNmpQSThpUnd6VG1PKzBWZ2hRPT0%3D--cb964319a9062f06e3b2ac82d0c6718544fb14f9; p...
+// Set-Cookie: logged_in=no; domain=.github.com; path=/; expires=Sat, 15 May 2038 14:30:11 -0000; secure; HttpOnly
+// Set-Cookie: _gh_sess=bDI1cjBIeVI5OUhVWkc3a1luUmhTOThLcmwza3lzRmIxcTZiVW96ZVR3c1MvbE1KdnVxWW1WbW8ydXZoSHRldG5lYUFpVDZxc0VpWG5RUzI1blg3L09ocXBJSlhMbWJXWXR3aTN2L1dSRW9US3hpT2phdDB1Tk5YalArWXJoSzZ3NHJLRU1hUVRQM1lBTFNIZURZKzViNkJFQXZndHo4L1RqNXZ4WU1jRFpTeWN2WGlPSUVDemRGZHBPaWMrL2U0L0FnQkVjQWxaWDN3em1kOE1DZjU1QT09LS1xYkhza2JYSEtaVVNlR3c5eC9ZZU9BPT0%3D--fdd3db255410f14b220b258041c1fec84c563f5a; p...
 ```
 
 ## Usage
