@@ -6,7 +6,7 @@ import sbt._
 object Settings {
     val Scala211 = "2.11.12"
 
-    val Scala212 = "2.12.4"
+    val Scala212 = "2.12.6"
 
     val common = Def.settings(
         crossScalaVersions := Scala211 :: Scala212 :: Nil,
