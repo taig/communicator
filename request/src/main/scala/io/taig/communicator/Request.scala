@@ -8,7 +8,8 @@ import okhttp3.OkHttpClient
 
 import scala.language.implicitConversions
 
-final class Request private (task: Task[Response[Unit]]) {
+final class Request private (val wrapped: OkHttpRequest,
+                             task: Task[Response[Unit]]) {
 
   /**
     * Transform the Request's InputStream to an instance of T
@@ -77,6 +78,6 @@ object Request {
       }
     }
 
-    new Request(task)
+    new Request(request, task)
   }
 }
