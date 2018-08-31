@@ -6,7 +6,7 @@ object Dependencies {
 
         val monix = "3.0.0-RC1"
 
-        val okhttp = "3.10.0"
+        val okhttp = "3.11.0"
     }
 
     val circeGeneric = "io.circe" %% "circe-generic" % Version.circe
