@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.5.1
+
+_2018-08-31_
+
+ * Provide a reference to `OkHttpRequest` in `Request`
+ * Upgrade to okhttp 3.11.0
+ * Upgrade to tut 0.6.7
+
 ## 3.5.0
 
 _2018-05-15_
