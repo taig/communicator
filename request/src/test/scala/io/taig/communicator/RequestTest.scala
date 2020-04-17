@@ -11,7 +11,7 @@ class RequestTest extends Suite {
 
     val request = builder.build()
 
-    Request(request).parse[String].runAsync.map {
+    Request(request).parse[String].runToFuture.map {
       _.body shouldBe "foobar"
     }
   }
@@ -23,7 +23,7 @@ class RequestTest extends Suite {
 
     val request = builder.build()
 
-    Request(request).runAsync.map {
+    Request(request).runToFuture.map {
       _.code shouldBe 201
     }
   }
@@ -35,7 +35,7 @@ class RequestTest extends Suite {
 
     val request = builder.build()
 
-    Request(request).unsafeToTask.runAsync.map {
+    Request(request).unsafeToTask.runToFuture.map {
       _.wrapped.body.string shouldBe "foobar"
     }
   }
@@ -47,7 +47,7 @@ class RequestTest extends Suite {
 
     val request = builder.build()
 
-    Request(request).runAsync.map {
+    Request(request).runToFuture.map {
       _.code shouldBe 200
     }
   }
@@ -61,7 +61,7 @@ class RequestTest extends Suite {
       .post(RequestBody.create(MediaType.parse("text/plain"), "foobar"))
       .build()
 
-    Request(request).runAsync.map {
+    Request(request).runToFuture.map {
       _.code shouldBe 200
     }
   }

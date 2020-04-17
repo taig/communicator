@@ -30,7 +30,7 @@ trait Suite extends AsyncFlatSpec with Matchers {
   }
 
   implicit def taskToFuture(task: Task[Assertion]): Future[Assertion] =
-    task.runAsync
+    task.runToFuture
 
   LogManager.getLogManager.reset()
 }

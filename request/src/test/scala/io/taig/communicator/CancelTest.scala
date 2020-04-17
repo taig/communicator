@@ -15,8 +15,7 @@ class CancelTest extends Suite {
     }
 
     val request = builder.build()
-    val future = Request(request).parse[String].runAsync
-
+    val future = Request(request).parse[String].executeWithOptions(_.disableAutoCancelableRunLoops).runToFuture
     future.cancel()
 
     future.failed.map {

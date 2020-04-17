@@ -11,7 +11,7 @@ class ParserTest extends Suite {
 
     val request = builder.build()
 
-    Request(request).parse[Array[Byte]].runAsync.map {
+    Request(request).parse[Array[Byte]].runToFuture.map {
       _.body shouldBe "foobar".getBytes
     }
   }
@@ -23,7 +23,7 @@ class ParserTest extends Suite {
 
     val request = builder.build()
 
-    Request(request).parse[String].runAsync.map {
+    Request(request).parse[String].runToFuture.map {
       _.body shouldBe "foobar"
     }
   }
@@ -35,7 +35,7 @@ class ParserTest extends Suite {
 
     val request = builder.build()
 
-    Request(request).parse[ResponseBody].runAsync.map {
+    Request(request).parse[ResponseBody].runToFuture.map {
       _.body.string shouldBe "foobar"
     }
   }
@@ -49,7 +49,7 @@ class ParserTest extends Suite {
 
     val request = builder.build()
 
-    Request(request).parse(parser).runAsync.map {
+    Request(request).parse(parser).runToFuture.map {
       _.body shouldBe "FOOBAR"
     }
   }
