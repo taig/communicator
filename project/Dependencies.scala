@@ -2,9 +2,9 @@ import sbt._
 
 object Dependencies {
     object Version {
-        val circe = "0.9.3"
+        val circe = "0.12.3"
 
-        val monix = "3.0.0-RC1"
+        val monix = "3.1.0"
 
         val okhttp = "3.11.0"
     }

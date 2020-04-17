@@ -10,7 +10,7 @@ class ResponseTest extends Suite {
 
     val request = builder.build()
 
-    Request(request).parse[String].runAsync.map {
+    Request(request).parse[String].runToFuture.map {
       _.toString should fullyMatch regex """
                  |>>> http://localhost:\d+/
                  |\[No headers\]
@@ -29,7 +29,7 @@ class ResponseTest extends Suite {
 
     val request = builder.build()
 
-    Request(request).parse[String].runAsync.map { response ⇒
+    Request(request).parse[String].runToFuture.map { response ⇒
       response.code shouldBe response.wrapped.code()
       response.message.orNull shouldBe response.wrapped.message()
       response.headers shouldBe response.wrapped.headers()
@@ -61,7 +61,7 @@ class ResponseTest extends Suite {
 
     val request = builder.build()
 
-    Request(request).parse[String].runAsync.map {
+    Request(request).parse[String].runToFuture.map {
       case Response(code, body) ⇒
         code shouldBe 201
         body shouldBe "foobar"
